@@ -1,0 +1,5 @@
+= Software
+
+== Overview
+
+omni_motion.py contains a Omni_motion_robot object that handles movement and thrower logic. Currently there also is a small test script if this file is executed as a program.
