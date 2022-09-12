@@ -1,0 +1,3 @@
+[submodule "software/picr22-boot-camp-programming"]
+	path = software/picr22-boot-camp-programming
+	url = git@github.com:ut-robotics/picr22-boot-camp-programming.git
