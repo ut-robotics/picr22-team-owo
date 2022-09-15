@@ -6,6 +6,8 @@ Sources:
 
 
 Programming:
+NUC will automatically connect to network with SSID: OWO and password: tereh0mmikust
+Connect with SSH, IP can be aqcuired from the device from which the hotspot originates.
 
 
 Electronics:
