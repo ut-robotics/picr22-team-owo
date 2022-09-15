@@ -41,3 +41,10 @@ Personal comments:
 === Wed, 14.09.22
 * Johannes - Learning neural networks 1.5 h
 * Sander - Thrower designing 2 h
+
+=== Thu, 15.09.22
+* Everyone . LiPo 1 h
+* Andres - NUC setup, Working with the vision example code from boot camp - 3 h
+* Johannes - NUC software and connectivity setup - 2 h
+* Sander - Thrower design improvements - 3 h
+* Kert - Thrower design improvements - 1.5 h
