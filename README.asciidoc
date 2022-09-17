@@ -48,3 +48,6 @@ Personal comments:
 * Johannes - NUC software and connectivity setup - 2 h
 * Sander - Thrower design improvements - 3 h
 * Kert - Thrower design improvements - 1.5 h
+
+=== Sat, 17.09.22
+* Sander - Thrower design improvements 1 h
