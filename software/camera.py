@@ -76,7 +76,7 @@ class RealsenseCamera(ICamera):
         frames = self.pipeline.wait_for_frames()
         if aligned:
             frames = self.align.process(frames)
-        return np.asanyarray(frames.get_color_frame().get_data()), np.asanyarray(frames.get_depth_frame().get_data(), frames.get_depth_frame())
+        return np.asanyarray(frames.get_color_frame().get_data()), np.asanyarray(frames.get_depth_frame().get_data())
 
 
 # resolution numbers are sensitive with openCV. Implement a resolution setting mechanism here or use the default of the webcam to
