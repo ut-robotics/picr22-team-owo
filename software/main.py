@@ -20,6 +20,7 @@ if __name__ == "__main__":
 
     # Setup from our code
     robot = omni_motion.Omni_motion_robot()
+    robot.start()
 
     # Setup from example code
     cam = camera.RealsenseCamera(exposure = 100)
@@ -48,12 +49,15 @@ if __name__ == "__main__":
                 #if (frame_cnt > 1000):
                 #    break
 
-            # Movement logic
-            speed_x = 0
-            speed_y = 0
-            speed_r = 0
+            if len(processedData.balls) > 0:
+                # Movement logic
+                speed_x = 0
+                speed_y = 0
+                speed_r = 0
 
-            robot.move(speed_y, speed_x, speed_r)
+                #robot.move(speed_y, speed_x, speed_r)
+                interesting_ball = processedData.balls[-1]
+                print(interesting_ball)
 
             if debug:
                 debug_frame = processedData.debug_frame

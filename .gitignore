@@ -1,1 +1,3 @@
 *.pyc
+software/segment_module/Segment.egg-info/
+software/segment_module/build/
