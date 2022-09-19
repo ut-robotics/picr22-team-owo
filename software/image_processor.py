@@ -73,7 +73,7 @@ class ImageProcessor():
     def stop(self):
         self.camera.close()
 
-    def analyze_balls(self, t_balls, fragments) -> list:
+    def analyze_balls(self, t_balls, fragments, depth) -> list:
         contours, hierarchy = cv2.findContours(t_balls, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         balls = []
@@ -85,7 +85,10 @@ class ImageProcessor():
 
             size = cv2.contourArea(contour)
 
-            if size < 15:
+
+            # changed to 100 from 15, hopefully reducing errors in ball detection
+            # needs testing
+            if size < 100:
                 continue
 
             x, y, w, h = cv2.boundingRect(contour)
@@ -95,7 +98,7 @@ class ImageProcessor():
 
             obj_x = int(x + (w/2))
             obj_y = int(y + (h/2))
-            obj_dst = obj_y
+            obj_dst = depth[obj_x][obj_y]
 
             if self.debug:
                 self.debug_frame[ys, xs] = [0, 0, 0]
@@ -145,14 +148,14 @@ class ImageProcessor():
             return self.camera.get_color_frame(), np.zeros((self.camera.rgb_height, self.camera.rgb_width), dtype=np.uint8)
 
     def process_frame(self, aligned_depth = False) -> ProcessedResults:
-        color_frame, depth_frame = self.get_frame_data(aligned_depth = aligned_depth)
+        color_frame, depth_frame, dframe = self.get_frame_data(aligned_depth = aligned_depth)
 
         segment.segment(color_frame, self.fragmented, self.t_balls, self.t_basket_m, self.t_basket_b)
 
         if self.debug:
             self.debug_frame = np.copy(color_frame)
 
-        balls = self.analyze_balls(self.t_balls, self.fragmented)
+        balls = self.analyze_balls(self.t_balls, self.fragmented, depth_frame)
         basket_b = self.analyze_baskets(self.t_basket_b, debug_color=c.Color.BLUE.color.tolist())
         basket_m = self.analyze_baskets(self.t_basket_m, debug_color=c.Color.MAGENTA.color.tolist())
 
