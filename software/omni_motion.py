@@ -41,8 +41,8 @@ class Omni_motion_robot():
     def move(self, speed_x, speed_y, speed_r):
         robot_angle = math.atan2(speed_y, speed_x)
         robot_speed = math.sqrt(math.pow(speed_x, 2) + math.pow(speed_y, 2))
-        print("Angle:", robot_angle)
-        print("Speed:", robot_speed)
+        #print("Angle:", robot_angle)
+        #print("Speed:", robot_speed)
 
         #M1 front left
         m1 = int(self.calculate_wheel_speed(1, robot_speed, robot_angle, speed_r))
@@ -52,8 +52,8 @@ class Omni_motion_robot():
         m3 = int(self.calculate_wheel_speed(3, robot_speed, robot_angle, speed_r))
 
         self.send_data(m1, m2, m3, 0)
-        print("Cmd:", m1, m2, m3)
-        print("Actual:", self.receive_data())
+        #print("Cmd:", m1, m2, m3)
+        #print("Actual:", self.receive_data())
 
 
     # Throw ball with given strength
@@ -87,14 +87,24 @@ class Omni_motion_robot():
             print("\nExiting")
             sys.exit()
 
+    # Simple driving test
+    def test_driving(self):
+        try:
+            start_time = time.perf_counter()
+            while time.perf_counter() - start_time < 2.0:
+                robot.move(0, 2, 1)
+                print(robot.receive_data())
+
+            start_time = time.perf_counter()
+            while time.perf_counter() - start_time < 2.0:
+                robot.move(0, -2, -1)
+                print(robot.receive_data())
+        except KeyboardInterrupt:
+            print("\nExiting")
+            sys.exit()
+
 if __name__ == "__main__":
     robot = Omni_motion_robot()
     robot.start()
-    
-    try:
-        while(True):
-            robot.test_motors()
-    except KeyboardInterrupt:
-        print("\nExiting")
-        sys.exit()
+    robot.test_driving()
     
