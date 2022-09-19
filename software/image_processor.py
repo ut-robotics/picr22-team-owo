@@ -98,7 +98,7 @@ class ImageProcessor():
 
             obj_x = int(x + (w/2))
             obj_y = int(y + (h/2))
-            obj_dst = depth[obj_x][obj_y]
+            obj_dst = depth[obj_y, obj_x]
 
             if self.debug:
                 self.debug_frame[ys, xs] = [0, 0, 0]
@@ -148,7 +148,7 @@ class ImageProcessor():
             return self.camera.get_color_frame(), np.zeros((self.camera.rgb_height, self.camera.rgb_width), dtype=np.uint8)
 
     def process_frame(self, aligned_depth = False) -> ProcessedResults:
-        color_frame, depth_frame, dframe = self.get_frame_data(aligned_depth = aligned_depth)
+        color_frame, depth_frame = self.get_frame_data(aligned_depth = aligned_depth)
 
         segment.segment(color_frame, self.fragmented, self.t_balls, self.t_basket_m, self.t_basket_b)
 
