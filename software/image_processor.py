@@ -88,7 +88,8 @@ class ImageProcessor():
 
             # changed to 100 from 15, hopefully reducing errors in ball detection
             # needs testing
-            if size < 100:
+            #changed back to 15
+            if size < 10:
                 continue
 
             x, y, w, h = cv2.boundingRect(contour)
