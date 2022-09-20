@@ -55,4 +55,5 @@ Personal comments:
 === Mon, 19.09.22
 *Andres:* Progress report, Vision example code, Trello setup 3.5 h +
 *Sander:* Thrower CAM 2h +
-*Kert:* Thrower CAM 2h
+*Kert:* Thrower CAM 2h +
+*Johannes:* Image Processing code and testing 3.5 h
