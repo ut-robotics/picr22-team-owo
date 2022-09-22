@@ -70,6 +70,49 @@ class ImageProcessor():
     def start(self):
         self.camera.open()
 
+    def get_lines(self, image):
+        img = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+        gr_img = img[30:400]
+        krn = 5 # kernel size for gauss
+        blur_img = cv2.GaussianBlur(gr_img, (krn, krn), 0)
+        
+
+        low = 58
+        high = 150
+
+        ret, thresh = cv2.threshold(blur_img, low, high, cv2.THRESH_BINARY_INV)
+
+        #cv2.imshow('lines', thresh)
+        low_thr = 50
+        high_thr = 150
+        edges = cv2.Canny(thresh, low_thr, high_thr)
+        rho = 1
+        theta = np.pi / 180
+        threshold = 15
+        minline = 50
+        maxgap = 50
+
+        cropped = image[30:400]
+
+        copyimg = np.copy(cropped) * 0
+
+        lines = cv2.HoughLinesP(edges, rho, theta, threshold, np.array([]), minline, maxgap)
+
+        print("LINES..... ", lines)
+        
+        points = []
+        #try:
+        for line in lines:
+            for x1, y1, x2, y2 in line:       
+                points.append(((x1 + 0.0, y1 + 0.0), (x2 + 0.0, y2 + 0.0)))
+                cv2.line(copyimg, (x1, y1), (x2, y2), (255, 0, 0), 5)
+                lines_edges = cv2.addWeighted(cropped, 0.8, copyimg, 1, 0)
+        #except:
+        #    return
+
+        cv2.imshow('lines', lines_edges)
+        #return lines_edges
+
     def stop(self):
         self.camera.close()
 
@@ -155,6 +198,7 @@ class ImageProcessor():
 
         if self.debug:
             self.debug_frame = np.copy(color_frame)
+            self.get_lines(color_frame)
 
         balls = self.analyze_balls(self.t_balls, self.fragmented, depth_frame)
         basket_b = self.analyze_baskets(self.t_basket_b, debug_color=c.Color.BLUE.color.tolist())
@@ -168,4 +212,8 @@ class ImageProcessor():
                                 fragmented=self.fragmented, 
                                 debug_frame=self.debug_frame)
 
-    def get_lines(image, )
+    
+        
+
+
+        
