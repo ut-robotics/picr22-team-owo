@@ -35,6 +35,8 @@ if __name__ == "__main__":
     middle_x = 424
     middle_y = 240
 
+    state = None
+
     try:
         while(True):
             processedData = processor.process_frame(aligned_depth=True)
@@ -52,23 +54,7 @@ if __name__ == "__main__":
                 #if (frame_cnt > 1000):
                 #    break
 
-            if len(processedData.balls) > 0:
-                # Movement logic
-                speed_x = 0
-                speed_y = 0
-                speed_r = 0
-
-                #robot.move(speed_y, speed_x, speed_r)
-                interesting_ball = processedData.balls[-1]
-                print(interesting_ball)
-
-                speed_x = (interesting_ball.x - middle_x) / 424 * 5
-                speed_r = -(interesting_ball.x - middle_x) / 424 * 10
-                if interesting_ball.distance > 400:
-                    speed_y = (interesting_ball.distance - 400)*(15 - 0)/(2000 - 400)
-                print("x: %s, y: %s, r: %s" % (speed_x, speed_y, speed_r))
-                robot.move(speed_x, speed_y, speed_r)
-
+            # Debug frame (turn off when over ssh)
             if debug:
                 debug_frame = processedData.debug_frame
 
@@ -77,6 +63,47 @@ if __name__ == "__main__":
                 k = cv2.waitKey(1) & 0xff
                 if k == ord('q'):
                     break
+
+
+            # Main control logic
+            if state == "wait":
+                input()
+
+            elif state == "ball_search":
+                if len(processedData.balls) > 0:
+                    state = "ball_move"
+                else:
+                    robot.move(0, 0, 3)
+            
+            elif state == "ball_move":
+                if len(processedData.balls) > 0:
+                    # Movement logic
+                    speed_x = 0
+                    speed_y = 0
+                    speed_r = 0
+
+                    #robot.move(speed_y, speed_x, speed_r)
+                    interesting_ball = processedData.balls[-1]
+                    print(interesting_ball)
+
+                    if interesting_ball.x < 424 + 15 and interesting_ball.x > 424 - 15 and interesting_ball.distance <= 400:
+                        state = "wait"
+                    else:
+                        if interesting_ball.x > 424 + 15 or interesting_ball.x < 424 - 15:
+                            speed_x = (interesting_ball.x - middle_x) / 424 * 5
+                            speed_r = -(interesting_ball.x - middle_x) / 424 * 10
+                        if interesting_ball.distance > 400:
+                            speed_y = (interesting_ball.distance - 400)*(15 - 0)/(2000 - 400)
+                        print("x: %s, y: %s, r: %s" % (speed_x, speed_y, speed_r))
+                        robot.move(speed_x, speed_y, speed_r)
+                else:
+                    state = "ball_search"
+
+            elif state == "ball_throw":
+                pass
+
+            else:
+                print("Unknown state")
 
     except KeyboardInterrupt:
         print("\nExiting")
