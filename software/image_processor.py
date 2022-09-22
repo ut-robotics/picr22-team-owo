@@ -85,7 +85,8 @@ class ImageProcessor():
         #cv2.imshow('lines', thresh)
         low_thr = 50
         high_thr = 150
-        edges = cv2.Canny(thresh, low_thr, high_thr)
+        #edges = cv2.Canny(thresh, low_thr, high_thr)
+        edges = thresh
         rho = 1
         theta = np.pi / 180
         threshold = 15
