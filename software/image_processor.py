@@ -89,9 +89,9 @@ class ImageProcessor():
         edges = thresh
         rho = 1
         theta = np.pi / 180
-        threshold = 15
-        minline = 50
-        maxgap = 50
+        threshold = 150
+        minline = 100
+        maxgap = 20
 
         cropped = image[30:400]
 
@@ -101,16 +101,73 @@ class ImageProcessor():
 
         print("LINES..... ", lines)
         
+        selected_lines = []
+        selected_lines_list = []
+        
         points = []
-        #try:
-        for line in lines:
-            for x1, y1, x2, y2 in line:       
-                points.append(((x1 + 0.0, y1 + 0.0), (x2 + 0.0, y2 + 0.0)))
-                cv2.line(copyimg, (x1, y1), (x2, y2), (255, 0, 0), 5)
-                lines_edges = cv2.addWeighted(cropped, 0.8, copyimg, 1, 0)
-        #except:
-        #    return
+        # hetkel brute force try-except puhuks kui jooni pole
+        # hiljem voiks teha mingi ifi vms mis kontrollib kas jooni pole
+        try:
+            for line in lines:
+                for x1, y1, x2, y2 in line:       
+                    points.append(((x1 + 0.0, y1 + 0.0), (x2 + 0.0, y2 + 0.0)))
+                    cv2.line(copyimg, (x1, y1), (x2, y2), (255, 0, 0), 5)
 
+                    if x1 == x2:
+                        continue
+                    slope = (y2 - y1) / (x2 - x1) # tous
+                    intercept = y1 - (slope * x1) # algordinaat
+                    length = np.sqrt(((y2 - y1) ** 2) + ((x2 - x1) ** 2)) # joone pikkus
+
+                    if (len(selected_lines) is 0) # kui ei ole veel esimest joont hakatud tegutsema
+                    {
+                        selected_lines.append(line)
+                        selected_lines_list.append([])
+                        selected_lines_list[0].append(list)
+                    } else {
+                        index = 0
+                        for sx1, sy1, sx2, sy2 in selected_lines:
+                            sel_slope = (sy2 - sy1) / (sx2 - sx1) # tous
+                            sel_intercept = sy1 - (slope * sx1) # algordinaat
+                            sel_length = np.sqrt(((sy2 - sy1) ** 2) + ((sx2 - sx1) ** 2)) # joone pikkus
+
+                            slope_tolerance = 0.1 # 0.1 on 10%
+                            ordinaat_tolerance = 40 # pikslites
+
+                            if (slope > (sel_slope * (1-slope_tolerance)) and slope < (sel_slope * (1+slope_tolerance)))
+                            {
+                                if (intercept > (sel_intercept - ordinaat_tolerance) and intercept < (sel_intercept + ordinaat_tolerance))
+                                {
+                                    selected_lines_list[index].append(line)
+                                } else {
+                                    selected_lines.append(line)
+                                    selected_lines_list.append([])
+                                    selected_lines_list[-1].append(line)
+                                }
+                            } else {
+                                selected_lines.append(line)
+                                selected_lines_list.append([])
+                                selected_lines_list[-1].append(line)
+                            }
+                            index += 1
+                    }
+
+                    # jatka siit, kogu see ulemine on see asi
+                    '''
+                    if slope < 0:
+                        left_lines.append((slope, intercept))
+                        left_weights.append((length))
+                    else:
+                        right_lines.append((slope, intercept))
+                        right_weights.append((length))
+                    '''
+
+
+            #cv2.line(copyimg, (lines[0].x1, lines[0].y1), (lines[0].x2, lines[0].y2), (255, 0, 0), 5)
+            
+        except:
+            return
+        lines_edges = cv2.addWeighted(cropped, 0.8, copyimg, 1, 0)
         cv2.imshow('lines', lines_edges)
         #return lines_edges
 
