@@ -1,10 +1,9 @@
 #!/usr/bin/python3
 
-# Python stuff
 import time, sys
 
-# Movement
 import omni_motion
+from robot_utilities import *
 
 # Boot camp examples
 sys.path.append("./picr22-boot-camp-programming")
@@ -51,8 +50,6 @@ if __name__ == "__main__":
                 start = end
                 print("FPS: {}, framecount: {}".format(fps, frame_cnt))
                 print("ball_count: {}".format(len(processedData.balls)))
-                #if (frame_cnt > 1000):
-                #    break
 
             # Debug frame (turn off when over ssh)
             if debug:
@@ -67,7 +64,9 @@ if __name__ == "__main__":
 
             # Main control logic
             if state == "wait":
+                LOGI("waiting")
                 input()
+                state = "ball_search"
 
             elif state == "ball_search":
                 if len(processedData.balls) > 0:
@@ -100,10 +99,11 @@ if __name__ == "__main__":
                     state = "ball_search"
 
             elif state == "ball_throw":
-                pass
+                LOGI("Ball throw here!")
+                state = "wait"
 
             else:
-                print("Unknown state")
+                LOGE("Unknown state")
 
     except KeyboardInterrupt:
         print("\nExiting")
