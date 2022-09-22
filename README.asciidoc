@@ -61,3 +61,9 @@ Personal comments:
 === Tue, 20.09.22
 *Johannes:* Image processing testing and calibration 2 h +
 *Andres:*
+
+=== Thu, 22.09.22
+*Johannes:* Image processing, line detection 5.5 h +
+*Andres:* +
+*Sander:* +
+*Kert:*
