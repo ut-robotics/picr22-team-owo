@@ -65,5 +65,4 @@ Personal comments:
 === Thu, 22.09.22
 *Johannes:* Image processing, line detection 5.5 h +
 *Andres:* +
-*Sander:* +
-*Kert:*
+*Sander and Kert:* Thrower cut out, assembled and tested 4 h
