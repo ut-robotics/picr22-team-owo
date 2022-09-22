@@ -32,6 +32,9 @@ if __name__ == "__main__":
     frame = 0
     frame_cnt = 0
 
+    middle_x = 424
+    middle_y = 240
+
     try:
         while(True):
             processedData = processor.process_frame(aligned_depth=True)
@@ -58,6 +61,12 @@ if __name__ == "__main__":
                 #robot.move(speed_y, speed_x, speed_r)
                 interesting_ball = processedData.balls[-1]
                 print(interesting_ball)
+
+                speed_x = interesting_ball.x - middle_x / 424 * 10
+                speed_r = interesting_ball.x - middle_x / 424 * 10
+                if interesting_ball.distance > 400:
+                    speed_y = 3/520 * interesting_ball.distance - 30/13
+                print("x: %s, y: %s, r: %s" % (speed_x, speed_y, speed_r))
 
             if debug:
                 debug_frame = processedData.debug_frame
