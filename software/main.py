@@ -16,7 +16,7 @@ import cv2
 
 if __name__ == "__main__":
     print("Starting...")
-    debug = True
+    debug = False
 
     # Setup from our code
     robot = omni_motion.Omni_motion_robot()
@@ -62,11 +62,12 @@ if __name__ == "__main__":
                 interesting_ball = processedData.balls[-1]
                 print(interesting_ball)
 
-                speed_x = interesting_ball.x - middle_x / 424 * 10
-                speed_r = interesting_ball.x - middle_x / 424 * 10
+                speed_x = (interesting_ball.x - middle_x) / 424 * 5
+                speed_r = -(interesting_ball.x - middle_x) / 424 * 10
                 if interesting_ball.distance > 400:
-                    speed_y = 3/520 * interesting_ball.distance - 30/13
+                    speed_y = (interesting_ball.distance - 400)*(15 - 0)/(2000 - 400)
                 print("x: %s, y: %s, r: %s" % (speed_x, speed_y, speed_r))
+                robot.move(speed_x, speed_y, speed_r)
 
             if debug:
                 debug_frame = processedData.debug_frame

@@ -168,4 +168,4 @@ class ImageProcessor():
                                 fragmented=self.fragmented, 
                                 debug_frame=self.debug_frame)
 
-    def get_lines(image, )
+    #def get_lines(image, )
