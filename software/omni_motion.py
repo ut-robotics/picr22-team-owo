@@ -3,6 +3,8 @@
 import math, struct, time, sys
 import numpy as np
 import serial
+from robot_utilities import *
+
 
 class Omni_motion_robot():
     def __init__(self):
@@ -19,14 +21,16 @@ class Omni_motion_robot():
         self.pid_control_frequency = 60 #Hz
         self.pid_control_period = 1 / self.pid_control_frequency #seconds
         self.wheel_speed_to_mainboard_units = self.gearbox_ratio * self.encoder_edges_per_motor_revolution / (2 * math.pi * self.wheel_radius * self.pid_control_frequency)
+        self.max_speed = 7
 
         # Orbiting constants
-        self.buffer_r = 10
-        self.buffer_x = 5
+        self.buffer_r = 1
+        self.buffer_x = 1
         self.middle_x = 424
 
-        self.r_const = 1
+        self.r_const = 5
         self.y_const = 1
+        self.prev_rad = 400
 
     # Pyserial stuff
     def start(self):
@@ -47,6 +51,10 @@ class Omni_motion_robot():
     # y - forward, positive to the front
     # r - rotation, positive anticlockwise
     def move(self, speed_x, speed_y, speed_r):
+        if abs(speed_x) > self.max_speed or abs(speed_x) > self.max_speed or abs(speed_x) > self.max_speed:
+            LOGE("Speed to large")
+            return
+        
         robot_angle = math.atan2(speed_y, speed_x)
         robot_speed = math.sqrt(math.pow(speed_x, 2) + math.pow(speed_y, 2))
         #print("Angle:", robot_angle)
@@ -67,18 +75,24 @@ class Omni_motion_robot():
     # speed - positive value starts orbiting anticlockwise (robot moves right)
     # radius, cur_radius in millimeters
     # cur_object_x - x coordinate of the center of the orbital trajectory
-    def orbit(self, radius, speed, cur_radius, cur_object_x):
+    def orbit(self, radius, speed_x, cur_radius, cur_object_x):
         speed_y = 0
-        speed_r = speed / radius
+        speed_r = 1000 * speed_x / radius
 
+        # Correct radius check
+        if cur_radius > 600:
+            LOGE("Invalid radius")
+            return
         # Radius adjustment
         if cur_radius > (radius + self.buffer_x) or cur_radius < (radius - self.buffer_x):
-            speed_y += (radius - cur_radius) / 100 * self.y_const
+            speed_y -= (radius - cur_radius) / 100 * self.y_const
         # Centering object, rotational speed adjustment
         if cur_object_x > (self.middle_x + self.buffer_x) or cur_object_x < (self.middle_x - self.buffer_x):
             speed_r += (self.middle_x - cur_object_x) / 100 * self.r_const
 
-        self.move(speed, speed_y, speed_r)
+        print("x:", speed_x, "y:", speed_y, "r:", speed_r, "cur_rad:", cur_radius, "cur_x:", cur_object_x)
+        self.move(speed_x, speed_y, speed_r)
+        self.prev_rad = cur_radius
 
 
     # Throw ball with given strength

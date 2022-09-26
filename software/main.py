@@ -35,7 +35,7 @@ if __name__ == "__main__":
     middle_x = 424
     middle_y = 240
 
-    state = None
+    state = "wait"
     using_magenta = True # If throwing into magenta basket set to true, if throwing into blue, set to false
 
     try:
@@ -77,7 +77,7 @@ if __name__ == "__main__":
                 if len(processedData.balls) > 0:
                     state = "ball_move"
                 else:
-                    robot.move(0, 0, 3)
+                    robot.move(0, 0, 5)
             # End of ball_search
             
             # Moving towards ball
@@ -91,17 +91,17 @@ if __name__ == "__main__":
 
                     # Choosing the closest ball
                     interesting_ball = processedData.balls[-1]
-                    print("Ball:", interesting_ball)
+                    #print("Ball:", interesting_ball)
 
                     if interesting_ball.x < middle_x + 15 and interesting_ball.x > middle_x - 15 and interesting_ball.distance <= 400:
                         state = "ball_orbit"
                     else:
-                        if interesting_ball.x > middle_x + 15 or interesting_ball.x < middle_x - 15:
+                        if interesting_ball.x > middle_x + 2 or interesting_ball.x < middle_x - 2:
                             speed_x = (interesting_ball.x - middle_x) / middle_x * 5
                             speed_r = -(interesting_ball.x - middle_x) / middle_x * 10
-                        if interesting_ball.distance > 400:
-                            speed_y = (interesting_ball.distance - 400)*(15 - 0)/(2000 - 400)
-                        print("x: %s, y: %s, r: %s" % (speed_x, speed_y, speed_r))
+                        if interesting_ball.distance > 370:
+                            speed_y = (interesting_ball.distance - 370)*(15 - 0)/(2000 - 370)
+                        #print("x: %s, y: %s, r: %s" % (speed_x, speed_y, speed_r))
                         robot.move(speed_x, speed_y, speed_r)
                 else:
                     state = "ball_search"
@@ -109,15 +109,27 @@ if __name__ == "__main__":
 
             elif state == "ball_orbit":
                 LOGSTATE("ball_orbit")
-                # Checking if correct basket is in position
-                if using_magenta and processedData.basket_m.exists:
-                    if (processedData.basket_m.x > middle_x + 10 or processedData.basket_m.x < middle_x - 10):
-                        state = "ball_throw"
-                elif not using_magenta and processedData.basket_b.exists:
-                    if (processedData.basket_b.x > middle_x + 10 or processedData.basket_b.x < middle_x - 10):
-                        state = "ball_throw"
 
-                robot.orbit(400, 2, interesting_ball.distance, interesting_ball.x)
+
+                if len(processedData.balls) > 0:
+                    interesting_ball = processedData.balls[-1]
+
+                    if interesting_ball.distance > 550:
+                        LOGE("Invalid radius")
+                        state = "wait"
+                        continue
+
+                    # Checking if correct basket is in position
+                    if using_magenta and processedData.basket_m.exists:
+                        if (processedData.basket_m.x > middle_x + 2 or processedData.basket_m.x < middle_x - 2):
+                            state = "ball_throw"
+                    elif not using_magenta and processedData.basket_b.exists:
+                        if (processedData.basket_b.x > middle_x + 2 or processedData.basket_b.x < middle_x - 2):
+                            state = "ball_throw"
+
+                    robot.orbit(400, 2, interesting_ball.distance, interesting_ball.x)
+                else:
+                    state == "ball_search"
             # End of ball_orbit
 
             elif state == "ball_throw":
