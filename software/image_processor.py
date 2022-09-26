@@ -120,7 +120,7 @@ class ImageProcessor():
             #for x1, y1, x2, y2 in line:
             x1, y1, x2, y2 = line[0]
             points.append(((x1 + 0.0, y1 + 0.0), (x2 + 0.0, y2 + 0.0)))
-            cv2.line(copyimg, (x1, y1), (x2, y2), (255, 0, 0), 1)
+            #cv2.line(copyimg, (x1, y1), (x2, y2), (255, 0, 0), 1)
             
             if x1 == x2:
                 continue
@@ -139,9 +139,6 @@ class ImageProcessor():
 
             else:
                 found = False
-                #index = 0
-                #for ind, sel in enumerate(selected_lines):
-                    #print(sel)
                 for ind, sel in enumerate(selected_lines):
                     print(ind, " ", sel)
                     sx1, sy1, sx2, sy2 = sel[0]
@@ -168,36 +165,27 @@ class ImageProcessor():
                     selected_lines_list[-1].append(line)
                     selected_lines_weights.append([])
                     selected_lines_weights[-1].append((length))
-                #print("added new line group...")
-                            
-                        
-                    #else:
-                    #    selected_lines.append(line)
-                    #    selected_lines_list.append([])
-                    #    selected_lines_list[-1].append(line)
-                    #    selected_lines_weights.append([])
-                    #    selected_lines_weights[-1].append(length)
-                    #    #print("added new line group.....")
-                        
-                        
-                    #index += 1
 
         for i in range(0, len(selected_lines)):
-            avglines.append(np.dot(selected_lines_weights[i], selected_lines_list[i]) / np.sum(selected_lines_weights[i]))
+            lineamount = len(selected_lines_list[i])
+            sumX1, sumY1, sumX2, sumY2 = 0
+            for lin in selected_lines_list[i]:
+                sumX1, sumY1, sumX2, sumY2 += lin[0]
+            avgX1 = sumX1 / lineamount
+            avgY1 = sumY1 / lineamount
+            avgX2 = sumX2 / lineamount
+            avgY2 = sumY2 / lineamount
 
+            avglines.append((avgX1, avgY1, avgX2, avgY2))
 
-        # RETURN ON HETKEL KOMMENTEERITUD...
-        for line in avglines:
-            for x1, y1, x2, y2 in line:
-                cv2.line(copyimg, (x1, y1), (x2, y2), (255, 0, 0), 5)
+        #for line in avglines:
+        for x1, y1, x2, y2 in avglines:
+            cv2.line(copyimg, (x1, y1), (x2, y2), (255, 0, 0), 5)
 
         
 
         #cv2.line(copyimg, (lines[0].x1, lines[0].y1), (lines[0].x2, lines[0].y2), (255, 0, 0), 5)
-        
-        #except:
-        #    print("midagi katik (toenaoliselt jooni pole...)")
-        #    return
+
         lines_edges = cv2.addWeighted(cropped, 0.8, copyimg, 1, 0)
 
         cv2.imshow('lines', lines_edges)
