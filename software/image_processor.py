@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 import camera
 import segment
 import _pickle as pickle
@@ -103,6 +104,9 @@ class ImageProcessor():
         
         selected_lines = []
         selected_lines_list = []
+        selected_lines_weights = []
+
+        avglines = []
         
         points = []
         # hetkel brute force try-except puhuks kui jooni pole
@@ -111,7 +115,7 @@ class ImageProcessor():
             for line in lines:
                 for x1, y1, x2, y2 in line:       
                     points.append(((x1 + 0.0, y1 + 0.0), (x2 + 0.0, y2 + 0.0)))
-                    cv2.line(copyimg, (x1, y1), (x2, y2), (255, 0, 0), 5)
+                    #cv2.line(copyimg, (x1, y1), (x2, y2), (255, 0, 0), 5)
 
                     if x1 == x2:
                         continue
@@ -119,38 +123,46 @@ class ImageProcessor():
                     intercept = y1 - (slope * x1) # algordinaat
                     length = np.sqrt(((y2 - y1) ** 2) + ((x2 - x1) ** 2)) # joone pikkus
 
-                    if (len(selected_lines) is 0) # kui ei ole veel esimest joont hakatud tegutsema
-                    {
+                    if (len(selected_lines) is 0): # kui ei ole veel esimest joont hakatud tegutsema
                         selected_lines.append(line)
                         selected_lines_list.append([])
-                        selected_lines_list[0].append(list)
-                    } else {
+                        selected_lines_list[0].append(line)
+                        selected_lines_weights.append([])
+                        selected_lines_weights[0].append(length)
+
+                    else:
                         index = 0
-                        for sx1, sy1, sx2, sy2 in selected_lines:
-                            sel_slope = (sy2 - sy1) / (sx2 - sx1) # tous
-                            sel_intercept = sy1 - (slope * sx1) # algordinaat
-                            sel_length = np.sqrt(((sy2 - sy1) ** 2) + ((sx2 - sx1) ** 2)) # joone pikkus
+                        for sel in selected_lines:
+                            for sx1, sy1, sx2, sy2 in sel:
+                                sel_slope = (sy2 - sy1) / (sx2 - sx1) # tous
+                                sel_intercept = sy1 - (slope * sx1) # algordinaat
+                                sel_length = np.sqrt(((sy2 - sy1) ** 2) + ((sx2 - sx1) ** 2)) # joone pikkus
 
-                            slope_tolerance = 0.1 # 0.1 on 10%
-                            ordinaat_tolerance = 40 # pikslites
+                                slope_tolerance = 0.1 # 0.1 on 10%
+                                ordinaat_tolerance = 40 # pikslites
 
-                            if (slope > (sel_slope * (1-slope_tolerance)) and slope < (sel_slope * (1+slope_tolerance)))
-                            {
-                                if (intercept > (sel_intercept - ordinaat_tolerance) and intercept < (sel_intercept + ordinaat_tolerance))
-                                {
-                                    selected_lines_list[index].append(line)
-                                } else {
+                                if (slope > (sel_slope * (1-slope_tolerance)) and slope < (sel_slope * (1+slope_tolerance))):
+                                
+                                    if (intercept > (sel_intercept - ordinaat_tolerance) and intercept < (sel_intercept + ordinaat_tolerance)):
+                                    
+                                        selected_lines_list[index].append(line)
+                                        selected_lines_weights[index].append(length)
+                                    else:
+                                        selected_lines.append(line)
+                                        selected_lines_list.append([])
+                                        selected_lines_list[-1].append(line)
+                                        selected_lines_weights.append([])
+                                        selected_lines_weights[-1].append(length)
+                                    
+                                else:
                                     selected_lines.append(line)
                                     selected_lines_list.append([])
                                     selected_lines_list[-1].append(line)
-                                }
-                            } else {
-                                selected_lines.append(line)
-                                selected_lines_list.append([])
-                                selected_lines_list[-1].append(line)
-                            }
-                            index += 1
-                    }
+                                    selected_lines_weights.append([])
+                                    selected_lines_weights[-1].append(length)
+                                
+                                index += 1
+                    
 
                     # jatka siit, kogu see ulemine on see asi
                     '''
@@ -161,11 +173,31 @@ class ImageProcessor():
                         right_lines.append((slope, intercept))
                         right_weights.append((length))
                     '''
+                    # THIS IS DONE...
+
+            for i in range(0, selected_lines_list.count):
+                try:
+                    avglines.append(np.dot(selected_lines_weights[i], selected_lines_list[i]) / np.sum(selected_lines_weights[i]))
+                except ArithmeticError:
+                    print("math error, probably nulliga jagamine.. check weight list...")
+                except:
+                    print("midagi on rohkem katki.....")
+
+            # RETURN ON HETKEL KOMMENTEERITUD...
+            for line in avglines:
+                for x1, y1, x2, y2 in line:
+                    cv2.line(copyimg, (x1, y1), (x2, y2), (255, 0, 0), 5)
 
 
+            if (avglines != NULL):
+                return #avglines; 
+            else:
+                print("what kuidas see triggeris")
+                return
             #cv2.line(copyimg, (lines[0].x1, lines[0].y1), (lines[0].x2, lines[0].y2), (255, 0, 0), 5)
             
         except:
+            print("midagi katik (toenaoliselt jooni pole...)")
             return
         lines_edges = cv2.addWeighted(cropped, 0.8, copyimg, 1, 0)
         cv2.imshow('lines', lines_edges)
