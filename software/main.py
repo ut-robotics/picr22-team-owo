@@ -26,6 +26,7 @@ if __name__ == "__main__":
     processor = image_processor.ImageProcessor(cam, debug=debug)
     processor.start()
 
+    # General constants etc.
     start = time.time()
     fps = 0
     frame = 0
@@ -35,6 +36,7 @@ if __name__ == "__main__":
     middle_y = 240
 
     state = None
+    using_magenta = True # If throwing into magenta basket set to true, if throwing into blue, set to false
 
     try:
         while(True):
@@ -62,48 +64,71 @@ if __name__ == "__main__":
                     break
 
 
-            # Main control logic
+            # Main control logic using a state machine
+
             if state == "wait":
-                LOGI("waiting")
-                input()
+                LOGSTATE("waiting")
+                input() # For making a break
                 state = "ball_search"
+            # End of wait
 
             elif state == "ball_search":
+                LOGSTATE("ball_search")
                 if len(processedData.balls) > 0:
                     state = "ball_move"
                 else:
                     robot.move(0, 0, 3)
+            # End of ball_search
             
+            # Moving towards ball
             elif state == "ball_move":
+                LOGSTATE("ball_move")
                 if len(processedData.balls) > 0:
                     # Movement logic
                     speed_x = 0
                     speed_y = 0
                     speed_r = 0
 
-                    #robot.move(speed_y, speed_x, speed_r)
+                    # Choosing the closest ball
                     interesting_ball = processedData.balls[-1]
-                    print(interesting_ball)
+                    print("Ball:", interesting_ball)
 
-                    if interesting_ball.x < 424 + 15 and interesting_ball.x > 424 - 15 and interesting_ball.distance <= 400:
-                        state = "wait"
+                    if interesting_ball.x < middle_x + 15 and interesting_ball.x > middle_x - 15 and interesting_ball.distance <= 400:
+                        state = "ball_orbit"
                     else:
-                        if interesting_ball.x > 424 + 15 or interesting_ball.x < 424 - 15:
-                            speed_x = (interesting_ball.x - middle_x) / 424 * 5
-                            speed_r = -(interesting_ball.x - middle_x) / 424 * 10
+                        if interesting_ball.x > middle_x + 15 or interesting_ball.x < middle_x - 15:
+                            speed_x = (interesting_ball.x - middle_x) / middle_x * 5
+                            speed_r = -(interesting_ball.x - middle_x) / middle_x * 10
                         if interesting_ball.distance > 400:
                             speed_y = (interesting_ball.distance - 400)*(15 - 0)/(2000 - 400)
                         print("x: %s, y: %s, r: %s" % (speed_x, speed_y, speed_r))
                         robot.move(speed_x, speed_y, speed_r)
                 else:
                     state = "ball_search"
+            # End of ball_move
+
+            elif state == "ball_orbit":
+                LOGSTATE("ball_orbit")
+                # Checking if correct basket is in position
+                if using_magenta and processedData.basket_m.exists:
+                    if (processedData.basket_m.x > middle_x + 10 or processedData.basket_m.x < middle_x - 10):
+                        state = "ball_throw"
+                elif not using_magenta and processedData.basket_b.exists:
+                    if (processedData.basket_b.x > middle_x + 10 or processedData.basket_b.x < middle_x - 10):
+                        state = "ball_throw"
+
+                robot.orbit(400, 2, interesting_ball.distance, interesting_ball.x)
+            # End of ball_orbit
 
             elif state == "ball_throw":
-                LOGI("Ball throw here!")
+                LOGSTATE("ball_throw")
                 state = "wait"
+            # End of ball_throw
 
             else:
-                LOGE("Unknown state")
+                LOGSTATE("unknown")
+                # Considered as an error
+            # End of unknown
 
     except KeyboardInterrupt:
         print("\nExiting")
