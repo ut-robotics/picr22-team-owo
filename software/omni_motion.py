@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 
-from curses import KEY_A1
 import math, struct, time, sys
 import numpy as np
 import serial
 
 class Omni_motion_robot():
     def __init__(self):
+        # General movement constants
         # Some values taken from here:
         # https://ut-robotics.github.io/picr22-home/basketball_robot_guide/software/omni_motion.html
         self.wheel_angles = np.radians([240, 120, 0]) #radians
@@ -19,6 +19,14 @@ class Omni_motion_robot():
         self.pid_control_frequency = 60 #Hz
         self.pid_control_period = 1 / self.pid_control_frequency #seconds
         self.wheel_speed_to_mainboard_units = self.gearbox_ratio * self.encoder_edges_per_motor_revolution / (2 * math.pi * self.wheel_radius * self.pid_control_frequency)
+
+        # Orbiting constants
+        self.buffer_r = 10
+        self.buffer_x = 5
+        self.middle_x = 424
+
+        self.r_const = 1
+        self.y_const = 1
 
     # Pyserial stuff
     def start(self):
@@ -54,6 +62,23 @@ class Omni_motion_robot():
         self.send_data(m1, m2, m3, 0)
         #print("Cmd:", m1, m2, m3)
         #print("Actual:", self.receive_data())
+
+    # Orbit around something with constant linear (sideways) speed, cur values allow for adjustments in speed, to make it more precise
+    # speed - positive value starts orbiting anticlockwise (robot moves right)
+    # radius, cur_radius in millimeters
+    # cur_object_x - x coordinate of the center of the orbital trajectory
+    def orbit(self, radius, speed, cur_radius, cur_object_x):
+        speed_y = 0
+        speed_r = speed / radius
+
+        # Radius adjustment
+        if cur_radius > (radius + self.buffer_x) or cur_radius < (radius - self.buffer_x):
+            speed_y += (radius - cur_radius) / 100 * self.y_const
+        # Centering object, rotational speed adjustment
+        if cur_object_x > (self.middle_x + self.buffer_x) or cur_object_x < (self.middle_x - self.buffer_x):
+            speed_r += (self.middle_x - cur_object_x) / 100 * self.r_const
+
+        self.move(speed, speed_y, speed_r)
 
 
     # Throw ball with given strength
