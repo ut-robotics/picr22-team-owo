@@ -69,3 +69,6 @@ Personal comments:
 
 === Mon, 26.09.22
 *Johannes:* Line detection 4 h
+
+=== Tue, 27.09.22
+*Johannes:* Filtering balls with lines, integrating distance without depth 3.5 h
