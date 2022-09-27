@@ -71,4 +71,5 @@ Personal comments:
 *Johannes:* Line detection 4 h
 
 === Tue, 27.09.22
-*Johannes:* Filtering balls with lines, integrating distance without depth 3.5 h
+*Johannes:* Filtering balls with lines, integrating distance without depth 3.5 h +
+*Sander:* Wheels design 1 h
