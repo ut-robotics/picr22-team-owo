@@ -88,11 +88,11 @@ class ImageProcessor():
         high_thr = 150
         #edges = cv2.Canny(thresh, low_thr, high_thr)
         edges = thresh
-        rho = 1
-        theta = np.pi / 180
-        threshold = 150
-        minline = 100
-        maxgap = 20
+        rho = 2
+        theta = np.pi / 180 * 2
+        threshold = 250
+        minline = 200
+        maxgap = 40
 
         cropped = image[30:400]
 
@@ -100,24 +100,25 @@ class ImageProcessor():
 
         lines = cv2.HoughLinesP(edges, rho, theta, threshold, np.array([]), minline, maxgap)
 
-        print("LINES..... ", len(lines))
+        #print("LINES..... ", len(lines))
         
         selected_lines = []
         selected_lines_list = []
         selected_lines_weights = []
 
         avglines = []
+
+        linesbyslope = []
         
         points = []
 
         firstline = True
-        # hetkel brute force try-except puhuks kui jooni pole
-        # hiljem voiks teha mingi ifi vms mis kontrollib kas jooni pole
-        #try:
+
         print("lines: ", len(lines))
+        if len(lines) is 0:
+            return
         
         for line in lines:
-            #for x1, y1, x2, y2 in line:
             x1, y1, x2, y2 = line[0]
             points.append(((x1 + 0.0, y1 + 0.0), (x2 + 0.0, y2 + 0.0)))
             #cv2.line(copyimg, (x1, y1), (x2, y2), (255, 0, 0), 1)
@@ -126,6 +127,8 @@ class ImageProcessor():
                 continue
             slope = (y2 - y1) / (x2 - x1) # tous
             intercept = y1 - (slope * x1) # algordinaat
+            linesbyslope.append((slope, intercept))
+            '''
             length = np.sqrt(((y2 - y1) ** 2) + ((x2 - x1) ** 2)) # joone pikkus
 
             if (firstline): # kui ei ole veel esimest joont hakatud tegutsema
@@ -140,14 +143,14 @@ class ImageProcessor():
             else:
                 found = False
                 for ind, sel in enumerate(selected_lines):
-                    print(ind, " ", sel)
+                    #print(ind, " ", sel)
                     sx1, sy1, sx2, sy2 = sel[0]
                     sel_slope = (sy2 - sy1) / (sx2 - sx1) # tous
                     sel_intercept = sy1 - (slope * sx1) # algordinaat
                     sel_length = np.sqrt(((sy2 - sy1) ** 2) + ((sx2 - sx1) ** 2)) # joone pikkus
 
-                    slope_tolerance = 0.2 # 0.1 on 10%
-                    ordinaat_tolerance = 30 # pikslites
+                    slope_tolerance = 0.5 # 0.1 on 10%
+                    ordinaat_tolerance = 50 # pikslites
 
                     if (slope > (sel_slope * (1-slope_tolerance)) and slope < (sel_slope * (1+slope_tolerance))):
                     
@@ -168,21 +171,26 @@ class ImageProcessor():
 
         for i in range(0, len(selected_lines)):
             lineamount = len(selected_lines_list[i])
-            sumX1, sumY1, sumX2, sumY2 = 0
+            sumX1, sumY1, sumX2, sumY2 = (0, 0, 0, 0)
             for lin in selected_lines_list[i]:
-                sumX1, sumY1, sumX2, sumY2 += lin[0]
+                #sumX1, sumY1, sumX2, sumY2 += lin[0]
+                sumX1 += lin[0][0]
+                sumY1 += lin[0][1]
+                sumX2 += lin[0][2]
+                sumY2 += lin[0][3]
             avgX1 = sumX1 / lineamount
             avgY1 = sumY1 / lineamount
             avgX2 = sumX2 / lineamount
             avgY2 = sumY2 / lineamount
 
-            avglines.append((avgX1, avgY1, avgX2, avgY2))
+            avglines.append((int(avgX1), int(avgY1), int(avgX2), int(avgY2)))
 
         #for line in avglines:
+        print("average lines: ", len(avglines))
         for x1, y1, x2, y2 in avglines:
             cv2.line(copyimg, (x1, y1), (x2, y2), (255, 0, 0), 5)
-
-        
+            
+        '''
 
         #cv2.line(copyimg, (lines[0].x1, lines[0].y1), (lines[0].x2, lines[0].y2), (255, 0, 0), 5)
 
@@ -191,12 +199,12 @@ class ImageProcessor():
         cv2.imshow('lines', lines_edges)
         
         #return lines_edges
-        return
+        return linesbyslope
 
     def stop(self):
         self.camera.close()
 
-    def analyze_balls(self, t_balls, fragments, depth) -> list:
+    def analyze_balls(self, t_balls, fragments, depth, lines) -> list:
         contours, hierarchy = cv2.findContours(t_balls, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         balls = []
@@ -223,6 +231,14 @@ class ImageProcessor():
             obj_x = int(x + (w/2))
             obj_y = int(y + (h/2))
             obj_dst = depth[obj_y, obj_x]
+
+            aboveline = False
+            for slope, interc in lines:
+                if obj_y > (slope * obj_x + interc):
+                    aboveline = True
+                    break
+            if aboveline:
+                continue
 
             if self.debug:
                 self.debug_frame[ys, xs] = [0, 0, 0]
@@ -278,9 +294,9 @@ class ImageProcessor():
 
         if self.debug:
             self.debug_frame = np.copy(color_frame)
-            self.get_lines(color_frame)
+        lines = self.get_lines(color_frame)
 
-        balls = self.analyze_balls(self.t_balls, self.fragmented, depth_frame)
+        balls = self.analyze_balls(self.t_balls, self.fragmented, depth_frame, lines)
         basket_b = self.analyze_baskets(self.t_basket_b, debug_color=c.Color.BLUE.color.tolist())
         basket_m = self.analyze_baskets(self.t_basket_m, debug_color=c.Color.MAGENTA.color.tolist())
 
