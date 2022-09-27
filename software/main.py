@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     try:
         while(True):
-            processedData = processor.process_frame(aligned_depth=True)
+            processedData = processor.process_frame(aligned_depth=False)
 
             frame_cnt +=1
 

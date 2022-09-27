@@ -5,6 +5,7 @@ import _pickle as pickle
 import numpy as np
 import cv2
 import Color as c
+import math
 
 
 class Object():
@@ -74,24 +75,25 @@ class ImageProcessor():
     def get_lines(self, image):
         img = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
         gr_img = img[30:400]
-        krn = 5 # kernel size for gauss
+        krn = 1 # kernel size for gauss
         blur_img = cv2.GaussianBlur(gr_img, (krn, krn), 0)
         
 
-        low = 58
+        low = 80
         high = 150
 
         ret, thresh = cv2.threshold(blur_img, low, high, cv2.THRESH_BINARY_INV)
 
-        #cv2.imshow('lines', thresh)
+
+        #scv2.imshow('hallo', thresh)
         low_thr = 50
         high_thr = 150
-        #edges = cv2.Canny(thresh, low_thr, high_thr)
-        edges = thresh
-        rho = 2
-        theta = np.pi / 180 * 2
-        threshold = 250
-        minline = 200
+        edges = cv2.Canny(thresh, low_thr, high_thr)
+        #edges = thresh
+        rho = 1
+        theta = np.pi / 180 * 1
+        threshold = 50
+        minline = 50
         maxgap = 40
 
         cropped = image[30:400]
@@ -114,14 +116,14 @@ class ImageProcessor():
 
         firstline = True
 
-        print("lines: ", len(lines))
-        if len(lines) is 0:
+        #print("lines: ", len(lines))
+        if lines is None:
             return
         
         for line in lines:
             x1, y1, x2, y2 = line[0]
-            points.append(((x1 + 0.0, y1 + 0.0), (x2 + 0.0, y2 + 0.0)))
-            #cv2.line(copyimg, (x1, y1), (x2, y2), (255, 0, 0), 1)
+            # !!! ?????? points.append(((x1 + 0.0, y1 + 0.0), (x2 + 0.0, y2 + 0.0)))
+            cv2.line(copyimg, (x1, y1), (x2, y2), (255, 0, 0), 1)
             
             if x1 == x2:
                 continue
@@ -220,7 +222,7 @@ class ImageProcessor():
             # changed to 100 from 15, hopefully reducing errors in ball detection
             # needs testing
             #changed back to 15
-            if size < 10:
+            if size < 20:
                 continue
 
             x, y, w, h = cv2.boundingRect(contour)
@@ -230,15 +232,19 @@ class ImageProcessor():
 
             obj_x = int(x + (w/2))
             obj_y = int(y + (h/2))
-            obj_dst = depth[obj_y, obj_x]
-
+            if depth is 0:
+                obj_dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((obj_y/4.829652), 0.6903042))
+            else:
+                obj_dst = depth[obj_y, obj_x]
+            
             aboveline = False
-            for slope, interc in lines:
-                if obj_y > (slope * obj_x + interc):
-                    aboveline = True
-                    break
-            if aboveline:
-                continue
+            if lines is not None:
+                for slope, interc in lines:
+                    if obj_y < (slope * obj_x + interc + 30): # NB! 30 on joonte pildi lõikamise offset!
+                        aboveline = True
+                        break
+                if aboveline:
+                    continue
 
             if self.debug:
                 self.debug_frame[ys, xs] = [0, 0, 0]
