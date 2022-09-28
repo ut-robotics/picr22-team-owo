@@ -73,3 +73,6 @@ Personal comments:
 === Tue, 27.09.22
 *Johannes:* Filtering balls with lines, integrating distance without depth 3.5 h +
 *Sander:* Wheels design 1 h
+
+=== Wed, 28.09.22
+*Sander and Kert:* Mechanics meeting 1h
