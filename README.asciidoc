@@ -64,7 +64,7 @@ Personal comments:
 
 === Thu, 22.09.22
 *Johannes:* Image processing, line detection 5.5 h +
-*Andres:* State machine, logging functionality 1.5 h
+*Andres:* State machine, logging functionality 1.5 h +
 *Sander and Kert:* Thrower cut out, assembled and tested 4 h
 
 === Mon, 26.09.22
@@ -73,4 +73,10 @@ Personal comments:
 
 === Tue, 27.09.22
 *Johannes:* Filtering balls with lines, integrating distance without depth 3.5 h +
+*Sander:* Wheels design 1 h
+
+=== Wed, 28.09.22
+*Sander and Kert:* Mechanics meeting 1h
+
+=== Thu, 29.09.22
 *Sander:* Wheels design 1 h
