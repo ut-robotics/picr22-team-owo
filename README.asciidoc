@@ -84,3 +84,6 @@ Personal comments:
 
 === Thu, 29.09.22
 *Sander:* Wheels design 2 h
+
+=== Sun, 02.10.22
+*Artur:* Component files, manually importing 4.5 h
