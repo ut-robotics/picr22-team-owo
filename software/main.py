@@ -116,20 +116,28 @@ if __name__ == "__main__":
                 if len(processedData.balls) > 0:
                     interesting_ball = processedData.balls[-1]
 
-                    if interesting_ball.distance > 550:
+                    # For checking if the ball is still in position
+                    if interesting_ball.distance > 450:
                         LOGE("Invalid radius")
                         state = "wait"
                         continue
 
-                    # Checking if correct basket is in position
-                    if using_magenta and processedData.basket_m.exists:
-                        if (processedData.basket_m.x > middle_x + 2 or processedData.basket_m.x < middle_x - 2):
-                            state = "ball_throw"
-                    elif not using_magenta and processedData.basket_b.exists:
-                        if (processedData.basket_b.x > middle_x + 2 or processedData.basket_b.x < middle_x - 2):
-                            state = "ball_throw"
+                    # Determining the correct basket
+                    if using_magenta:
+                        basket = processedData.basket_m
+                    else:
+                        basket = processedData.basket_b
 
-                    robot.orbit(400, 2, interesting_ball.distance, interesting_ball.x)
+                    if basket.exists:
+                        if (processedData.basket_m.x > middle_x + 1 or processedData.basket_m.x < middle_x - 1):
+                            state = "ball_throw"
+                            continue
+                        
+                        rot = sigmoid_controller(interesting_ball.x, middle_x, x_scale=max_speed/10, y_scale=-100)
+                        print("rotational speed:", rot)
+                        robot.orbit(400, rot/10, interesting_ball.distance, interesting_ball.x)
+                    else:
+                        robot.orbit(400, 2, interesting_ball.distance, interesting_ball.x)
                 else:
                     state == "ball_search"
             # End of ball_orbit
