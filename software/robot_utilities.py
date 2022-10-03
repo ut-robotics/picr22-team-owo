@@ -4,6 +4,7 @@
 
 # Imports
 import time, math
+import numpy as np
 
 
 
@@ -56,4 +57,8 @@ def LOGSTATE(state, error=False):
 # y_scale - For scaling in the y-axis, by default the curve's max value is 1
 # Current values smaller than the target output negative values, larger values positive values, to reverse this use negative x_scale or y_scale
 def sigmoid_controller(current, target, x_scale = 1, y_scale = 1):
-    return (2 / (1 + math.exp(3*(target-current)/x_scale)) - 1) * y_scale
+    return (2 / (1 + np.exp(3*(target-current)/x_scale)) - 1) * y_scale
+
+
+if __name__ == "__main__":
+    print(sigmoid_controller(1000, 0))
