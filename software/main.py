@@ -21,8 +21,8 @@ if __name__ == "__main__":
     # Setup from our code
     max_speed = 10
     ball_good_range = 370
-    robot = omni_motion.Omni_motion_robot()
-    robot.start(max_speed)
+    robot = omni_motion.Omni_motion_robot(max_speed)
+    robot.start()
 
     # Setup from example code
     cam = camera.RealsenseCamera(exposure = 100)
@@ -99,11 +99,11 @@ if __name__ == "__main__":
                         state = "ball_orbit"
                         continue
                     else:
-                        if interesting_ball.x > middle_x + 2 or interesting_ball.x < middle_x - 2:
-                            speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=max_speed/10, y_scale=100)
-                            speed_r = sigmoid_controller(interesting_ball.x, middle_x, x_scale=max_speed/10, y_scale=-100)
-                        if interesting_ball.distance > 370:
-                            speed_y = sigmoid_controller(interesting_ball.distance, ball_good_range, x_scale=max_speed/10, y_scale=1000)
+                        if interesting_ball.x > middle_x + 1 or interesting_ball.x < middle_x - 1:
+                            speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=100, y_scale=max_speed/5)
+                            speed_r = sigmoid_controller(interesting_ball.x, middle_x, x_scale=100, y_scale=-max_speed/5)
+                        if interesting_ball.distance > 385:
+                            speed_y = sigmoid_controller(interesting_ball.distance, ball_good_range, x_scale=100, y_scale=max_speed/5)
                         print("x: %s, y: %s, r: %s" % (speed_x, speed_y, speed_r))
                         robot.move(speed_x, speed_y, speed_r)
                 else:
@@ -134,9 +134,11 @@ if __name__ == "__main__":
                         #    state = "ball_throw"
                         #    continue
                         
-                        rot = sigmoid_controller(interesting_ball.x, middle_x, x_scale=max_speed/10, y_scale=-100)
+                        rot = sigmoid_controller(interesting_ball.x, middle_x, x_scale=1000, y_scale=max_speed/10)
                         print("rotational speed:", rot)
-                        robot.orbit(400, rot/8, interesting_ball.distance, interesting_ball.x)
+
+                        robot.orbit(400, rot, interesting_ball.distance, interesting_ball.x)
+
                     else:
                         robot.orbit(400, 2, interesting_ball.distance, interesting_ball.x)
                 else:
