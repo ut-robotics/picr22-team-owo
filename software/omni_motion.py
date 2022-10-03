@@ -80,7 +80,7 @@ class Omni_motion_robot():
 
         # Correct radius check
         if cur_radius > 600:
-            LOGE("Invalid radius")
+            LOGE("Invalid radius, radius:", cur_radius)
             return
         # Radius adjustment
         if cur_radius > (radius + self.buffer_x) or cur_radius < (radius - self.buffer_x):

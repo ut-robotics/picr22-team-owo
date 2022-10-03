@@ -97,8 +97,9 @@ if __name__ == "__main__":
 
                     if interesting_ball.x < middle_x + 5 and interesting_ball.x > middle_x - 5 and interesting_ball.distance <= 400:
                         state = "ball_orbit"
+                        continue
                     else:
-                        if interesting_ball.x > middle_x + 1 or interesting_ball.x < middle_x - 1:
+                        if interesting_ball.x > middle_x + 2 or interesting_ball.x < middle_x - 2:
                             speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=max_speed/10, y_scale=100)
                             speed_r = sigmoid_controller(interesting_ball.x, middle_x, x_scale=max_speed/10, y_scale=-100)
                         if interesting_ball.distance > 370:
@@ -117,8 +118,8 @@ if __name__ == "__main__":
                     interesting_ball = processedData.balls[-1]
 
                     # For checking if the ball is still in position
-                    if interesting_ball.distance > 450:
-                        LOGE("Invalid radius")
+                    if interesting_ball.distance > 500:
+                        LOGE("Invalid radius, radius:", interesting_ball.distance)
                         state = "wait"
                         continue
 
@@ -129,13 +130,13 @@ if __name__ == "__main__":
                         basket = processedData.basket_b
 
                     if basket.exists:
-                        if (processedData.basket_m.x > middle_x + 1 or processedData.basket_m.x < middle_x - 1):
-                            state = "ball_throw"
-                            continue
+                        #if (processedData.basket_m.x > middle_x + 1 or processedData.basket_m.x < middle_x - 1):
+                        #    state = "ball_throw"
+                        #    continue
                         
                         rot = sigmoid_controller(interesting_ball.x, middle_x, x_scale=max_speed/10, y_scale=-100)
                         print("rotational speed:", rot)
-                        robot.orbit(400, rot/10, interesting_ball.distance, interesting_ball.x)
+                        robot.orbit(400, rot/8, interesting_ball.distance, interesting_ball.x)
                     else:
                         robot.orbit(400, 2, interesting_ball.distance, interesting_ball.x)
                 else:
