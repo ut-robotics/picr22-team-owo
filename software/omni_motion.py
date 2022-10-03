@@ -7,7 +7,7 @@ from robot_utilities import *
 
 
 class Omni_motion_robot():
-    def __init__(self):
+    def __init__(self, max_speed):
         # General movement constants
         # Some values taken from here:
         # https://ut-robotics.github.io/picr22-home/basketball_robot_guide/software/omni_motion.html
@@ -21,7 +21,7 @@ class Omni_motion_robot():
         self.pid_control_frequency = 60 #Hz
         self.pid_control_period = 1 / self.pid_control_frequency #seconds
         self.wheel_speed_to_mainboard_units = self.gearbox_ratio * self.encoder_edges_per_motor_revolution / (2 * math.pi * self.wheel_radius * self.pid_control_frequency)
-        self.max_speed = 7
+        self.max_speed = max_speed
 
         # Orbiting constants
         self.buffer_r = 1
@@ -50,15 +50,14 @@ class Omni_motion_robot():
     # x - sideways, positive to the right
     # y - forward, positive to the front
     # r - rotation, positive anticlockwise
-    def move(self, speed_x, speed_y, speed_r):
-        if abs(speed_x) > self.max_speed or abs(speed_x) > self.max_speed or abs(speed_x) > self.max_speed:
-            LOGE("Speed to large")
-            return
-        
+    def move(self, speed_x, speed_y, speed_r):        
         robot_angle = math.atan2(speed_y, speed_x)
         robot_speed = math.sqrt(math.pow(speed_x, 2) + math.pow(speed_y, 2))
         #print("Angle:", robot_angle)
         #print("Speed:", robot_speed)
+        if abs(robot_speed) > self.max_speed or abs(speed_r) > self.max_speed:
+            LOGE("Speed to large")
+            return
 
         #M1 front left
         m1 = int(self.calculate_wheel_speed(1, robot_speed, robot_angle, speed_r))

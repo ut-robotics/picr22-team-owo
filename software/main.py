@@ -15,11 +15,14 @@ import cv2
 
 if __name__ == "__main__":
     print("Starting...")
+    init_logging()
     debug = False
 
     # Setup from our code
+    max_speed = 10
+    ball_good_range = 370
     robot = omni_motion.Omni_motion_robot()
-    robot.start()
+    robot.start(max_speed)
 
     # Setup from example code
     cam = camera.RealsenseCamera(exposure = 100)
@@ -35,23 +38,23 @@ if __name__ == "__main__":
     middle_x = 424
     middle_y = 240
 
-    state = "wait"
+    state = "wait" # Initial state
     using_magenta = True # If throwing into magenta basket set to true, if throwing into blue, set to false
 
     try:
         while(True):
             processedData = processor.process_frame(aligned_depth=True)
 
+            # Housekeeping stuff
             frame_cnt +=1
-
             frame += 1
             if frame % 30 == 0:
                 frame = 0
                 end = time.time()
                 fps = 30 / (end - start)
                 start = end
-                print("FPS: {}, framecount: {}".format(fps, frame_cnt))
-                print("ball_count: {}".format(len(processedData.balls)))
+                LOGI("FPS: {}, framecount: {}".format(fps, frame_cnt))
+                LOGI("ball_count: {}".format(len(processedData.balls)))
 
             # Debug frame (turn off when over ssh)
             if debug:
@@ -62,10 +65,9 @@ if __name__ == "__main__":
                 k = cv2.waitKey(1) & 0xff
                 if k == ord('q'):
                     break
-
+            # End of housekeeping
 
             # Main control logic using a state machine
-
             if state == "wait":
                 LOGSTATE("waiting")
                 input() # For making a break
@@ -93,23 +95,23 @@ if __name__ == "__main__":
                     interesting_ball = processedData.balls[-1]
                     #print("Ball:", interesting_ball)
 
-                    if interesting_ball.x < middle_x + 15 and interesting_ball.x > middle_x - 15 and interesting_ball.distance <= 400:
+                    if interesting_ball.x < middle_x + 5 and interesting_ball.x > middle_x - 5 and interesting_ball.distance <= 400:
                         state = "ball_orbit"
                     else:
-                        if interesting_ball.x > middle_x + 2 or interesting_ball.x < middle_x - 2:
-                            speed_x = (interesting_ball.x - middle_x) / middle_x * 5
-                            speed_r = -(interesting_ball.x - middle_x) / middle_x * 10
+                        if interesting_ball.x > middle_x + 1 or interesting_ball.x < middle_x - 1:
+                            speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=max_speed/10, y_scale=100)
+                            speed_r = sigmoid_controller(interesting_ball.x, middle_x, x_scale=max_speed/10, y_scale=-100)
                         if interesting_ball.distance > 370:
-                            speed_y = (interesting_ball.distance - 370)*(15 - 0)/(2000 - 370)
-                        #print("x: %s, y: %s, r: %s" % (speed_x, speed_y, speed_r))
+                            speed_y = sigmoid_controller(interesting_ball.distance, ball_good_range, x_scale=max_speed/10, y_scale=1000)
+                        print("x: %s, y: %s, r: %s" % (speed_x, speed_y, speed_r))
                         robot.move(speed_x, speed_y, speed_r)
                 else:
                     state = "ball_search"
             # End of ball_move
 
+            # Orbiting around ball until correct basket is found
             elif state == "ball_orbit":
                 LOGSTATE("ball_orbit")
-
 
                 if len(processedData.balls) > 0:
                     interesting_ball = processedData.balls[-1]
@@ -138,7 +140,9 @@ if __name__ == "__main__":
             # End of ball_throw
 
             else:
-                LOGSTATE("unknown")
+                LOGSTATE("unknown state")
+                LOGE("Exiting...")
+                break
                 # Considered as an error
             # End of unknown
 
