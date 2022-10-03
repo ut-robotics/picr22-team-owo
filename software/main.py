@@ -20,8 +20,9 @@ if __name__ == "__main__":
 
     # Setup from our code
     max_speed = 10
-    ball_good_range = 370
-    robot = omni_motion.Omni_motion_robot(max_speed)
+    max_speed_inner = 15
+    ball_good_range = 375
+    robot = omni_motion.Omni_motion_robot(max_speed_inner)
     robot.start()
 
     # Setup from example code
@@ -100,11 +101,11 @@ if __name__ == "__main__":
                         continue
                     else:
                         if interesting_ball.x > middle_x + 1 or interesting_ball.x < middle_x - 1:
-                            speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=100, y_scale=max_speed/5)
-                            speed_r = sigmoid_controller(interesting_ball.x, middle_x, x_scale=100, y_scale=-max_speed/5)
-                        if interesting_ball.distance > 385:
-                            speed_y = sigmoid_controller(interesting_ball.distance, ball_good_range, x_scale=100, y_scale=max_speed/5)
-                        print("x: %s, y: %s, r: %s" % (speed_x, speed_y, speed_r))
+                            speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=1000, y_scale=max_speed)
+                            speed_r = sigmoid_controller(interesting_ball.x, middle_x, x_scale=1000, y_scale=-max_speed)
+                        if interesting_ball.distance > ball_good_range:
+                            speed_y = sigmoid_controller(interesting_ball.distance, ball_good_range, x_scale=800, y_scale=max_speed)
+                        #print("x: %s, y: %s, r: %s" % (speed_x, speed_y, speed_r))
                         robot.move(speed_x, speed_y, speed_r)
                 else:
                     state = "ball_search"
@@ -118,8 +119,8 @@ if __name__ == "__main__":
                     interesting_ball = processedData.balls[-1]
 
                     # For checking if the ball is still in position
-                    if interesting_ball.distance > 500:
-                        LOGE("Invalid radius, radius:", interesting_ball.distance)
+                    if interesting_ball.distance > 550:
+                        LOGE("Invalid radius, radius: " + str(interesting_ball.distance))
                         state = "wait"
                         continue
 
@@ -130,12 +131,13 @@ if __name__ == "__main__":
                         basket = processedData.basket_b
 
                     if basket.exists:
+                        #print("Basket x:", basket.x)
                         #if (processedData.basket_m.x > middle_x + 1 or processedData.basket_m.x < middle_x - 1):
                         #    state = "ball_throw"
                         #    continue
                         
-                        rot = sigmoid_controller(interesting_ball.x, middle_x, x_scale=1000, y_scale=max_speed/10)
-                        print("rotational speed:", rot)
+                        rot = sigmoid_controller(basket.x, middle_x, x_scale=1000, y_scale=-max_speed)
+                        #print("rotational speed:", rot)
 
                         robot.orbit(400, rot, interesting_ball.distance, interesting_ball.x)
 

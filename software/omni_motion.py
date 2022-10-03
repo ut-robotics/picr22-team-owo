@@ -75,12 +75,13 @@ class Omni_motion_robot():
     # radius, cur_radius in millimeters
     # cur_object_x - x coordinate of the center of the orbital trajectory
     def orbit(self, radius, speed_x, cur_radius, cur_object_x):
+        print("speed_x: ", speed_x)
         speed_y = 0
         speed_r = 1000 * speed_x / radius
 
         # Correct radius check
         if cur_radius > 600:
-            LOGE("Invalid radius, radius:", cur_radius)
+            LOGE("Invalid radius, radius: " + str(cur_radius))
             return
         # Radius adjustment
         if cur_radius > (radius + self.buffer_x) or cur_radius < (radius - self.buffer_x):
@@ -142,7 +143,7 @@ class Omni_motion_robot():
             sys.exit()
 
 if __name__ == "__main__":
-    robot = Omni_motion_robot()
+    robot = Omni_motion_robot(10)
     robot.start()
     robot.throw(200)
     
