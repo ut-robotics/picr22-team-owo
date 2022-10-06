@@ -145,5 +145,6 @@ class Omni_motion_robot():
 if __name__ == "__main__":
     robot = Omni_motion_robot(10)
     robot.start()
-    robot.throw(200)
+    while(True):
+        robot.throw(1000)
     

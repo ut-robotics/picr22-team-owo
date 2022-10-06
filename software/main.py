@@ -73,12 +73,14 @@ if __name__ == "__main__":
                 LOGSTATE("waiting")
                 input() # For making a break
                 state = "ball_search"
+                continue
             # End of wait
 
             elif state == "ball_search":
                 LOGSTATE("ball_search")
                 if len(processedData.balls) > 0:
                     state = "ball_move"
+                    continue
                 else:
                     robot.move(0, 0, 5)
             # End of ball_search
@@ -96,19 +98,20 @@ if __name__ == "__main__":
                     interesting_ball = processedData.balls[-1]
                     #print("Ball:", interesting_ball)
 
-                    if interesting_ball.x < middle_x + 5 and interesting_ball.x > middle_x - 5 and interesting_ball.distance <= 400:
+                    if interesting_ball.x < middle_x + 7 and interesting_ball.x > middle_x - 7 and interesting_ball.distance <= 400:
                         state = "ball_orbit"
                         continue
                     else:
                         if interesting_ball.x > middle_x + 1 or interesting_ball.x < middle_x - 1:
                             speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=1000, y_scale=max_speed)
-                            speed_r = sigmoid_controller(interesting_ball.x, middle_x, x_scale=1000, y_scale=-max_speed)
+                            speed_r = -sigmoid_controller(interesting_ball.x, middle_x, x_scale=1000, y_scale=max_speed)
                         if interesting_ball.distance > ball_good_range:
                             speed_y = sigmoid_controller(interesting_ball.distance, ball_good_range, x_scale=800, y_scale=max_speed)
                         #print("x: %s, y: %s, r: %s" % (speed_x, speed_y, speed_r))
                         robot.move(speed_x, speed_y, speed_r)
                 else:
                     state = "ball_search"
+                    continue
             # End of ball_move
 
             # Orbiting around ball until correct basket is found
@@ -136,7 +139,7 @@ if __name__ == "__main__":
                         #    state = "ball_throw"
                         #    continue
                         
-                        rot = sigmoid_controller(basket.x, middle_x, x_scale=1000, y_scale=-max_speed)
+                        rot = -sigmoid_controller(basket.x, middle_x, x_scale=1000, y_scale=(max_speed - 2))
                         #print("rotational speed:", rot)
 
                         robot.orbit(400, rot, interesting_ball.distance, interesting_ball.x)
@@ -145,11 +148,13 @@ if __name__ == "__main__":
                         robot.orbit(400, 2, interesting_ball.distance, interesting_ball.x)
                 else:
                     state == "ball_search"
+                    continue
             # End of ball_orbit
 
             elif state == "ball_throw":
                 LOGSTATE("ball_throw")
                 state = "wait"
+                continue
             # End of ball_throw
 
             else:
