@@ -40,9 +40,11 @@ if __name__ == "__main__":
     middle_x = 424
     middle_y = 240
 
-    state = "input" # Initial state
+    state = sys.argv[1] # Initial state
     using_magenta = True # If throwing into magenta basket set to true, if throwing into blue, set to false
     thrower_speed = 0
+    first_time = True
+    d_data = []
 
     try:
         while(True):
@@ -83,18 +85,25 @@ if __name__ == "__main__":
                 state = "calibration"
 
             elif state == "calibration":
-                start_time = time.perf_counter()
-                print(time.perf_counter())
-                print(start_time)
-                print(time.perf_counter() - start_time)
-                while ((time.perf_counter() - start_time) < 10):
-                    if (processedData.basket_m.exists):
-                        print("Distance:", processedData.basket_m.distance)
-                        robot.throw(thrower_speed)
-                    else: 
-                        print("No basket")
-                        break
-                state = "input"
+                if first_time:
+                    first_time = False
+                    start_time = time.perf_counter()
+
+                if (time.perf_counter() - start_time) > 10:
+                    print("Average:", np.average(d_data))
+                    print("Speed:", thrower_speed)
+                    state = "input"
+                    first_time = True
+                    d_data = []
+                    continue
+
+                if (processedData.basket_m.exists):
+                    #print("Distance:", processedData.basket_m.distance)
+                    d_data.append(processedData.basket_m.distance)
+                    robot.throw(thrower_speed)
+                else: 
+                    print("No basket")
+                    continue
 
             elif state == "ball_search":
                 LOGSTATE("ball_search")
@@ -118,7 +127,7 @@ if __name__ == "__main__":
                     interesting_ball = processedData.balls[-1]
                     #print("Ball:", interesting_ball)
 
-                    if interesting_ball.x < middle_x + 7 and interesting_ball.x > middle_x - 7 and interesting_ball.distance <= 400:
+                    if interesting_ball.x < middle_x + 10 and interesting_ball.x > middle_x - 10 and interesting_ball.distance <= 450:
                         state = "ball_orbit"
                         continue
                     else:

@@ -222,7 +222,7 @@ class ImageProcessor():
             # changed to 100 from 15, hopefully reducing errors in ball detection
             # needs testing
             #changed back to 15
-            if size < 13:
+            if size < 14:
                 continue
 
             x, y, w, h = cv2.boundingRect(contour)
@@ -256,7 +256,7 @@ class ImageProcessor():
 
         return balls
 
-    def analyze_baskets(self, t_basket, debug_color = (0, 255, 255)) -> list:
+    def analyze_baskets(self, t_basket, depth, debug_color = (0, 255, 255)) -> list:
         contours, hierarchy = cv2.findContours(t_basket, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         baskets = []
@@ -273,7 +273,10 @@ class ImageProcessor():
 
             obj_x = int(x + (w/2))
             obj_y = int(y + (h/2))
-            obj_dst = obj_y
+            if depth is 0:
+                obj_dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((obj_y/4.829652), 0.6903042))
+            else:
+                obj_dst = depth[obj_y, obj_x]
 
             baskets.append(Object(x = obj_x, y = obj_y, size = size, distance = obj_dst, exists = True))
 
@@ -284,6 +287,9 @@ class ImageProcessor():
         if self.debug:
             if basket.exists:
                 cv2.circle(self.debug_frame,(basket.x, basket.y), 20, debug_color, -1)
+
+        # Basket distance print for debug reasons
+        #print("BASKET DISTANCE..... ", basket.distance)
 
         return basket
 
@@ -303,8 +309,8 @@ class ImageProcessor():
         lines = self.get_lines(color_frame)
 
         balls = self.analyze_balls(self.t_balls, self.fragmented, depth_frame, lines)
-        basket_b = self.analyze_baskets(self.t_basket_b, debug_color=c.Color.BLUE.color.tolist())
-        basket_m = self.analyze_baskets(self.t_basket_m, debug_color=c.Color.MAGENTA.color.tolist())
+        basket_b = self.analyze_baskets(self.t_basket_b, depth_frame, debug_color=c.Color.BLUE.color.tolist())
+        basket_m = self.analyze_baskets(self.t_basket_m, depth_frame, debug_color=c.Color.MAGENTA.color.tolist())
 
         return ProcessedResults(balls = balls, 
                                 basket_b = basket_b, 
