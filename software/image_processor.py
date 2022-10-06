@@ -289,7 +289,7 @@ class ImageProcessor():
                 cv2.circle(self.debug_frame,(basket.x, basket.y), 20, debug_color, -1)
 
         # Basket distance print for debug reasons
-        print("BASKET DISTANCE..... ", basket.distance)
+        #print("BASKET DISTANCE..... ", basket.distance)
 
         return basket
 
