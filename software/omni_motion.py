@@ -32,6 +32,9 @@ class Omni_motion_robot():
         self.y_const = 1
         self.prev_rad = 400
 
+        # Throwing
+        self.thrower_speed = 0
+
     # Pyserial stuff
     def start(self):
         self.ser = serial.Serial("/dev/ttyACM0")
@@ -50,6 +53,7 @@ class Omni_motion_robot():
     # x - sideways, positive to the right
     # y - forward, positive to the front
     # r - rotation, positive anticlockwise
+    # While moving it also rotates the thrower with self.thrower_speed
     def move(self, speed_x, speed_y, speed_r):        
         robot_angle = math.atan2(speed_y, speed_x)
         robot_speed = math.sqrt(math.pow(speed_x, 2) + math.pow(speed_y, 2))
@@ -66,7 +70,7 @@ class Omni_motion_robot():
         #M3 back
         m3 = int(self.calculate_wheel_speed(3, robot_speed, robot_angle, speed_r))
 
-        self.send_data(m1, m2, m3, 0)
+        self.send_data(m1, m2, m3, self.thrower_speed)
         #print("Cmd:", m1, m2, m3)
         #print("Actual:", self.receive_data())
 
@@ -96,19 +100,22 @@ class Omni_motion_robot():
 
 
     # Throw ball with given strength
+    # Discrete call not continuous, use within a loop
     # Value range 48 - 2047
     def throw(self, strength):
         if 48 <= strength and strength <= 2047:
             self.send_data(0, 0, 0, strength)
             print(self.receive_data())
 
+    # Set the speed for thrower when moving
+    def set_thrower(self, speed):
+        self.thrower_speed = speed
 
     def send_data(self, speed1, speed2, speed3, thrower_speed):
         disable_failsafe = 0
         delimiter = 0xAAAA
         data = struct.pack('<hhhHBH', speed1, speed2, speed3, thrower_speed, disable_failsafe, delimiter)
         self.ser.write(data)
-
 
     def receive_data(self):
         received_data = self.ser.read(size=8)

@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+from multiprocessing.pool import ThreadPool
 import time, sys
 
 import omni_motion
@@ -39,8 +40,9 @@ if __name__ == "__main__":
     middle_x = 424
     middle_y = 240
 
-    state = "wait" # Initial state
+    state = "input" # Initial state
     using_magenta = True # If throwing into magenta basket set to true, if throwing into blue, set to false
+    thrower_speed = 0
 
     try:
         while(True):
@@ -75,6 +77,15 @@ if __name__ == "__main__":
                 state = "ball_search"
                 continue
             # End of wait
+
+            elif state == "input":
+                thrower_speed = input("Speed:")
+
+            elif state == "calibration":
+                start_time = time.perf_counter
+                while (time.perf_counter - start_time > 10):
+                    print("Distance:", processedData.basket_m.distance)
+                    robot.throw(thrower_speed)
 
             elif state == "ball_search":
                 LOGSTATE("ball_search")
