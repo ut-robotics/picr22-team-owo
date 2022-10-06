@@ -79,13 +79,22 @@ if __name__ == "__main__":
             # End of wait
 
             elif state == "input":
-                thrower_speed = input("Speed:")
+                thrower_speed = int(input("Speed:"))
+                state = "calibration"
 
             elif state == "calibration":
-                start_time = time.perf_counter
-                while (time.perf_counter - start_time > 10):
-                    print("Distance:", processedData.basket_m.distance)
-                    robot.throw(thrower_speed)
+                start_time = time.perf_counter()
+                print(time.perf_counter())
+                print(start_time)
+                print(time.perf_counter() - start_time)
+                while ((time.perf_counter() - start_time) < 10):
+                    if (processedData.basket_m.exists):
+                        print("Distance:", processedData.basket_m.distance)
+                        robot.throw(thrower_speed)
+                    else: 
+                        print("No basket")
+                        break
+                state = "input"
 
             elif state == "ball_search":
                 LOGSTATE("ball_search")
