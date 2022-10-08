@@ -90,3 +90,6 @@ Personal comments:
 
 === Tue, 4.10.22
 *Sander:* Wheels design 2 h
+
+=== Sat, 8.10.22
+*Sander:* Thrower design 4 h
