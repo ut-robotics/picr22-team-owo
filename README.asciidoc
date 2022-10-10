@@ -71,8 +71,8 @@ Personal comments:
 *Artur:* Component files, import testing 2 h
 
 === Mon, 26.09.22
-*Johannes:* Line detection 4 h
-*Andres:* Orbiting logic, general code improvements 5 h
+*Johannes:* Line detection 4 h +
+*Andres:* Orbiting logic, general code improvements 5 h +
 *Artur:* Component files, import testing 1 h
 
 === Tue, 27.09.22
@@ -92,7 +92,7 @@ Personal comments:
 *Johannes:* Progress report and misc. changes in code 2.5h
 
 === Tue, 4.10.22
-*Sander:* Wheels design 2 h
+*Sander:* Wheels design 2 h +
 *Johannes:* Testing and measuring thrower 1.5 h
 
 === Thu, 06.10.22
@@ -102,8 +102,8 @@ Personal comments:
 *Sander:* Thrower design 4 h
 
 === Mon, 10.10.22
-*Johannes:* hello
-*Artur:*
-*Andres:*
-*Kert:*
+*Johannes:* hello +
+*Artur:* +
+*Andres:* +
+*Kert:* +
 *Sander:* 
