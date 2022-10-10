@@ -198,7 +198,7 @@ class ImageProcessor():
 
         lines_edges = cv2.addWeighted(cropped, 0.8, copyimg, 1, 0)
 
-        cv2.imshow('lines', lines_edges)
+        #cv2.imshow('lines', lines_edges)
         
         #return lines_edges
         return linesbyslope
@@ -271,12 +271,15 @@ class ImageProcessor():
 
             x, y, w, h = cv2.boundingRect(contour)
 
+            averagingSize = 2
+
             obj_x = int(x + (w/2))
             obj_y = int(y + (h/2))
             if depth is 0:
                 obj_dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((obj_y/4.829652), 0.6903042))
             else:
-                obj_dst = depth[obj_y, obj_x]
+                obj_dst = np.average(depth[obj_y-averagingSize:obj_y+averagingSize, obj_x-averagingSize:obj_x+averagingSize])
+                #obj_dst = depth[obj_y, obj_x]
 
             baskets.append(Object(x = obj_x, y = obj_y, size = size, distance = obj_dst, exists = True))
 
