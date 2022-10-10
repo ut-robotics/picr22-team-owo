@@ -32,9 +32,6 @@ class Omni_motion_robot():
         self.y_const = 1
         self.prev_rad = 400
 
-        # Throwing
-        self.thrower_speed = 0
-
     # Pyserial stuff
     def start(self):
         self.ser = serial.Serial("/dev/ttyACM0")
@@ -54,7 +51,7 @@ class Omni_motion_robot():
     # y - forward, positive to the front
     # r - rotation, positive anticlockwise
     # While moving it also rotates the thrower with self.thrower_speed
-    def move(self, speed_x, speed_y, speed_r):        
+    def move(self, speed_x, speed_y, speed_r, thrower_speed=0):        
         robot_angle = math.atan2(speed_y, speed_x)
         robot_speed = math.sqrt(math.pow(speed_x, 2) + math.pow(speed_y, 2))
         #print("Angle:", robot_angle)
@@ -70,7 +67,7 @@ class Omni_motion_robot():
         #M3 back
         m3 = int(self.calculate_wheel_speed(3, robot_speed, robot_angle, speed_r))
 
-        self.send_data(m1, m2, m3, self.thrower_speed)
+        self.send_data(m1, m2, m3, thrower_speed)
         #print("Cmd:", m1, m2, m3)
         #print("Actual:", self.receive_data())
 
@@ -79,7 +76,6 @@ class Omni_motion_robot():
     # radius, cur_radius in millimeters
     # cur_object_x - x coordinate of the center of the orbital trajectory
     def orbit(self, radius, speed_x, cur_radius, cur_object_x):
-        print("speed_x: ", speed_x)
         speed_y = 0
         speed_r = 1000 * speed_x / radius
 
@@ -94,7 +90,7 @@ class Omni_motion_robot():
         if cur_object_x > (self.middle_x + self.buffer_x) or cur_object_x < (self.middle_x - self.buffer_x):
             speed_r += (self.middle_x - cur_object_x) / 100 * self.r_const
 
-        print("x:", speed_x, "y:", speed_y, "r:", speed_r, "cur_rad:", cur_radius, "cur_x:", cur_object_x)
+        #print("x:", speed_x, "y:", speed_y, "r:", speed_r, "cur_rad:", cur_radius, "cur_x:", cur_object_x)
         self.move(speed_x, speed_y, speed_r)
         self.prev_rad = cur_radius
 
@@ -106,10 +102,6 @@ class Omni_motion_robot():
         if 48 <= strength and strength <= 2047:
             self.send_data(0, 0, 0, strength)
             print(self.receive_data())
-
-    # Set the speed for thrower when moving
-    def set_thrower(self, speed):
-        self.thrower_speed = speed
 
     def send_data(self, speed1, speed2, speed3, thrower_speed):
         disable_failsafe = 0
