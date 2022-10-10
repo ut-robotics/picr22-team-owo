@@ -88,8 +88,22 @@ Personal comments:
 === Sun, 02.10.22
 *Artur:* Component files, manually importing 4.5 h
 
+=== Mon, 03.10.22
+*Johannes:* Progress report and misc. changes in code 2.5h
+
 === Tue, 4.10.22
 *Sander:* Wheels design 2 h
+*Johannes:* Testing and measuring thrower 1.5 h
+
+=== Thu, 06.10.22
+*Johannes:* Image processing minor tweaks, thrower testing 3.5 h
 
 === Sat, 8.10.22
 *Sander:* Thrower design 4 h
+
+=== Mon, 10.10.22
+*Johannes:* hello
+*Artur:*
+*Andres:*
+*Kert:*
+*Sander:* 
