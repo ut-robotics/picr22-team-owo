@@ -47,6 +47,7 @@ if __name__ == "__main__":
     d_data = []
 
     thrower_time_counter = 0
+    basket_ok_counter = 0
 
     try:
         while(True):
@@ -131,6 +132,7 @@ if __name__ == "__main__":
 
                     if interesting_ball.x < middle_x + 10 and interesting_ball.x > middle_x - 10 and interesting_ball.distance <= 475:
                         state = "ball_orbit"
+                        basket_ok_counter = 0
                         continue
                     else:
                         if interesting_ball.x > middle_x + 2 or interesting_ball.x < middle_x - 2:
@@ -168,9 +170,15 @@ if __name__ == "__main__":
                     if basket.exists:
                         print("Basket x:", basket.x)
                         if (processedData.basket_m.x > (middle_x + 1) or processedData.basket_m.x < (middle_x - 1)):
-                            state = "ball_throw"
-                            thrower_time_counter = time.perf_counter()
-                            continue
+                            if (basket_ok_counter > 10):
+                                state = "ball_throw"
+                                thrower_time_counter = time.perf_counter()
+                                continue
+                            else:
+                                basket_ok_counter += 1
+                            
+                        else:
+                            basket_ok_counter = 0
                         
                         speed_x = -sigmoid_controller(basket.x, middle_x, x_scale=2000, y_scale=(max_speed - 2))
                         #print("rotational speed:", rot)
@@ -187,6 +195,11 @@ if __name__ == "__main__":
             elif state == "ball_throw":
                 LOGSTATE("ball_throw")
 
+                if using_magenta:
+                    basket = processedData.basket_m
+                else:
+                    basket = processedData.basket_b
+
                 if len(processedData.balls) > 0:
                     interesting_ball = processedData.balls[-1]
 
@@ -194,12 +207,12 @@ if __name__ == "__main__":
                     state = "ball_search"
 
 
-                speed_x = sigmoid_controller(basket.x, middle_x, x_scale=2000, y_scale=(max_speed - 4))
-                if len(processedData.balls) is 0:
-                    speed_rot = sigmoid_controller(interesting_ball.x, middle_x, x_scale=1200, y_scale=max_speed)
+                speed_rot = -sigmoid_controller(basket.x, middle_x, x_scale=900, y_scale=(max_speed))
+                if len(processedData.balls) is not 0:
+                    speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=2200, y_scale=max_speed / 3)
                 else:
-                    speed_rot = 0
-                speed_y = 2
+                    speed_x = 0
+                speed_y = 0.7
 
                 throw_speed = basket.distance*0.3166512 + 468.4378
 
