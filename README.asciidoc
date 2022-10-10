@@ -102,8 +102,8 @@ Personal comments:
 *Sander:* Thrower design 4 h
 
 === Mon, 10.10.22
-*Johannes:* hello +
+*Johannes:* Meeting, throwing state coded, first tests ran 4.5 h +
 *Artur:* +
 *Andres:* +
-*Kert:* +
+*Kert:* Meeting, bottom chassis design and motor mount completion 6.5 h +
 *Sander: Meeting, thrower design 6.5 h* 
