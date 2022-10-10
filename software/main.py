@@ -130,7 +130,7 @@ if __name__ == "__main__":
                     interesting_ball = processedData.balls[-1]
                     #print("Ball:", interesting_ball)
 
-                    if interesting_ball.x < middle_x + 10 and interesting_ball.x > middle_x - 10 and interesting_ball.distance <= 475:
+                    if interesting_ball.x < middle_x + 5 and interesting_ball.x > middle_x - 5 and interesting_ball.distance <= 475:
                         state = "ball_orbit"
                         basket_ok_counter = 0
                         continue
@@ -170,6 +170,7 @@ if __name__ == "__main__":
                     if basket.exists:
                         print("Basket x:", basket.x)
                         if (processedData.basket_m.x > (middle_x + 1) or processedData.basket_m.x < (middle_x - 1)):
+                            print("basket ok counter...", basket_ok_counter)
                             if (basket_ok_counter > 10):
                                 state = "ball_throw"
                                 thrower_time_counter = time.perf_counter()
