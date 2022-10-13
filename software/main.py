@@ -130,14 +130,14 @@ if __name__ == "__main__":
                     interesting_ball = processedData.balls[-1]
                     #print("Ball:", interesting_ball)
 
-                    if interesting_ball.x < middle_x + 5 and interesting_ball.x > middle_x - 5 and interesting_ball.distance <= 475:
+                    if interesting_ball.x < middle_x + 12 and interesting_ball.x > middle_x - 12 and interesting_ball.distance <= 475:
                         state = "ball_orbit"
                         basket_ok_counter = 0
                         continue
                     else:
                         if interesting_ball.x > middle_x + 2 or interesting_ball.x < middle_x - 2:
                             speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=2000, y_scale=max_speed)
-                            speed_r = -sigmoid_controller(interesting_ball.x, middle_x, x_scale=1500, y_scale=max_speed)
+                            speed_r = -sigmoid_controller(interesting_ball.x, middle_x, x_scale=1200, y_scale=max_speed)
                         if interesting_ball.distance > ball_good_range:
                             speed_y = sigmoid_controller(interesting_ball.distance, ball_good_range, x_scale=1500, y_scale=max_speed)
                         print(f"x: {speed_x}, y: {speed_y}, r: {speed_r}, dist: {interesting_ball.distance}, b.x: {interesting_ball.x}, b.y: {interesting_ball.y}")
@@ -195,6 +195,7 @@ if __name__ == "__main__":
                     else:
                         robot.orbit(400, 2, interesting_ball.distance, interesting_ball.x)
                 else:
+                    print("no ball........")
                     state == "ball_search"
                     continue
             # End of ball_orbit
@@ -221,7 +222,7 @@ if __name__ == "__main__":
                     speed_x = 0
                 speed_y = 0.7
 
-                throw_speed = basket.distance*0.3166512 + 468.4378
+                throw_speed = basket.distance*0.3266512 + 473.4378
 
                 robot.move(speed_x, speed_y, speed_rot, int(throw_speed))
 

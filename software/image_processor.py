@@ -276,7 +276,8 @@ class ImageProcessor():
             if depth is 0:
                 obj_dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((obj_y/4.829652), 0.6903042))
             else:
-                obj_dst = depth[obj_y, obj_x]
+                #obj_dst = depth[obj_y, obj_x]
+                obj_dst = np.average(depth[obj_y-2:obj_y+2, obj_x-2:obj_x+2])
 
             baskets.append(Object(x = obj_x, y = obj_y, size = size, distance = obj_dst, exists = True))
 
