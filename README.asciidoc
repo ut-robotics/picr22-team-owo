@@ -106,7 +106,7 @@ Personal comments:
 *Artur:* +
 *Andres:* +
 *Kert:* Meeting, bottom chassis design and motor mount completion 6.5 h +
-*Sander:* Meeting, thrower design 6.5 h* 
+*Sander:* Meeting, thrower design 6.5 h
 
 === Mon, 10.10.22
-*Sander:* Thrower design 5 h*
+*Sander:* Thrower design 5 h
