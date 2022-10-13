@@ -222,7 +222,7 @@ if __name__ == "__main__":
                     speed_x = 0
                 speed_y = 0.7
 
-                throw_speed = basket.distance*0.3266512 + 473.4378
+                throw_speed = basket.distance*0.3166512 + 471.4378
 
                 robot.move(speed_x, speed_y, speed_rot, int(throw_speed))
 

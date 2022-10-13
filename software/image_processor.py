@@ -93,7 +93,7 @@ class ImageProcessor():
         rho = 1
         theta = np.pi / 180 * 1
         threshold = 50
-        minline = 50
+        minline = 100
         maxgap = 40
 
         cropped = image[30:400]
