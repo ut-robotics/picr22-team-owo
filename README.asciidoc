@@ -127,5 +127,5 @@ Personal comments:
 *Artur:* Designing the mainboard 3.5 h 
 
 === Mon, 17.10.22
-*Artur:* Designing the mainboard pcb 1.5 h
+*Artur:* Designing the mainboard pcb 1.5 h +
 *Sander:* Thrower design improvements 4.5 h
