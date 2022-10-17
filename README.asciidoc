@@ -89,22 +89,25 @@ Personal comments:
 *Artur:* Component files, manually importing 4.5 h
 
 === Mon, 03.10.22
-*Johannes:* Progress report and misc. changes in code 2.5h
+*Johannes:* Progress report and misc. changes in code 2.5h +
+*Andres:* Progress report, sigmoid, orbiting 6.5 h +
 
 === Tue, 4.10.22
 *Sander:* Wheels design 2 h +
-*Johannes:* Testing and measuring thrower 1.5 h
+*Johannes:* Testing and measuring thrower 1.5 h +
+*Andres:* Color calibration 1.5 h +
 
 === Thu, 06.10.22
-*Johannes:* Image processing minor tweaks, thrower testing 3.5 h
+*Johannes:* Image processing minor tweaks, thrower testing 3.5 h +
+*Andres:* Thrower code and calibration 3 h +
 
 === Sat, 8.10.22
-*Sander:* Thrower design 4 h
+*Sander:* Thrower design 4 h +
 
 === Mon, 10.10.22
 *Johannes:* Meeting, throwing state coded, first tests ran 4.5 h +
-*Artur:* +
-*Andres:* +
+*Artur:* Meeting +
+*Andres:* Meeting, some discussion with the mechanics, code 4.5 h +
 *Kert:* Meeting, bottom chassis design and motor mount completion 6.5 h +
 *Sander:* Meeting, thrower design 6.5 h
 
