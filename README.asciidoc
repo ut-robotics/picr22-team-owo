@@ -113,3 +113,6 @@ Personal comments:
 
 === Wed, 12.10.22
 *Sander:* Thrower design 5 h
+
+=== Thu, 13.10.22
+*Johannes:* Miscellaneous testing and bug fixes, stability improvements 2.5 h
