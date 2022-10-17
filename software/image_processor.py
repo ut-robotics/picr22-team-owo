@@ -4,6 +4,7 @@ import _pickle as pickle
 import numpy as np
 import cv2
 import Color as c
+import math
 
 
 class Object():
@@ -70,10 +71,83 @@ class ImageProcessor():
     def start(self):
         self.camera.open()
 
+    # arvutab valja pildilt jooned ja tagastab sirge vorranditena
+    def get_lines(self, image):
+        img = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+        # 30:400 proved to work
+        gr_img = img[30:260]
+        krn = 1 # kernel size for gauss
+        blur_img = cv2.GaussianBlur(gr_img, (krn, krn), 0)
+        
+
+        low = 80
+        high = 150
+
+        ret, thresh = cv2.threshold(blur_img, low, high, cv2.THRESH_BINARY_INV)
+
+
+        # joonte igasugused numbrid, detection parameetrid pmst
+        #scv2.imshow('hallo', thresh)
+        low_thr = 50
+        high_thr = 150
+        edges = cv2.Canny(thresh, low_thr, high_thr)
+        rho = 1
+        theta = np.pi / 180 * 1
+        threshold = 50
+        minline = 100
+        maxgap = 40
+
+        cropped = image[30:260]
+
+        copyimg = np.copy(cropped) * 0
+
+        # here happens the magic
+        lines = cv2.HoughLinesP(edges, rho, theta, threshold, np.array([]), minline, maxgap)
+
+        #print("LINES..... ", len(lines))
+        
+        selected_lines = []
+        selected_lines_list = []
+        selected_lines_weights = []
+
+        avglines = []
+
+        linesbyslope = []
+        
+        points = []
+
+        firstline = True
+
+        #print("lines: ", len(lines))
+        if lines is None:
+            return
+        
+
+        # arvutab sirge vorrandid valja
+        for line in lines:
+            x1, y1, x2, y2 = line[0]
+            # !!! ?????? points.append(((x1 + 0.0, y1 + 0.0), (x2 + 0.0, y2 + 0.0)))
+            cv2.line(copyimg, (x1, y1), (x2, y2), (255, 0, 0), 1)
+            
+            if x1 == x2:
+                continue
+            slope = (y2 - y1) / (x2 - x1) # tous
+            intercept = y1 - (slope * x1) # algordinaat
+            linesbyslope.append((slope, intercept))
+
+        #lines_edges = cv2.addWeighted(cropped, 0.8, copyimg, 1, 0)
+
+        return linesbyslope
+
     def stop(self):
         self.camera.close()
 
-    def analyze_balls(self, t_balls, fragments, depth) -> list:
+    # vaatab pildilt valja pallid
+    # sisendid: segmenditud pilt, samuti ka joonte info ja depth frame.
+    # kui depth frame eksisteerib, vaatab kauguse selle pealt, muidu y koordinaadilt.
+    # automaatselt valistab pallid, mis on ule joonte.
+    # tagastab: pallide list
+    def analyze_balls(self, t_balls, fragments, depth, lines) -> list:
         contours, hierarchy = cv2.findContours(t_balls, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         balls = []
@@ -85,11 +159,7 @@ class ImageProcessor():
 
             size = cv2.contourArea(contour)
 
-
-            # changed to 100 from 15, hopefully reducing errors in ball detection
-            # needs testing
-            #changed back to 15
-            if size < 10:
+            if size < 14:
                 continue
 
             x, y, w, h = cv2.boundingRect(contour)
@@ -99,7 +169,19 @@ class ImageProcessor():
 
             obj_x = int(x + (w/2))
             obj_y = int(y + (h/2))
-            obj_dst = depth[obj_y, obj_x]
+            if depth is 0:
+                obj_dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((obj_y/4.829652), 0.6903042))
+            else:
+                obj_dst = depth[obj_y, obj_x]
+            
+            aboveline = False
+            if lines is not None:
+                for slope, interc in lines:
+                    if obj_y < (slope * obj_x + interc + 30): # NB! 30 on joonte pildi lõikamise offset!
+                        aboveline = True
+                        break
+                if aboveline:
+                    continue
 
             if self.debug:
                 self.debug_frame[ys, xs] = [0, 0, 0]
@@ -111,13 +193,12 @@ class ImageProcessor():
 
         return balls
 
-    def analyze_baskets(self, t_basket, debug_color = (0, 255, 255)) -> list:
+    # tldr sama asi aga basketitele
+    def analyze_baskets(self, t_basket, depth, debug_color = (0, 255, 255)) -> list:
         contours, hierarchy = cv2.findContours(t_basket, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         baskets = []
         for contour in contours:
-
-            # basket filtering logic goes here. Example includes size filtering of the basket
 
             size = cv2.contourArea(contour)
 
@@ -128,7 +209,11 @@ class ImageProcessor():
 
             obj_x = int(x + (w/2))
             obj_y = int(y + (h/2))
-            obj_dst = obj_y
+            if depth is 0:
+                obj_dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((obj_y/4.829652), 0.6903042))
+            else:
+                #obj_dst = depth[obj_y, obj_x]
+                obj_dst = np.average(depth[obj_y-5:obj_y+5, obj_x-5:obj_x+5])
 
             baskets.append(Object(x = obj_x, y = obj_y, size = size, distance = obj_dst, exists = True))
 
@@ -139,6 +224,9 @@ class ImageProcessor():
         if self.debug:
             if basket.exists:
                 cv2.circle(self.debug_frame,(basket.x, basket.y), 20, debug_color, -1)
+
+        # Basket distance print for debug reasons
+        #print("BASKET DISTANCE..... ", basket.distance)
 
         return basket
 
@@ -155,10 +243,11 @@ class ImageProcessor():
 
         if self.debug:
             self.debug_frame = np.copy(color_frame)
+        lines = self.get_lines(color_frame)
 
-        balls = self.analyze_balls(self.t_balls, self.fragmented, depth_frame)
-        basket_b = self.analyze_baskets(self.t_basket_b, debug_color=c.Color.BLUE.color.tolist())
-        basket_m = self.analyze_baskets(self.t_basket_m, debug_color=c.Color.MAGENTA.color.tolist())
+        balls = self.analyze_balls(self.t_balls, self.fragmented, depth_frame, lines)
+        basket_b = self.analyze_baskets(self.t_basket_b, depth_frame, debug_color=c.Color.BLUE.color.tolist())
+        basket_m = self.analyze_baskets(self.t_basket_m, depth_frame, debug_color=c.Color.MAGENTA.color.tolist())
 
         return ProcessedResults(balls = balls, 
                                 basket_b = basket_b, 
@@ -168,4 +257,8 @@ class ImageProcessor():
                                 fragmented=self.fragmented, 
                                 debug_frame=self.debug_frame)
 
-    def get_lines(image, )
+    
+        
+
+
+        
