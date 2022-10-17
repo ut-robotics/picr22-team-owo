@@ -169,7 +169,7 @@ class ImageProcessor():
 
             obj_x = int(x + (w/2))
             obj_y = int(y + (h/2))
-            if depth is 0:
+            if depth is None:
                 obj_dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((obj_y/4.829652), 0.6903042))
             else:
                 obj_dst = depth[obj_y, obj_x]
@@ -209,7 +209,7 @@ class ImageProcessor():
 
             obj_x = int(x + (w/2))
             obj_y = int(y + (h/2))
-            if depth is 0:
+            if depth is None:
                 obj_dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((obj_y/4.829652), 0.6903042))
             else:
                 #obj_dst = depth[obj_y, obj_x]
@@ -256,9 +256,3 @@ class ImageProcessor():
                                 depth_frame=depth_frame, 
                                 fragmented=self.fragmented, 
                                 debug_frame=self.debug_frame)
-
-    
-        
-
-
-        
