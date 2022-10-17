@@ -6,9 +6,7 @@ Sources:
 
 
 Programming:
-NUC will automatically connect to network with SSID: OWO and password: tereh0mmikust
-Connect with SSH, IP can be aqcuired from the device from which the hotspot originates. (usually 192.168.43.180)
-
+The robot will automatically connect to the pwir wifi. Then it can be accessed via ssh using the hostname OWO.
 
 Electronics:
 
