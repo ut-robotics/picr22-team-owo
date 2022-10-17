@@ -12,7 +12,6 @@ class Omni_motion_robot():
         # Some values taken from here:
         # https://ut-robotics.github.io/picr22-home/basketball_robot_guide/software/omni_motion.html
         self.wheel_angles = np.radians([240, 120, 0]) #radians
-        self.name = "OWO"
         self.encoder_edges_per_motor_revolution = 64
         self.gearbox_ratio = 18.75 # 19?
         self.wheel_radius = 0.365 #meters

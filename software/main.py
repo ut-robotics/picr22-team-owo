@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-from multiprocessing.pool import ThreadPool
 import time, sys
 
 import omni_motion
@@ -31,26 +30,29 @@ if __name__ == "__main__":
     processor = image_processor.ImageProcessor(cam, debug=debug)
     processor.start()
 
-    # General constants etc.
+    # Constants etc.
+    # Housekeeping
     start = time.time()
     fps = 0
     frame = 0
     frame_cnt = 0
-
+    # Camera constants
     middle_x = 424
     middle_y = 240
-
+    # Control logic constants
     state = sys.argv[1] # Initial state
     using_magenta = True # If throwing into magenta basket set to true, if throwing into blue, set to false
     thrower_speed = 0
     first_time = True
-    d_data = []
+    calibration_data = []
 
-    thrower_time_counter = 0
+
+    thrower_time_start = 0
     basket_ok_counter = 0
 
     try:
         while(True):
+            # Getting camera data
             processedData = processor.process_frame(aligned_depth=True)
 
             # Housekeeping stuff
@@ -63,19 +65,18 @@ if __name__ == "__main__":
                 start = end
                 LOGI("FPS: {}, framecount: {}".format(fps, frame_cnt))
                 LOGI("ball_count: {}".format(len(processedData.balls)))
+            # End of housekeeping stuff
 
             # Debug frame (turn off when over ssh)
             if debug:
                 debug_frame = processedData.debug_frame
-
                 cv2.imshow('debug', debug_frame)
-
                 k = cv2.waitKey(1) & 0xff
                 if k == ord('q'):
                     break
             # End of housekeeping
 
-            # Main control logic using a state machine
+            # Main control logic uses a state machine
             if state == "wait":
                 LOGSTATE("waiting")
                 input() # For making a break
@@ -83,30 +84,32 @@ if __name__ == "__main__":
                 continue
             # End of wait
 
+            # States used for thrower calibration
             elif state == "input":
-                thrower_speed = int(input("Speed:"))
+                thrower_speed = int(input("Speed:")) # Input speed for thrower
                 state = "calibration"
 
-            elif state == "calibration":
+            elif state == "calibration": # Spin the motor for 10 seconds with the speed given in state "input"
                 if first_time:
                     first_time = False
                     start_time = time.perf_counter()
 
                 if (time.perf_counter() - start_time) > 10:
-                    print("Average:", np.average(d_data))
+                    print("Average:", np.average(calibration_data))
                     print("Speed:", thrower_speed)
                     state = "input"
                     first_time = True
-                    d_data = []
+                    calibration_data = []
                     continue
 
                 if (processedData.basket_m.exists):
                     print("Distance:", processedData.basket_m.distance)
-                    d_data.append(processedData.basket_m.distance)
+                    calibration_data.append(processedData.basket_m.distance)
                     robot.throw(thrower_speed)
                 else: 
                     print("No basket")
                     continue
+            # End of states used for thrower calibration
 
             elif state == "ball_search":
                 LOGSTATE("ball_search")
@@ -179,7 +182,7 @@ if __name__ == "__main__":
                             print("basket ok counter...", basket_ok_counter)
                             if (basket_ok_counter > 4):
                                 state = "ball_throw"
-                                thrower_time_counter = time.perf_counter()
+                                thrower_time_start = time.perf_counter()
                                 continue
                             else:
                                 basket_ok_counter += 1
@@ -211,7 +214,7 @@ if __name__ == "__main__":
                 if len(processedData.balls) > 0:
                     interesting_ball = processedData.balls[-1]
 
-                if (thrower_time_counter + 3 < time.perf_counter()):
+                if (thrower_time_start + 3 < time.perf_counter()):
                     state = "ball_search"
 
 
@@ -220,29 +223,19 @@ if __name__ == "__main__":
                     speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=2200, y_scale=max_speed / 3)
                 else:
                     speed_x = 0
+
                 speed_y = 0.7
 
                 throw_speed = basket.distance*0.3166512 + 471.4378
-
                 robot.move(speed_x, speed_y, speed_rot, int(throw_speed))
-
-                #speed_x = sigmoid_controller(basket.x, middle_x, x_scale=1500, y_scale=(max_speed - 4))
-                #speed_rot = sigmoid_controller(interesting_ball.x, middle_x, x_scale=1200, y_scale=max_speed)
-                #speed_y = 2
-
-                #robot.move(speed_x, speed_y, speed_rot)
-
-                
-
-                #state = "wait"
                 continue
             # End of ball_throw
 
-            else:
+            else: # Unknown state
+                # Considered as an error
                 LOGSTATE("unknown state")
                 LOGE("Exiting...")
                 break
-                # Considered as an error
             # End of unknown
 
     except KeyboardInterrupt:

@@ -1,4 +1,3 @@
-#from asyncio.windows_events import NULL
 import camera
 import segment
 import _pickle as pickle
