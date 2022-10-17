@@ -91,11 +91,15 @@ Personal comments:
 === Mon, 03.10.22
 *Johannes:* Progress report and misc. changes in code 2.5h +
 *Andres:* Progress report, sigmoid, orbiting 6.5 h +
+*Artur:* Electrical trouble debugging, creating passives 2.5 h
 
 === Tue, 4.10.22
 *Sander:* Wheels design 2 h +
 *Johannes:* Testing and measuring thrower 1.5 h +
 *Andres:* Color calibration 1.5 h +
+
+=== Wed, 5.10.22
+*Artur:* Designing the mainboard 2 h 
 
 === Thu, 06.10.22
 *Johannes:* Image processing minor tweaks, thrower testing 3.5 h +
@@ -103,10 +107,14 @@ Personal comments:
 
 === Sat, 8.10.22
 *Sander:* Thrower design 4 h +
+*Artur:* Designing the mainboard 2.5 h 
+
+=== Sun. 9.10.22
+*Artur:* Designing the mainboard 2 h 
 
 === Mon, 10.10.22
 *Johannes:* Meeting, throwing state coded, first tests ran 4.5 h +
-*Artur:* Meeting +
+*Artur:* Meeting, mainboard design 3 h +
 *Andres:* Meeting, some discussion with the mechanics, code 4.5 h +
 *Kert:* Meeting, bottom chassis design and motor mount completion 6.5 h +
 *Sander:* Meeting, thrower design 6.5 h
@@ -116,3 +124,9 @@ Personal comments:
 
 === Thu, 13.10.22
 *Johannes:* Miscellaneous testing and bug fixes, stability improvements 2.5 h
+
+=== Sun, 16.10.22
+*Artur:* Designing the mainboard 3.5 h 
+
+=== Mon, 17.10.22
+*Artur:* Designing the mainboard pcb 1.5 h
