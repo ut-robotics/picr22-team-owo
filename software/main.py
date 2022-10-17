@@ -101,7 +101,7 @@ if __name__ == "__main__":
                     continue
 
                 if (processedData.basket_m.exists):
-                    #print("Distance:", processedData.basket_m.distance)
+                    print("Distance:", processedData.basket_m.distance)
                     d_data.append(processedData.basket_m.distance)
                     robot.throw(thrower_speed)
                 else: 
@@ -130,7 +130,7 @@ if __name__ == "__main__":
                     interesting_ball = processedData.balls[-1]
                     #print("Ball:", interesting_ball)
 
-                    if interesting_ball.x < middle_x + 12 and interesting_ball.x > middle_x - 12 and interesting_ball.distance <= 475:
+                    if interesting_ball.x < middle_x + 25 and interesting_ball.x > middle_x - 25 and interesting_ball.distance <= 475:
                         state = "ball_orbit"
                         basket_ok_counter = 0
                         continue

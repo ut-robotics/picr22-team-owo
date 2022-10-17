@@ -101,7 +101,7 @@ class Omni_motion_robot():
     def throw(self, strength):
         if 48 <= strength and strength <= 2047:
             self.send_data(0, 0, 0, strength)
-            print(self.receive_data())
+            #print(self.receive_data())
 
     def send_data(self, speed1, speed2, speed3, thrower_speed):
         disable_failsafe = 0
