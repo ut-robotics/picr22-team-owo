@@ -71,7 +71,7 @@ class ImageProcessor():
     def start(self):
         self.camera.open()
 
-    def calculatePosition(height, width, depth):
+    def calculatePosition(self, height, width, depth):
         x = int(x + (width/2))
         y = int(y + (height/2))
         if depth is None:
