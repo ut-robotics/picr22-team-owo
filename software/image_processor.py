@@ -6,15 +6,17 @@ import cv2
 import Color as c
 import math
 
-def calculatePosition(height, width, depth):
-    x = int(x + (width/2))
-    y = int(y + (height/2))
+# position calculation helper function
+def calculatePosition(height, width, depth, origx, origy):
+    x = int(origx + (width/2))
+    y = int(origy + (height/2))
     if depth is None:
-        dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((obj_y/4.829652), 0.6903042))
+        dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((y/4.829652), 0.6903042))
     else:
         dst = depth[y, x]
     
     return x, y, dst
+
 class Object():
     def __init__(self, x = -1, y = -1, size = -1, distance = -1, exists = False):
         self.x = x
@@ -81,7 +83,7 @@ class ImageProcessor():
 
     
 
-    # arvutab valja pildilt jooned ja tagastab sirge vorranditena
+    # will get lines from the image and return them as line equations
     def get_lines(self, image):
         img = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
         # 30:400 proved to work
@@ -165,7 +167,7 @@ class ImageProcessor():
             ys	= np.array(np.arange(y + h, self.camera.rgb_height), dtype=np.uint16)
             xs	= np.array(np.linspace(x + w/2, self.camera.rgb_width / 2, num=len(ys)), dtype=np.uint16)
 
-            obj_x, obj_y, obj_dst = calculatePosition(h, w, depth)
+            obj_x, obj_y, obj_dst = calculatePosition(h, w, depth, x, y)
             
             aboveline = False
             if lines is not None:
@@ -200,7 +202,7 @@ class ImageProcessor():
 
             x, y, w, h = cv2.boundingRect(contour)
 
-            obj_x, obj_y, not_used = calculatePosition(h, w, depth)
+            obj_x, obj_y, not_used = calculatePosition(h, w, depth, x, y)
             if depth is None:
                 obj_dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((obj_y/4.829652), 0.6903042))
             else:
