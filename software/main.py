@@ -219,7 +219,7 @@ if __name__ == "__main__":
 
 
                 speed_rot = -sigmoid_controller(basket.x, middle_x, x_scale=2000, y_scale=(max_speed))
-                if (len(processedData.balls) is not 0) and interesting_ball.distance > 400 and interesting_ball.distance < 600:
+                if (len(processedData.balls) != 0) and interesting_ball.distance > 400 and interesting_ball.distance < 600:
                     speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=2200, y_scale=max_speed / 3)
                 else:
                     speed_x = 0

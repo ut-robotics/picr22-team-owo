@@ -219,7 +219,12 @@ class ImageProcessor():
 
             x, y, w, h = cv2.boundingRect(contour)
 
+<<<<<<< HEAD
             obj_x, obj_y, not_used = calculatePosition(h, w, depth)
+=======
+            obj_x = int(x + (w/2))
+            obj_y = int(y + (h/2))
+>>>>>>> b91bcc7ceddd823207f0f0269376651c30204c77
             if depth is None:
                 obj_dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((obj_y/4.829652), 0.6903042))
             else:
@@ -266,9 +271,3 @@ class ImageProcessor():
                                 depth_frame=depth_frame, 
                                 fragmented=self.fragmented, 
                                 debug_frame=self.debug_frame)
-
-    
-        
-
-
-        

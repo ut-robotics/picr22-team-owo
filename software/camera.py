@@ -78,4 +78,4 @@ class RealsenseCamera(ICamera):
             frames = self.align.process(frames)
             return np.asanyarray(frames.get_color_frame().get_data()), np.asanyarray(frames.get_depth_frame().get_data())
         else:
-            return np.asanyarray(frames.get_color_frame().get_data()), 0
+            return np.asanyarray(frames.get_color_frame().get_data()), None
