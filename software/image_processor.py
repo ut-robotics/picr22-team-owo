@@ -6,7 +6,15 @@ import cv2
 import Color as c
 import math
 
-
+def calculatePosition(height, width, depth):
+    x = int(x + (width/2))
+    y = int(y + (height/2))
+    if depth is None:
+        dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((obj_y/4.829652), 0.6903042))
+    else:
+        dst = depth[y, x]
+    
+    return x, y, dst
 class Object():
     def __init__(self, x = -1, y = -1, size = -1, distance = -1, exists = False):
         self.x = x
@@ -71,15 +79,7 @@ class ImageProcessor():
     def start(self):
         self.camera.open()
 
-    def calculatePosition(self, height, width, depth):
-        x = int(x + (width/2))
-        y = int(y + (height/2))
-        if depth is None:
-            dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((obj_y/4.829652), 0.6903042))
-        else:
-            dst = depth[y, x]
-        
-        return x, y, dst
+    
 
     # arvutab valja pildilt jooned ja tagastab sirge vorranditena
     def get_lines(self, image):
@@ -96,7 +96,7 @@ class ImageProcessor():
         ret, thresh = cv2.threshold(blur_img, low, high, cv2.THRESH_BINARY_INV)
 
 
-        # joonte igasugused numbrid, detection parameetrid pmst
+        # different line detection parameters
         #scv2.imshow('hallo', thresh)
         low_thr = 50
         high_thr = 150
@@ -113,8 +113,6 @@ class ImageProcessor():
 
         # here happens the magic
         lines = cv2.HoughLinesP(edges, rho, theta, threshold, np.array([]), minline, maxgap)
-
-        #print("LINES..... ", len(lines))
         
         selected_lines = []
         selected_lines_list = []
@@ -133,39 +131,29 @@ class ImageProcessor():
             return
         
 
-        # arvutab sirge vorrandid valja
+        # calculates the line equations
         for line in lines:
             x1, y1, x2, y2 = line[0]
-            # !!! ?????? points.append(((x1 + 0.0, y1 + 0.0), (x2 + 0.0, y2 + 0.0)))
             cv2.line(copyimg, (x1, y1), (x2, y2), (255, 0, 0), 1)
             
             if x1 == x2:
                 continue
-            slope = (y2 - y1) / (x2 - x1) # tous
-            intercept = y1 - (slope * x1) # algordinaat
+            slope = (y2 - y1) / (x2 - x1) # slope
+            intercept = y1 - (slope * x1) # intercept
             linesbyslope.append((slope, intercept))
-
-        #lines_edges = cv2.addWeighted(cropped, 0.8, copyimg, 1, 0)
 
         return linesbyslope
 
     def stop(self):
         self.camera.close()
 
-    # vaatab pildilt valja pallid
-    # sisendid: segmenditud pilt, samuti ka joonte info ja depth frame.
-    # kui depth frame eksisteerib, vaatab kauguse selle pealt, muidu y koordinaadilt.
-    # automaatselt valistab pallid, mis on ule joonte.
-    # tagastab: pallide list
+    # returns the balls from an already segmented image
     def analyze_balls(self, t_balls, fragments, depth, lines) -> list:
         contours, hierarchy = cv2.findContours(t_balls, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         balls = []
 
         for contour in contours:
-
-            # ball filtering logic goes here. Example includes filtering by size and an example how to get pixels from
-            # the bottom center of the fram to the ball
 
             size = cv2.contourArea(contour)
 
@@ -177,19 +165,12 @@ class ImageProcessor():
             ys	= np.array(np.arange(y + h, self.camera.rgb_height), dtype=np.uint16)
             xs	= np.array(np.linspace(x + w/2, self.camera.rgb_width / 2, num=len(ys)), dtype=np.uint16)
 
-            #obj_x = int(x + (w/2))
-            #obj_y = int(y + (h/2))
-            #if depth is None:
-            #    obj_dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((obj_y/4.829652), 0.6903042))
-            #else:
-            #    obj_dst = depth[obj_y, obj_x]
-
             obj_x, obj_y, obj_dst = calculatePosition(h, w, depth)
             
             aboveline = False
             if lines is not None:
                 for slope, interc in lines:
-                    if obj_y < (slope * obj_x + interc + 30): # NB! 30 on joonte pildi lõikamise offset!
+                    if obj_y < (slope * obj_x + interc + 30): # NB! 30 is the offset from line processing!
                         aboveline = True
                         break
                 if aboveline:
@@ -205,7 +186,7 @@ class ImageProcessor():
 
         return balls
 
-    # tldr sama asi aga basketitele
+    # same thing for baskets
     def analyze_baskets(self, t_basket, depth, debug_color = (0, 255, 255)) -> list:
         contours, hierarchy = cv2.findContours(t_basket, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -219,12 +200,7 @@ class ImageProcessor():
 
             x, y, w, h = cv2.boundingRect(contour)
 
-<<<<<<< HEAD
             obj_x, obj_y, not_used = calculatePosition(h, w, depth)
-=======
-            obj_x = int(x + (w/2))
-            obj_y = int(y + (h/2))
->>>>>>> b91bcc7ceddd823207f0f0269376651c30204c77
             if depth is None:
                 obj_dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((obj_y/4.829652), 0.6903042))
             else:
