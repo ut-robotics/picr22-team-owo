@@ -71,6 +71,16 @@ class ImageProcessor():
     def start(self):
         self.camera.open()
 
+    def calculatePosition(height, width, depth):
+        x = int(x + (width/2))
+        y = int(y + (height/2))
+        if depth is None:
+            dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((obj_y/4.829652), 0.6903042))
+        else:
+            dst = depth[y, x]
+        
+        return x, y, dst
+
     # arvutab valja pildilt jooned ja tagastab sirge vorranditena
     def get_lines(self, image):
         img = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
@@ -167,12 +177,14 @@ class ImageProcessor():
             ys	= np.array(np.arange(y + h, self.camera.rgb_height), dtype=np.uint16)
             xs	= np.array(np.linspace(x + w/2, self.camera.rgb_width / 2, num=len(ys)), dtype=np.uint16)
 
-            obj_x = int(x + (w/2))
-            obj_y = int(y + (h/2))
-            if depth is 0:
-                obj_dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((obj_y/4.829652), 0.6903042))
-            else:
-                obj_dst = depth[obj_y, obj_x]
+            #obj_x = int(x + (w/2))
+            #obj_y = int(y + (h/2))
+            #if depth is None:
+            #    obj_dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((obj_y/4.829652), 0.6903042))
+            #else:
+            #    obj_dst = depth[obj_y, obj_x]
+
+            obj_x, obj_y, obj_dst = calculatePosition(h, w, depth)
             
             aboveline = False
             if lines is not None:
@@ -207,12 +219,10 @@ class ImageProcessor():
 
             x, y, w, h = cv2.boundingRect(contour)
 
-            obj_x = int(x + (w/2))
-            obj_y = int(y + (h/2))
-            if depth is 0:
+            obj_x, obj_y, not_used = calculatePosition(h, w, depth)
+            if depth is None:
                 obj_dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((obj_y/4.829652), 0.6903042))
             else:
-                #obj_dst = depth[obj_y, obj_x]
                 obj_dst = np.average(depth[obj_y-5:obj_y+5, obj_x-5:obj_x+5])
 
             baskets.append(Object(x = obj_x, y = obj_y, size = size, distance = obj_dst, exists = True))
