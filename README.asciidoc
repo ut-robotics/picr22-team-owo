@@ -132,3 +132,6 @@ Personal comments:
 
 === Tue, 18.10.22
 *Sander:* Chassis design 2 h
+
+=== Wed, 19.10.22
+*Sander:* Chassis design 3 h
