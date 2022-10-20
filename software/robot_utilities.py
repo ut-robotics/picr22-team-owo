@@ -3,50 +3,47 @@
 # General utility and helper functions
 
 # Imports
-import time, math
+import time
 import numpy as np
 
-
-
 # Logging stuff
-red = '\033[91m'
-yellow = '\033[33m'
-green = '\u001b[32m'
-end = '\033[0m'
-previous_state = ""
-file_active = False
-logging_start_time = 0
+class Logging():
+    def __init__(self):
+        self.logging_start_time = time.perf_counter()
+        print("Logging started!")
+        #print(logging_start_time)
+        #print("logs/" + time.ctime(time.time()))
 
-def init_logging():
-    global file_active, logging_start_time
+        self.red = '\033[91m'
+        self.yellow = '\033[33m'
+        self.green = '\u001b[32m'
+        self.end = '\033[0m'
+        self.previous_state = ""
+        self.file_active = False
+        return
 
-    logging_start_time = time.perf_counter()
-    #print(logging_start_time)
-    #print("logs/" + time.ctime(time.time()))
+    def create_timestamp(self):
+        return "[" + str(round(time.perf_counter() - self.logging_start_time, 3)) + "] "
 
-def create_timestamp():
-    return "[" + str(round(time.perf_counter() - logging_start_time, 3)) + "] "
+    #def write_log(self, message):
+    #    return
 
-def write_log(message):
-    return
+    def LOGE(self, message):
+        print(self.red + self.create_timestamp() + message + self.end)
 
-def LOGE(message):
-    print(red + create_timestamp() + message + end)
+    def LOGW(self, message):
+        print(self.yellow + self.create_timestamp() + message + self.end)
 
-def LOGW(message):
-    print(yellow + create_timestamp() + message + end)
+    def LOGI(self, message):
+        print(self.create_timestamp() + message)
 
-def LOGI(message):
-    print(create_timestamp() + message)
-
-def LOGSTATE(state, error=False):
-    global previous_state
-    if previous_state != state:
-        if error:
-            print(red + create_timestamp() + "New state: " + state + end)
-        else:
-            print(green + create_timestamp() + "New state: " + state + end)
-        previous_state = state
+    def LOGSTATE(self, state, error=False):
+        if self.previous_state != state:
+            if error:
+                print(self.red + self.create_timestamp() + "New state: " + state + self.end)
+            else:
+                print(self.green + self.create_timestamp() + "New state: " + state + self.end)
+            self.previous_state = state
 # End of logging stuff
 
 
@@ -61,4 +58,8 @@ def sigmoid_controller(current, target, x_scale = 1, y_scale = 1):
 
 
 if __name__ == "__main__":
-    print(sigmoid_controller(1000, 0))
+    log = Logging()
+    time.sleep(1)
+    log.LOGI("Info")
+    log.LOGW("Warning")
+    log.LOGE("Error")

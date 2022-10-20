@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import time, sys
+import time, sys, math
 from enum import Enum
 
 import mainboard
@@ -31,14 +31,14 @@ class State(Enum):
 
 if __name__ == "__main__":
     print("Starting...")
-    init_logging()
+    log = Logging()
     debug = False
 
     # Setup from our code
     max_speed = 10
     max_speed_inner = 15
     ball_good_range = 300
-    robot = mainboard.Mainboard(max_speed_inner)
+    robot = mainboard.Mainboard(max_speed_inner, log)
     robot.start()
 
     # Setup from example code
@@ -78,8 +78,8 @@ if __name__ == "__main__":
                 end = time.time()
                 fps = 30 / (end - start)
                 start = end
-                LOGI("FPS: {}, framecount: {}".format(fps, frame_cnt))
-                LOGI("ball_count: {}".format(len(processedData.balls)))
+                log.LOGI("FPS: {}, framecount: {}".format(fps, frame_cnt))
+                log.LOGI("ball_count: {}".format(len(processedData.balls)))
             # End of housekeeping stuff
 
             # Debug frame (turn off when over ssh)
@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
             # Main control logic uses a state machine
             if state == State.WAIT:
-                LOGSTATE("waiting")
+                log.LOGSTATE("waiting")
                 input() # For making a break
                 state = State.BALL_SEARCH
                 continue
@@ -127,7 +127,7 @@ if __name__ == "__main__":
             # End of states used for thrower calibration
 
             elif state == State.BALL_SEARCH:
-                LOGSTATE("ball_search")
+                log.LOGSTATE("ball_search")
                 if len(processedData.balls) > 0:
                     state = State.BALL_MOVE
                     continue
@@ -137,7 +137,7 @@ if __name__ == "__main__":
             
             # Moving towards ball
             elif state == State.BALL_MOVE:
-                LOGSTATE("ball_move")
+                log.LOGSTATE("ball_move")
                 if len(processedData.balls) > 0:
                     # Movement logic
                     speed_x = 0
@@ -166,13 +166,13 @@ if __name__ == "__main__":
 
             # Orbiting around ball until correct basket is found
             elif state == State.BALL_ORBIT:
-                LOGSTATE("ball_orbit")
+                log.LOGSTATE("ball_orbit")
                 if len(processedData.balls) > 0:
                     interesting_ball = processedData.balls[-1]
 
                     # For checking if the ball is still in position
                     if interesting_ball.distance > 550:
-                        LOGE("Invalid radius, radius: " + str(interesting_ball.distance))
+                        log.LOGE("Invalid radius, radius: " + str(interesting_ball.distance))
                         state = State.WAIT
                         continue
 
@@ -182,7 +182,7 @@ if __name__ == "__main__":
                     elif basketColor == TargetBasket.BLUE:
                         basket = processedData.basket_b
                     else:
-                        LOGE("Basket color invalid")
+                        log.LOGE("Basket color invalid")
 
                     if basket.exists:
                         print("Basket x:", basket.x, "/", middle_x)
@@ -207,14 +207,14 @@ if __name__ == "__main__":
             # End of ball_orbit
 
             elif state == State.BALL_THROW:
-                LOGSTATE("ball_throw")
+                log.LOGSTATE("ball_throw")
 
                 if basketColor == TargetBasket.MAGENTA:
                     basket = processedData.basket_m
                 elif basketColor == TargetBasket.BLUE:
                     basket = processedData.basket_b
                 else:
-                    LOGE("Basket color invalid")
+                    log.LOGE("Basket color invalid")
 
                 if len(processedData.balls) > 0:
                     interesting_ball = processedData.balls[-1]
@@ -240,8 +240,8 @@ if __name__ == "__main__":
 
             else: # Unknown state
                 # Considered as an error
-                LOGSTATE("unknown state")
-                LOGE("Exiting...")
+                log.LOGSTATE("unknown state")
+                log.LOGE("Exiting...")
                 break
             # End of unknown
 

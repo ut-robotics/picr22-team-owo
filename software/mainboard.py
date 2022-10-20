@@ -7,11 +7,10 @@ from robot_utilities import *
 
 class SerialPortNotFound(Exception):
     def __init__(self):
-        LOGE("Cannot connect to mainboard")
         super().__init__("Serial port with given hardware id not found")
 
 class Mainboard():
-    def __init__(self, max_speed):
+    def __init__(self, max_speed, logger):
         # General movement constants
         # Some values taken from here:
         # https://ut-robotics.github.io/picr22-home/basketball_robot_guide/software/omni_motion.html
@@ -39,6 +38,9 @@ class Mainboard():
         self.y_const = 1
         self.prev_rad = 400
 
+        # Logger
+        self.logger = logger
+
     # Pyserial stuff
     def start(self):
         #self.ser = serial.Serial("/dev/ttyACM0")
@@ -46,6 +48,7 @@ class Mainboard():
       
         port_list = serial.tools.list_ports.comports()
         devices = {}
+        serial_port = None
 
         for port, _, hwid in sorted(port_list):
             devices[hwid] = port
@@ -56,6 +59,7 @@ class Mainboard():
                 break
         
         if serial_port is None:
+            self.logger.LOGE("Cannot connect to mainboard")
             raise SerialPortNotFound 
         self.ser = serial.Serial(serial_port, self.baud_rate)
 
@@ -86,7 +90,7 @@ class Mainboard():
         #print("Angle:", robot_angle)
         #print("Speed:", robot_speed)
         if abs(robot_speed) > self.max_speed or abs(speed_r) > self.max_speed:
-            LOGE("Speed to large")
+            self.logger.LOGE("Speed to large")
             return
 
         # M1 front left, M2 front right, M3 back
@@ -107,7 +111,7 @@ class Mainboard():
 
         # Correct radius check
         if cur_radius > 600:
-            LOGE("Invalid radius, radius: " + str(cur_radius))
+            self.logger.LOGE("Invalid radius, radius: " + str(cur_radius))
             return
         # Radius adjustment
         if cur_radius > (radius + self.buffer_x) or cur_radius < (radius - self.buffer_x):
@@ -173,7 +177,8 @@ class Mainboard():
             sys.exit()
 
 if __name__ == "__main__":
-    robot = Mainboard(10)
+    logger = Logging()
+    robot = Mainboard(10, logger)
     robot.start()
     try: 
         while(True):
