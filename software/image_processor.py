@@ -7,6 +7,16 @@ import cv2
 import Color as c
 import math
 
+# position calculation helper function
+def calculatePosition(height, width, depth, origx, origy):
+    x = int(origx + (width/2))
+    y = int(origy + (height/2))
+    if depth is None:
+        dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((y/4.829652), 0.6903042))
+    else:
+        dst = depth[y, x]
+    
+    return x, y, dst
 
 class Object():
     def __init__(self, x = -1, y = -1, size = -1, distance = -1, exists = False):
@@ -72,9 +82,13 @@ class ImageProcessor():
     def start(self):
         self.camera.open()
 
+    
+
+    # will get lines from the image and return them as line equations
     def get_lines(self, image):
         img = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
-        gr_img = img[30:400]
+        # 30:400 proved to work
+        gr_img = img[30:260]
         krn = 1 # kernel size for gauss
         blur_img = cv2.GaussianBlur(gr_img, (krn, krn), 0)
         
@@ -85,24 +99,23 @@ class ImageProcessor():
         ret, thresh = cv2.threshold(blur_img, low, high, cv2.THRESH_BINARY_INV)
 
 
+        # different line detection parameters
         #scv2.imshow('hallo', thresh)
         low_thr = 50
         high_thr = 150
         edges = cv2.Canny(thresh, low_thr, high_thr)
-        #edges = thresh
         rho = 1
         theta = np.pi / 180 * 1
         threshold = 50
-        minline = 50
+        minline = 100
         maxgap = 40
 
-        cropped = image[30:400]
+        cropped = image[30:260]
 
         copyimg = np.copy(cropped) * 0
 
+        # here happens the magic
         lines = cv2.HoughLinesP(edges, rho, theta, threshold, np.array([]), minline, maxgap)
-
-        #print("LINES..... ", len(lines))
         
         selected_lines = []
         selected_lines_list = []
@@ -120,92 +133,24 @@ class ImageProcessor():
         if lines is None:
             return
         
+
+        # calculates the line equations
         for line in lines:
             x1, y1, x2, y2 = line[0]
-            # !!! ?????? points.append(((x1 + 0.0, y1 + 0.0), (x2 + 0.0, y2 + 0.0)))
             cv2.line(copyimg, (x1, y1), (x2, y2), (255, 0, 0), 1)
             
             if x1 == x2:
                 continue
-            slope = (y2 - y1) / (x2 - x1) # tous
-            intercept = y1 - (slope * x1) # algordinaat
+            slope = (y2 - y1) / (x2 - x1) # slope
+            intercept = y1 - (slope * x1) # intercept
             linesbyslope.append((slope, intercept))
-            '''
-            length = np.sqrt(((y2 - y1) ** 2) + ((x2 - x1) ** 2)) # joone pikkus
 
-            if (firstline): # kui ei ole veel esimest joont hakatud tegutsema
-                selected_lines.append(line)
-                selected_lines_list.append([])
-                selected_lines_list[0].append(line)
-                selected_lines_weights.append([])
-                selected_lines_weights[0].append(length)
-                print("first line..")
-                firstline = False
-
-            else:
-                found = False
-                for ind, sel in enumerate(selected_lines):
-                    #print(ind, " ", sel)
-                    sx1, sy1, sx2, sy2 = sel[0]
-                    sel_slope = (sy2 - sy1) / (sx2 - sx1) # tous
-                    sel_intercept = sy1 - (slope * sx1) # algordinaat
-                    sel_length = np.sqrt(((sy2 - sy1) ** 2) + ((sx2 - sx1) ** 2)) # joone pikkus
-
-                    slope_tolerance = 0.5 # 0.1 on 10%
-                    ordinaat_tolerance = 50 # pikslites
-
-                    if (slope > (sel_slope * (1-slope_tolerance)) and slope < (sel_slope * (1+slope_tolerance))):
-                    
-                        if abs(intercept - sel_intercept) < ordinaat_tolerance:
-                        
-                            selected_lines_list[ind].append(line)
-                            selected_lines_weights[ind].append(length)
-                            #print("added line to group ", ind)
-                            found = True
-                            break
-                            
-                if not found:
-                    selected_lines.append(line)
-                    selected_lines_list.append([])
-                    selected_lines_list[-1].append(line)
-                    selected_lines_weights.append([])
-                    selected_lines_weights[-1].append((length))
-
-        for i in range(0, len(selected_lines)):
-            lineamount = len(selected_lines_list[i])
-            sumX1, sumY1, sumX2, sumY2 = (0, 0, 0, 0)
-            for lin in selected_lines_list[i]:
-                #sumX1, sumY1, sumX2, sumY2 += lin[0]
-                sumX1 += lin[0][0]
-                sumY1 += lin[0][1]
-                sumX2 += lin[0][2]
-                sumY2 += lin[0][3]
-            avgX1 = sumX1 / lineamount
-            avgY1 = sumY1 / lineamount
-            avgX2 = sumX2 / lineamount
-            avgY2 = sumY2 / lineamount
-
-            avglines.append((int(avgX1), int(avgY1), int(avgX2), int(avgY2)))
-
-        #for line in avglines:
-        print("average lines: ", len(avglines))
-        for x1, y1, x2, y2 in avglines:
-            cv2.line(copyimg, (x1, y1), (x2, y2), (255, 0, 0), 5)
-            
-        '''
-
-        #cv2.line(copyimg, (lines[0].x1, lines[0].y1), (lines[0].x2, lines[0].y2), (255, 0, 0), 5)
-
-        lines_edges = cv2.addWeighted(cropped, 0.8, copyimg, 1, 0)
-
-        #cv2.imshow('lines', lines_edges)
-        
-        #return lines_edges
         return linesbyslope
 
     def stop(self):
         self.camera.close()
 
+    # returns the balls from an already segmented image
     def analyze_balls(self, t_balls, fragments, depth, lines) -> list:
         contours, hierarchy = cv2.findContours(t_balls, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -213,15 +158,8 @@ class ImageProcessor():
 
         for contour in contours:
 
-            # ball filtering logic goes here. Example includes filtering by size and an example how to get pixels from
-            # the bottom center of the fram to the ball
-
             size = cv2.contourArea(contour)
 
-
-            # changed to 100 from 15, hopefully reducing errors in ball detection
-            # needs testing
-            #changed back to 15
             if size < 14:
                 continue
 
@@ -230,17 +168,12 @@ class ImageProcessor():
             ys	= np.array(np.arange(y + h, self.camera.rgb_height), dtype=np.uint16)
             xs	= np.array(np.linspace(x + w/2, self.camera.rgb_width / 2, num=len(ys)), dtype=np.uint16)
 
-            obj_x = int(x + (w/2))
-            obj_y = int(y + (h/2))
-            if depth is 0:
-                obj_dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((obj_y/4.829652), 0.6903042))
-            else:
-                obj_dst = depth[obj_y, obj_x]
+            obj_x, obj_y, obj_dst = calculatePosition(h, w, depth, x, y)
             
             aboveline = False
             if lines is not None:
                 for slope, interc in lines:
-                    if obj_y < (slope * obj_x + interc + 30): # NB! 30 on joonte pildi lõikamise offset!
+                    if obj_y < (slope * obj_x + interc + 30): # NB! 30 is the offset from line processing!
                         aboveline = True
                         break
                 if aboveline:
@@ -256,13 +189,12 @@ class ImageProcessor():
 
         return balls
 
+    # same thing for baskets
     def analyze_baskets(self, t_basket, depth, debug_color = (0, 255, 255)) -> list:
         contours, hierarchy = cv2.findContours(t_basket, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         baskets = []
         for contour in contours:
-
-            # basket filtering logic goes here. Example includes size filtering of the basket
 
             size = cv2.contourArea(contour)
 
@@ -271,15 +203,11 @@ class ImageProcessor():
 
             x, y, w, h = cv2.boundingRect(contour)
 
-            averagingSize = 2
-
-            obj_x = int(x + (w/2))
-            obj_y = int(y + (h/2))
-            if depth is 0:
+            obj_x, obj_y, not_used = calculatePosition(h, w, depth, x, y)
+            if depth is None:
                 obj_dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((obj_y/4.829652), 0.6903042))
             else:
-                obj_dst = np.average(depth[obj_y-averagingSize:obj_y+averagingSize, obj_x-averagingSize:obj_x+averagingSize])
-                #obj_dst = depth[obj_y, obj_x]
+                obj_dst = np.average(depth[obj_y-5:obj_y+5, obj_x-5:obj_x+5])
 
             baskets.append(Object(x = obj_x, y = obj_y, size = size, distance = obj_dst, exists = True))
 
@@ -322,9 +250,3 @@ class ImageProcessor():
                                 depth_frame=depth_frame, 
                                 fragmented=self.fragmented, 
                                 debug_frame=self.debug_frame)
-
-    
-        
-
-
-        
