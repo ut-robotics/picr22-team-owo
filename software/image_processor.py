@@ -87,13 +87,13 @@ class ImageProcessor():
     def get_lines(self, image):
         img = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
         # 30:400 proved to work
-        gr_img = img[30:260]
+        gr_img = img[30:320]
         krn = 1 # kernel size for gauss
         blur_img = cv2.GaussianBlur(gr_img, (krn, krn), 0)
         
 
         low = 80
-        high = 150
+        high = 140
 
         ret, thresh = cv2.threshold(blur_img, low, high, cv2.THRESH_BINARY_INV)
 
@@ -109,7 +109,7 @@ class ImageProcessor():
         minline = 100
         maxgap = 40
 
-        cropped = image[30:260]
+        cropped = image[30:320]
 
         copyimg = np.copy(cropped) * 0
 
@@ -141,8 +141,15 @@ class ImageProcessor():
             if x1 == x2:
                 continue
             slope = (y2 - y1) / (x2 - x1) # slope
+
+            if (slope < -5 or slope > 5):
+                continue
+
             intercept = y1 - (slope * x1) # intercept
             linesbyslope.append((slope, intercept))
+
+        if self.debug:
+            cv2.imshow("lines", copyimg)
 
         return linesbyslope
 
@@ -176,11 +183,13 @@ class ImageProcessor():
                         aboveline = True
                         break
                 if aboveline:
+                    print("ball at x: " + str(obj_x) + " y: " + str(obj_y) + "is above a line")
                     continue
 
             if self.debug:
                 self.debug_frame[ys, xs] = [0, 0, 0]
                 cv2.circle(self.debug_frame,(obj_x, obj_y), 10, (0,255,0), 2)
+                #cv2.imshow("lines", copyimg)
 
             balls.append(Object(x = obj_x, y = obj_y, size = size, distance = obj_dst, exists = True))
 

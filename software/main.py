@@ -132,7 +132,11 @@ if __name__ == "__main__":
                     state = State.BALL_MOVE
                     continue
                 else:
-                    robot.move(0, 0, 6)
+                    if (int(time.perf_counter() * 6) % 3 == 0):
+                        robot.move(0, 0, 20)
+                    else:
+                        robot.move(0, 0, 5)
+                    #robot.move(0, 0, 6)
             # End of ball_search
             
             # Moving towards ball
@@ -187,7 +191,7 @@ if __name__ == "__main__":
                     if basket.exists:
                         print("Basket x:", basket.x, "/", middle_x)
                         #if (processedData.basket_m.x > (middle_x + 1) or processedData.basket_m.x < (middle_x - 1)):
-                        basket_tolerance = 13
+                        basket_tolerance = 14
                         if abs(basket.x - middle_x) < basket_tolerance:
                             state = State.BALL_THROW
                             thrower_time_start = time.perf_counter()
@@ -223,15 +227,15 @@ if __name__ == "__main__":
                     state = State.BALL_SEARCH
 
 
-                speed_rot = -sigmoid_controller(basket.x, middle_x, x_scale=900, y_scale=(max_speed / 2))
-                if (len(processedData.balls) != 0) and interesting_ball.distance > 400 and interesting_ball.distance < 600:
-                    speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=2200, y_scale=max_speed / 3)
+                speed_rot = -sigmoid_controller(basket.x, middle_x, x_scale=900, y_scale=(max_speed))
+                if (len(processedData.balls) != 0) and interesting_ball.distance > 300 and interesting_ball.distance < 600:
+                    speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=1100, y_scale=max_speed / 1.6)
                 else:
                     speed_x = 0
 
                 speed_y = 0.7
 
-                if (basket.distance != math.nan):
+                if (not math.isnan(basket.distance)):
                     robot.move(speed_x, speed_y, speed_rot, int(basket.distance))
                 else: 
                     robot.move(speed_x, speed_y, speed_rot, 0)

@@ -72,7 +72,7 @@ class Mainboard():
         if distance == 0:
             return 0
         else:
-            return int(distance*0.3166512 + 471.4378)
+            return int(distance*0.3186512 + 440.7378)
 
     # Big math, returns speed of a wheel in mainboard units
     def calculate_wheel_speed(self, motor_num, robot_speed, robot_angle, speed_rot):
@@ -89,8 +89,8 @@ class Mainboard():
         robot_speed = math.sqrt(math.pow(speed_x, 2) + math.pow(speed_y, 2))
         #print("Angle:", robot_angle)
         #print("Speed:", robot_speed)
-        if abs(robot_speed) > self.max_speed or abs(speed_r) > self.max_speed:
-            self.logger.LOGE("Speed to large")
+        if (abs(robot_speed) > self.max_speed) or (abs(speed_r) > self.max_speed * 2):
+            self.logger.LOGE("Speed to large, speeds: " +str(speed_x) + " / " + str(speed_y) + " / " + str(speed_r))
             return
 
         # M1 front left, M2 front right, M3 back
@@ -119,6 +119,7 @@ class Mainboard():
         # Centering object, rotational speed adjustment
         if cur_object_x > (self.middle_x + self.buffer_x) or cur_object_x < (self.middle_x - self.buffer_x):
             speed_r += (self.middle_x - cur_object_x) / 100 * self.r_const
+        self.logger.LOGI("orbit speeds- x: " + str(speed_x) + " y: " + str(speed_y) + " r: " + str(speed_r) + " cur_object_x: " + str(cur_object_x))
 
         #print("x:", speed_x, "y:", speed_y, "r:", speed_r, "cur_rad:", cur_radius, "cur_x:", cur_object_x)
         self.move(speed_x, speed_y, speed_r)
