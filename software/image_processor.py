@@ -158,6 +158,9 @@ class ImageProcessor():
 
     # returns the balls from an already segmented image
     def analyze_balls(self, t_balls, fragments, depth, lines) -> list:
+
+        t_balls = cv2.morphologyEx(t_balls, cv2.MORPH_OPEN, (3,3))
+
         contours, hierarchy = cv2.findContours(t_balls, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         balls = []
@@ -166,7 +169,7 @@ class ImageProcessor():
 
             size = cv2.contourArea(contour)
 
-            if size < 10:
+            if size < 15:
                 continue
 
             x, y, w, h = cv2.boundingRect(contour)
@@ -206,7 +209,7 @@ class ImageProcessor():
 
             size = cv2.contourArea(contour)
 
-            if size < 100:
+            if size < 80:
                 continue
 
             x, y, w, h = cv2.boundingRect(contour)

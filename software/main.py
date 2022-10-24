@@ -177,7 +177,8 @@ if __name__ == "__main__":
                     # For checking if the ball is still in position
                     if interesting_ball.distance > 550:
                         log.LOGE("Invalid radius, radius: " + str(interesting_ball.distance))
-                        state = State.WAIT
+                        #state = State.WAIT
+                        state = State.BALL_SEARCH
                         continue
 
                     # Determining the correct basket
