@@ -93,7 +93,7 @@ class ImageProcessor():
         
 
         low = 80
-        high = 140
+        high = 120
 
         ret, thresh = cv2.threshold(blur_img, low, high, cv2.THRESH_BINARY_INV)
 
@@ -142,7 +142,7 @@ class ImageProcessor():
                 continue
             slope = (y2 - y1) / (x2 - x1) # slope
 
-            if (slope < -5 or slope > 5):
+            if (slope < -3 or slope > 3):
                 continue
 
             intercept = y1 - (slope * x1) # intercept
@@ -166,7 +166,7 @@ class ImageProcessor():
 
             size = cv2.contourArea(contour)
 
-            if size < 14:
+            if size < 10:
                 continue
 
             x, y, w, h = cv2.boundingRect(contour)

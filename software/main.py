@@ -133,9 +133,9 @@ if __name__ == "__main__":
                     continue
                 else:
                     if (int(time.perf_counter() * 6) % 3 == 0):
-                        robot.move(0, 0, 20)
+                        robot.move(0, 0, 23)
                     else:
-                        robot.move(0, 0, 5)
+                        robot.move(0, 0, 1)
                     #robot.move(0, 0, 6)
             # End of ball_search
             
@@ -197,13 +197,13 @@ if __name__ == "__main__":
                             thrower_time_start = time.perf_counter()
                             continue
                         
-                        speed_x = -sigmoid_controller(basket.x, middle_x, x_scale=1500, y_scale=(max_speed - 2))
+                        speed_x = -sigmoid_controller(basket.x, middle_x, x_scale=1500, y_scale=(max_speed - 3))
                         #print("rotational speed:", rot)
 
                         robot.orbit(400, speed_x, interesting_ball.distance, interesting_ball.x)
 
                     else:
-                        robot.orbit(400, 2, interesting_ball.distance, interesting_ball.x)
+                        robot.orbit(400, 2.8, interesting_ball.distance, interesting_ball.x)
                 else:
                     print("no ball........")
                     state = State.BALL_SEARCH
@@ -223,7 +223,7 @@ if __name__ == "__main__":
                 if len(processedData.balls) > 0:
                     interesting_ball = processedData.balls[-1]
 
-                if (thrower_time_start + 3 < time.perf_counter()):
+                if (thrower_time_start + 2 < time.perf_counter()):
                     state = State.BALL_SEARCH
 
 
@@ -233,7 +233,7 @@ if __name__ == "__main__":
                 else:
                     speed_x = 0
 
-                speed_y = 0.7
+                speed_y = 1.5
 
                 if (not math.isnan(basket.distance)):
                     robot.move(speed_x, speed_y, speed_rot, int(basket.distance))
