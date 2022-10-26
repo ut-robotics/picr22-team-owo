@@ -128,19 +128,23 @@ Personal comments:
 
 === Mon, 17.10.22
 *Artur:* Designing the mainboard pcb 1.5 h +
-*Sander:* Thrower design improvements 4.5 h
+*Sander:* Thrower design improvements 4.5 h +
+*Johannes:* Code improvements 1.5 h 
 
 === Tue, 18.10.22
-*Sander:* Chassis design 2 h
+*Sander:* Chassis design 2 h +
+*Johannes:* Pull request fixes, general improvements 2.5 h
 
 === Wed, 19.10.22
 *Sander:* Chassis design 3 h
 
 === Thu, 20.10.22
-*Sander:* Chassis design 3 h
+*Sander:* Chassis design 3 h +
+*Johannes:* Thrower and motion code tweaking 3 h
 
 === Mon, 24.10.22
-*Sander:* Chassis design and various improvements 4 h
+*Sander:* Chassis design and various improvements 4 h +
+*Johannes:* Task reviews, image processing modifications 4 h
 
 === Wed, 26.10.22
 *Sander:* Chassis design and various improvements 1 h
