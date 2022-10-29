@@ -116,23 +116,6 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=HQJPSDGD
 
-[Document5]
-DocumentPath=picr22-team-owo-mainboard.OutJob
-AnnotationEnabled=1
-AnnotateStartValue=1
-AnnotationIndexControlEnabled=0
-AnnotateSuffix=
-AnnotateScope=All
-AnnotateOrder=-1
-DoLibraryUpdate=1
-DoDatabaseUpdate=1
-ClassGenCCAutoEnabled=1
-ClassGenCCAutoRoomEnabled=1
-ClassGenNCAutoScope=None
-DItemRevisionGUID=
-GenerateClassCluster=0
-DocumentUniqueId=
-
 [GeneratedDocument1]
 DocumentPath=Project Outputs for picr22-team-owo-mainboard\Design Rule Check - picr22-team-owo-mainboard.html
 DItemRevisionGUID=
