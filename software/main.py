@@ -260,8 +260,34 @@ if __name__ == "__main__":
                     print("gamepad is None, you entered this state incorrectly")
                     continue
                 xboxcont.read_gamepad_input()
+                joyY = 0
+                joyX = 0
+                joyRightX = 0
+                joyRTrig = 0
+                deadzone = 0.15
 
-                print(str(xboxcont.joystick_left_y) + " / " + str(xboxcont.joystick_left_x))
+                if xboxcont.joystick_left_y > deadzone or xboxcont.joystick_left_y < -deadzone:
+                    joyY = xboxcont.joystick_left_y
+
+                if xboxcont.joystick_left_x > deadzone or xboxcont.joystick_left_x < -deadzone:
+                    joyX = xboxcont.joystick_left_x
+
+                if xboxcont.joystick_right_x > deadzone or xboxcont.joystick_right_x < -deadzone:
+                    joyRightX = -xboxcont.joystick_right_x
+                
+                joyRTrig = xboxcont.trigger_right
+
+                #print(str(xboxcont.joystick_left_y) + " / " + str(xboxcont.joystick_left_x))
+
+                speedy = joyY * 5
+                speedx = joyX * 5
+                speedr = joyRightX * 20
+                speedthrow = joyRTrig * 1200
+
+                print("Y: " + str(speedy) + " X: " + str(speedx) + " R: " + str(speedr))
+
+                robot.move(speedx, speedy, speedr, speedthrow)
+                
 
             else: # Unknown state
                 # Considered as an error
