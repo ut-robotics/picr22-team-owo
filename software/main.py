@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 
-import time, sys, math
+import time, sys, math, asyncio
 from enum import Enum
 
+import gamepad
 import mainboard
 from robot_utilities import *
 
@@ -48,6 +49,9 @@ if __name__ == "__main__":
     processor = image_processor.ImageProcessor(cam, debug=debug)
     processor.start()
 
+    # Manual control
+    xboxcont = None
+
     # Constants etc.
     # Housekeeping
     start = time.time()
@@ -68,7 +72,9 @@ if __name__ == "__main__":
     thrower_time_start = 0
 
     if manualcontrol:
-        state = 
+        state = State.MANUAL
+        xboxcont = gamepad.gamepad(file = '/dev/input/event12')
+
 
     try:
         while(True):
@@ -247,6 +253,15 @@ if __name__ == "__main__":
                     robot.move(speed_x, speed_y, speed_rot, 0)
                 continue
             # End of ball_throw
+
+            elif state == State.MANUAL:
+                log.LOGSTATE("manual control")
+                if xboxcont == None:
+                    print("gamepad is None, you entered this state incorrectly")
+                    continue
+                xboxcont.read_gamepad_input()
+
+                print(str(xboxcont.joystick_left_y) + " / " + str(xboxcont.joystick_left_x))
 
             else: # Unknown state
                 # Considered as an error

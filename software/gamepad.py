@@ -28,7 +28,7 @@ class gamepad():
         #self.load_effects()
 
 
-    async def read_gamepad_input(self): # asyncronus read-out of events
+    def read_gamepad_input(self): # asyncronus read-out of events
         max_abs_joystick_left_x = 0xFFFF/2
         uncertainty_joystick_left_x = 2500
         max_abs_joystick_left_y = 0xFFFF/2
@@ -37,8 +37,13 @@ class gamepad():
         uncertainty_joystick_right_x = 2000
         max_trigger = 1023
 
-        async for event in self.device_file.async_read_loop():
+        while True:
+        #for event in self.device_file.read_loop():
             #print(str(event))
+            event = self.device_file.read_one()
+            if event == None:
+                break
+
             if not(self.power_on): #stop reading device when power_on = false
                 break
             if event.type == 3: # type is analog trigger or joystick
@@ -76,21 +81,4 @@ class gamepad():
                     self.button_b = True
 
 
-if __name__ == "__main__":
 
-    async def main():
-        print("press x to stop, Y to rumble light, B to rumble once, trigger and joystick right to see analog value")
-        while True:
-            print(" trigger_right = ", round(remote_control.trigger_right,2), "  joystick_right_x = ", round(remote_control.joystick_right_x,2),end="\r")
-
-            if remote_control.button_x: # stop the script
-                remote_control.power_on = False
-                break
-            await asyncio.sleep(0)
-
-    remote_control = gamepad(file = '/dev/input/event12')
-    futures = [remote_control.read_gamepad_input(), main()]
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(asyncio.wait(futures))
-    loop.close()
-    print(" ")
