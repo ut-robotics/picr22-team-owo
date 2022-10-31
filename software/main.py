@@ -27,12 +27,14 @@ class State(Enum):
     # 6 and 7 are for thrower calibration
     INPUT = 6
     THROWER_CALIBRATION = 7
+    MANUAL = 8
 
 
 if __name__ == "__main__":
     print("Starting...")
     log = Logging()
     debug = False
+    manualcontrol = True
 
     # Setup from our code
     max_speed = 10
@@ -64,6 +66,9 @@ if __name__ == "__main__":
     basketColor = TargetBasket.MAGENTA # currently defaults to magenta for testing purposes
 
     thrower_time_start = 0
+
+    if manualcontrol:
+        state = 
 
     try:
         while(True):
