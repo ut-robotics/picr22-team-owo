@@ -1,0 +1,4 @@
+numpy==1.23.3
+pyrealsense2==2.51.1.4348
+pyserial==3.5
+websockets==10.4
