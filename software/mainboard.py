@@ -124,6 +124,11 @@ class Mainboard():
         self.move(speed_x, speed_y, speed_r)
         self.prev_rad = cur_radius
 
+    # Moves forward with constant speed with the first two wheel and makes direction adjustments with the back wheel
+    def move_backwheel_adjust(speed_y, cur_object_x):
+        pass
+
+
     # Throw ball to a basket at given distance
     # Discrete call not continuous, use within a loop
     def throw(self, thrower_distance):
