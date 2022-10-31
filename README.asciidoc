@@ -163,3 +163,4 @@ Personal comments:
 
 === Mon, 31.10.22
 *Kert:* Camera mount design troubleshooting and bottom & top plate modifications 2.5 h +
+*Sander:* Various improvements and wheel manufacturing 7.5 h +
