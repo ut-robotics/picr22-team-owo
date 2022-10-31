@@ -131,6 +131,7 @@ Personal comments:
 *Sander:* Thrower design improvements 4.5 h +
 *Johannes:* Code improvements 1.5 h 
 *Andres:* Progress report, code improvements based on feedback 4.5 h +
+*Kert:* Started working on camera mount & design 4 h +
 
 === Tue, 18.10.22
 *Sander:* Chassis design 2 h +
@@ -143,11 +144,13 @@ Personal comments:
 *Sander:* Chassis design 3 h +
 *Johannes:* Thrower and motion code tweaking 3 h +
 *Andres:* Logging improvements, testing, housekeeping (Trello etc...) 3 h +
+*Kert:* Camera mount design 2 h +
 
 === Mon, 24.10.22
 *Andres:* Task reviews, NUC fixing 1 h +
 *Sander:* Chassis design and various improvements 4 h +
 *Johannes:* Task reviews, image processing modifications 4 h
+*Kert:* Helping with task reviews, improving the camera mount and other little tweaks 4.5 h +
 
 === Tue, 25.10.22
 *Andres:* Started looking into referee commands 0.5 h +
@@ -159,3 +162,4 @@ Personal comments:
 *Sander:* Chassis design and various improvements 1 h +
 
 === Mon, 31.10.22
+*Kert:* Camera mount design troubleshooting and bottom & top plate modifications 1 h +
