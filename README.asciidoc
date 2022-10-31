@@ -162,4 +162,4 @@ Personal comments:
 *Sander:* Chassis design and various improvements 1 h +
 
 === Mon, 31.10.22
-*Kert:* Camera mount design troubleshooting and bottom & top plate modifications 1 h +
+*Kert:* Camera mount design troubleshooting and bottom & top plate modifications 2.5 h +
