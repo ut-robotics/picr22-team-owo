@@ -18,13 +18,13 @@ Personal comments:
 
 
 == BLOG
-=== Mon, 5.09.22
+=== Mon, 05.09.22
 *Everyone:* Workshop safety training and team management
 
-=== Thu, 8.09.22
+=== Thu, 08.09.22
 *Andres and Kert:* Mainboard communication 2 h
 
-=== Fri, 9.09.22
+=== Fri, 09.09.22
 *Andres and Artur:* Assembling test robot 3 h 
 
 === Sun, 11.09.22
@@ -91,7 +91,7 @@ Personal comments:
 *Andres:* Progress report, sigmoid, orbiting 6.5 h +
 *Artur:* Electrical trouble debugging, creating passives 2.5 h
 
-=== Tue, 4.10.22
+=== Tue, 04.10.22
 *Sander:* Wheels design 2 h +
 *Johannes:* Testing and measuring thrower 1.5 h +
 *Andres:* Color calibration 1.5 h +
@@ -103,11 +103,11 @@ Personal comments:
 *Johannes:* Image processing minor tweaks, thrower testing 3.5 h +
 *Andres:* Thrower code and calibration 3 h +
 
-=== Sat, 8.10.22
+=== Sat, 08.10.22
 *Sander:* Thrower design 4 h +
 *Artur:* Designing the mainboard 2.5 h 
 
-=== Sun. 9.10.22
+=== Sun. 09.10.22
 *Artur:* Designing the mainboard 2 h 
 
 === Mon, 10.10.22
@@ -164,3 +164,6 @@ Personal comments:
 === Mon, 31.10.22
 *Kert:* Camera mount design troubleshooting and bottom & top plate modifications 2.5 h +
 *Sander:* Various improvements and wheel manufacturing 7.5 h +
+
+=== Tue, 01.11.22
+*Sander:* Chassis design and various improvements 1 h +
