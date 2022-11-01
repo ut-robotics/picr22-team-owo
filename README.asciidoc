@@ -12,6 +12,7 @@ Electronics:
 
 
 Mechanics:
+Link to the robot's assembly: https://a360.co/3FA4tEU
 
 
 Personal comments:
