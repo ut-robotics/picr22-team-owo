@@ -127,13 +127,14 @@ Personal comments:
 *Artur:* Designing the mainboard 3.5 h 
 
 === Mon, 17.10.22
-*Artur:* Designing the mainboard pcb 1.5 h +
+*Artur:* Designing the mainboard pcb 3 h +
 *Sander:* Thrower design improvements 4.5 h +
 *Johannes:* Code improvements 1.5 h 
 *Andres:* Progress report, code improvements based on feedback 4.5 h +
 *Kert:* Started working on camera mount & design 4 h +
 
 === Tue, 18.10.22
+*Artur:* Improving the mainboard schematic 2 h +
 *Sander:* Chassis design 2 h +
 *Johannes:* Pull request fixes, general improvements 2.5 h
 
@@ -146,6 +147,12 @@ Personal comments:
 *Andres:* Logging improvements, testing, housekeeping (Trello etc...) 3 h +
 *Kert:* Camera mount design 2 h +
 
+=== Sat, 22.10.22
+*Artur:* Picking the microcontroller timer layout, improving the schematic and designing the pcb 6 h +
+
+=== Sun, 23.10.22
+*Artur:* Picking the microcontroller timer layout and routing traces 3 h +
+
 === Mon, 24.10.22
 *Andres:* Task reviews, NUC fixing 1 h +
 *Sander:* Chassis design and various improvements 4 h +
@@ -154,16 +161,19 @@ Personal comments:
 
 === Tue, 25.10.22
 *Andres:* Started looking into referee commands 0.5 h +
+*Artur:* Improving the mainboard schematic 1 h +
 
 === Wed, 26.10.22
 *Sander:* Chassis design and various improvements 1 h +
 
 === Sat, 29.10.22
 *Sander:* Chassis design and various improvements 1 h +
+*Artur:* Picking the microcontroller timer layout and improving the schematic 4.5 h +
 
 === Mon, 31.10.22
 *Kert:* Camera mount design troubleshooting and bottom & top plate modifications 2.5 h +
 *Sander:* Various improvements and wheel manufacturing 7.5 h +
+*Artur:* Picking the microcontroller timer layout, improving the schematic and designing the pcb 4 h +
 
 === Tue, 01.11.22
 *Sander:* Chassis design and various improvements 1 h +
