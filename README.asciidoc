@@ -178,3 +178,4 @@ Personal comments:
 
 === Tue, 01.11.22
 *Sander:* Chassis design and various improvements 3 h +
+*Kert:* Chassis design and camera mount modifications 4.5 h +
