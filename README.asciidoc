@@ -177,4 +177,4 @@ Personal comments:
 *Artur:* Picking the microcontroller timer layout, improving the schematic and designing the pcb 4 h +
 
 === Tue, 01.11.22
-*Sander:* Chassis design and various improvements 1 h +
+*Sander:* Chassis design and various improvements 3 h +
