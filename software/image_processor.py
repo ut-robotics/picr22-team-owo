@@ -150,7 +150,8 @@ class ImageProcessor():
             linesbyslope.append((slope, intercept))
 
         if self.debug:
-            cv2.imshow("lines", copyimg)
+            pass
+            #cv2.imshow("lines", copyimg)
 
         return linesbyslope
 
@@ -160,7 +161,7 @@ class ImageProcessor():
     # returns the balls from an already segmented image
     def analyze_balls(self, t_balls, fragments, depth, lines) -> list:
 
-        t_balls = cv2.morphologyEx(t_balls, cv2.MORPH_OPEN, (3,3))
+        t_balls = cv2.dilate(t_balls, (3,3))
 
         contours, hierarchy = cv2.findContours(t_balls, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -170,7 +171,7 @@ class ImageProcessor():
 
             size = cv2.contourArea(contour)
 
-            if size < 15:
+            if size < 18:
                 continue
 
             x, y, w, h = cv2.boundingRect(contour)
@@ -187,7 +188,7 @@ class ImageProcessor():
                         aboveline = True
                         break
                 if aboveline:
-                    print("ball at x: " + str(obj_x) + " y: " + str(obj_y) + "is above a line")
+                    #print("ball at x: " + str(obj_x) + " y: " + str(obj_y) + "is above a line")
                     continue
 
             if self.debug:

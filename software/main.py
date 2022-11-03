@@ -35,7 +35,7 @@ if __name__ == "__main__":
     print("Starting...")
     log = Logging()
     debug = False
-    manualcontrol = True
+    manualcontrol = False
 
     # Setup from our code
     max_speed = 10
