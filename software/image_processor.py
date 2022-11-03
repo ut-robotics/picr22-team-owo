@@ -96,25 +96,40 @@ class ImageProcessor():
 
         frag_sx, frag_sy = np.shape(fragmented)
 
-        white_img = np.zeros(frag_sx, frag_sy)
-        black_img = np.zeros(frag_sx, frag_sy)
-        comb_img = np.zeros(frag_sx, frag_sy)
+        white_img = np.zeros((frag_sx, frag_sy))
+        black_img = np.zeros((frag_sx, frag_sy))
+        comb_img = np.zeros((frag_sx, frag_sy))
 
-        for x in range(frag_sx):
+#        for x in range(frag_sx):
 
-            for y in range(frag_sy):
-                if fragmented[x,y] == 5:
-                    white_img[x,y] = 1
-                elif fragmented[x,y] == 6:
-                    black_img[x,y] = 1
+#            for y in range(frag_sy):
+#                if fragmented[x,y] == 5:
+#                    white_img[x,y] = 1
+#                elif fragmented[x,y] == 6:
+#                    black_img[x,y] = 1
             
-        dilatekernel = (3,3)
-        white_img = cv2.dilate(white_img, dilatekernel)
-        black_img = cv2.dilate(black_img, dilatekernel)
+        #white_img = np.bitwise_and(fragmented, 5)
+        #black_img = np.bitwise_and(fragmented, 6)
 
-        comb_img = white_img & black_img
-                
+        white_img[fragmented
+        white_img = white_img.astype(np.bool)
+        black_img = black_img.astype(np.bool)
+        white_img = white_img.astype(np.uint8) * 255
+        black_img = black_img.astype(np.uint8) * 255
 
+        #white_img[white_img == 5] = 1
+        #black_img[black_img == 6] = 1
+        
+        dilatekernel = (5,5)
+        #white_img = cv2.dilate(white_img, dilatekernel)
+        #black_img = cv2.dilate(black_img, dilatekernel)
+
+        comb_img = np.logical_and(white_img, black_img)
+        comb_img = comb_img.astype(np.uint8) * 255
+        
+        print("bit " + str(np.bitwise_and(6, 5)))
+        print("log " + str(np.logical_and(6, 5)))
+        #print(comb_img)
 
         low = 80
         high = 120
@@ -176,7 +191,7 @@ class ImageProcessor():
             pass
             cv2.imshow("black", black_img)
             cv2.imshow("white", white_img)
-            cv2.imshow("comb", comb_img)
+            #cv2.imshow("comb", comb_img)
 
         return linesbyslope
 

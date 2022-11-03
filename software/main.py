@@ -34,7 +34,7 @@ class State(Enum):
 if __name__ == "__main__":
     print("Starting...")
     log = Logging()
-    debug = False
+    debug = True
     manualcontrol = False
 
     # Setup from our code
