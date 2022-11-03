@@ -5,7 +5,7 @@ import robot_utilities
 
 class Referee_cmd_client:
     def __init__(self, logger):
-        self.ip = "localhost"
+        self.ip = "192.168.3.19"
         self.port = "8222"
         self.logger = logger
         self.queue = mp.Queue()
@@ -14,7 +14,7 @@ class Referee_cmd_client:
     def open(self):
         self.ws = wsc.WebSocket()
         self.ws.connect("ws://" + self.ip + ":" + self.port)
-        self.process = mp.Process(target=client.listen, args=())
+        self.process = mp.Process(target=self.listen, args=())
         self.process.start()
         self.logger.LOGI("Referee cmd client started")
 

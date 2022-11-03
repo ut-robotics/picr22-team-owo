@@ -22,14 +22,15 @@ class TargetBasket(Enum):
 class State(Enum):
     WAIT = 1
     PAUSED = 2
-    START = 3
-    BALL_SEARCH = 4
-    BALL_MOVE = 5
-    BALL_ORBIT = 6
-    BALL_THROW = 7
-    # 8 and 9 are for thrower calibration
-    INPUT = 8
-    THROWER_CALIBRATION = 9
+    START_WAIT = 3
+    START_GO = 4
+    BALL_SEARCH = 5
+    BALL_MOVE = 6
+    BALL_ORBIT = 7
+    BALL_THROW = 8
+    # Last 2 are for thrower calibration
+    INPUT = 9
+    THROWER_CALIBRATION = 10
 
 
 if __name__ == "__main__":
@@ -50,7 +51,7 @@ if __name__ == "__main__":
 
     # Control logic setup
     debug = False
-    state = State.WAIT # Initial state
+    state = State.START_WAIT # Initial state
     thrower_speed = 0
     calib_first_time = True
     calibration_data = []
@@ -68,7 +69,7 @@ if __name__ == "__main__":
     referee = ref_cmd.Referee_cmd_client(log)
     ref_first_start = True
     robot_name = "OWO"
-    referee.start()
+    referee.open()
 
     try:
         while(True):
@@ -102,17 +103,17 @@ if __name__ == "__main__":
             # Referee command handling
             msg = referee.get_cmd()
             if msg is not None:
-                if robot.name in msg["targets"]:
+                if robot_name in msg["targets"]:
                     if msg["signal"] == "start":
                         log.LOGI("Start signal received")
                         # ref_first_start used if we want to differentiate between start of the match and resuming from a stop
                         if ref_first_start:
                             log.LOGI("Match started!")
                             ref_first_start = False
-                            state = State.START
-                            if msg["baskets"][msg["targets"].find("OWO")] == 'blue':
+                            state = State.START_GO
+                            if msg["baskets"][msg["targets"].index("OWO")] == 'blue':
                                 basket_color = TargetBasket.BLUE
-                            elif msg["baskets"][msg["targets"].find("OWO")] == 'magenta':
+                            elif msg["baskets"][msg["targets"].index("OWO")] == 'magenta':
                                 basket_color = TargetBasket.MAGENTA
                             else:
                                 log.LOGE("Basket color error")
@@ -124,12 +125,16 @@ if __name__ == "__main__":
             # End of referee commands
 
             # Main control logic uses a state machine
+            # Inactive states
             if state == State.WAIT:
                 log.LOGSTATE("waiting")
                 input() # For making a break
                 state = State.BALL_SEARCH
                 continue
-            # End of wait
+
+            if state == State.PAUSED:
+                continue
+            # End of inactive states
 
             # States used for thrower calibration
             elif state == State.INPUT:
@@ -158,7 +163,10 @@ if __name__ == "__main__":
                     continue
             # End of states used for thrower calibration
 
-            elif state == State.START:
+            elif state == State.START_WAIT:
+                continue
+
+            elif state == State.START_GO:
                 state = State.BALL_SEARCH
                 continue
 
