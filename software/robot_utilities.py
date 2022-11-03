@@ -23,7 +23,7 @@ class Logging():
         return
 
     def create_timestamp(self):
-        return "[" + str(round(time.perf_counter() - self.logging_start_time, 3)) + "] "
+        return "[" + '%.3f' % (time.perf_counter() - self.logging_start_time) + "] "
 
     #def write_log(self, message):
     #    return

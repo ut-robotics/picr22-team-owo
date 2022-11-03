@@ -1,17 +1,18 @@
 #!/usr/bin/python3
 
+# Python
 import time, sys, math
 from enum import Enum
+sys.path.append("./picr22-boot-camp-programming")
 
+# Our code
 import mainboard
 from robot_utilities import *
-
-# Boot camp examples
-sys.path.append("./picr22-boot-camp-programming")
 import image_processor
 import camera
+import ref_cmd
 
-# Open cv
+# External dependencies
 import cv2
 
 class TargetBasket(Enum):
@@ -20,55 +21,62 @@ class TargetBasket(Enum):
 
 class State(Enum):
     WAIT = 1
-    BALL_SEARCH = 2
-    BALL_MOVE = 3
-    BALL_ORBIT = 4
-    BALL_THROW = 5
-    # 6 and 7 are for thrower calibration
-    INPUT = 6
-    THROWER_CALIBRATION = 7
+    PAUSED = 2
+    START = 3
+    BALL_SEARCH = 4
+    BALL_MOVE = 5
+    BALL_ORBIT = 6
+    BALL_THROW = 7
+    # 8 and 9 are for thrower calibration
+    INPUT = 8
+    THROWER_CALIBRATION = 9
 
 
 if __name__ == "__main__":
-    print("Starting...")
+    # Housekeeping setup
+    start = time.time()
+    fps = 0
+    frame = 0
+    frame_cnt = 0
     log = Logging()
-    debug = False
+    log.LOGI("Starting...")
 
-    # Setup from our code
+    # Mainboard stuff setup
     max_speed = 10
     max_speed_inner = 15
     ball_good_range = 300
     robot = mainboard.Mainboard(max_speed_inner, log)
     robot.start()
 
-    # Setup from example code
+    # Control logic setup
+    debug = False
+    state = State.WAIT # Initial state
+    thrower_speed = 0
+    calib_first_time = True
+    calibration_data = []
+    basketColor = TargetBasket.MAGENTA # currently defaults to magenta for testing purposes
+    thrower_time_start = 0
+
+    # Vision setup
     cam = camera.RealsenseCamera(exposure = 100)
     processor = image_processor.ImageProcessor(cam, debug=debug)
     processor.start()
-
-    # Constants etc.
-    # Housekeeping
-    start = time.time()
-    fps = 0
-    frame = 0
-    frame_cnt = 0
-    # Camera constants
     middle_x = cam.rgb_width / 2
     middle_y = cam.rgb_height / 2
-    # Control logic constants
-    state = State.WAIT # Initial state
-    thrower_speed = 0
-    first_time = True
-    calibration_data = []
 
-    basketColor = TargetBasket.MAGENTA # currently defaults to magenta for testing purposes
-
-    thrower_time_start = 0
+    # Referee commands
+    referee = ref_cmd.Referee_cmd_client(log)
+    ref_first_start = True
+    robot_name = "OWO"
+    referee.start()
 
     try:
         while(True):
             # Getting camera data
-            processedData = processor.process_frame(aligned_depth=True)
+            if state == State.BALL_THROW:
+                processedData = processor.process_frame(aligned_depth=True)
+            else:
+                processedData = processor.process_frame(aligned_depth=False)
 
             # Housekeeping stuff
             frame_cnt +=1
@@ -91,6 +99,30 @@ if __name__ == "__main__":
                     break
             # End of housekeeping
 
+            # Referee command handling
+            msg = referee.get_cmd()
+            if msg is not None:
+                if robot.name in msg["targets"]:
+                    if msg["signal"] == "start":
+                        log.LOGI("Start signal received")
+                        # ref_first_start used if we want to differentiate between start of the match and resuming from a stop
+                        if ref_first_start:
+                            log.LOGI("Match started!")
+                            ref_first_start = False
+                            state = State.START
+                            if msg["baskets"][msg["targets"].find("OWO")] == 'blue':
+                                basket_color = TargetBasket.BLUE
+                            elif msg["baskets"][msg["targets"].find("OWO")] == 'magenta':
+                                basket_color = TargetBasket.MAGENTA
+                            else:
+                                log.LOGE("Basket color error")
+                        else:
+                            state = State.BALL_SEARCH
+                    elif msg["signal"] == "stop":
+                        log.LOGI("Paused signal received")
+                        state = State.PAUSED
+            # End of referee commands
+
             # Main control logic uses a state machine
             if state == State.WAIT:
                 log.LOGSTATE("waiting")
@@ -105,15 +137,15 @@ if __name__ == "__main__":
                 state = State.THROWER_CALIBRATION
 
             elif state == State.THROWER_CALIBRATION: # Spin the motor for 10 seconds with the speed given in state "input"
-                if first_time:
-                    first_time = False
+                if calib_first_time:
+                    calib_first_time = False
                     start_time = time.perf_counter()
 
                 if (time.perf_counter() - start_time) > 10:
                     print("Average:", np.average(calibration_data))
                     print("Speed:", thrower_speed)
                     state = State.BALL_INPUT
-                    first_time = True
+                    calib_first_time = True
                     calibration_data = []
                     continue
 
@@ -125,6 +157,10 @@ if __name__ == "__main__":
                     print("No basket")
                     continue
             # End of states used for thrower calibration
+
+            elif state == State.START:
+                state = State.BALL_SEARCH
+                continue
 
             elif state == State.BALL_SEARCH:
                 log.LOGSTATE("ball_search")
