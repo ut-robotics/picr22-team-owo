@@ -100,35 +100,28 @@ class ImageProcessor():
         black_img = np.zeros((frag_sx, frag_sy))
         comb_img = np.zeros((frag_sx, frag_sy))
 
-#        for x in range(frag_sx):
+        white_img[fragmented == 5] = 1
+        black_img[fragmented == 6] = 1
 
-#            for y in range(frag_sy):
-#                if fragmented[x,y] == 5:
-#                    white_img[x,y] = 1
-#                elif fragmented[x,y] == 6:
-#                    black_img[x,y] = 1
-            
-        #white_img = np.bitwise_and(fragmented, 5)
-        #black_img = np.bitwise_and(fragmented, 6)
-
-        white_img[fragmented
-        white_img = white_img.astype(np.bool)
-        black_img = black_img.astype(np.bool)
-        white_img = white_img.astype(np.uint8) * 255
-        black_img = black_img.astype(np.uint8) * 255
-
-        #white_img[white_img == 5] = 1
-        #black_img[black_img == 6] = 1
         
-        dilatekernel = (5,5)
-        #white_img = cv2.dilate(white_img, dilatekernel)
-        #black_img = cv2.dilate(black_img, dilatekernel)
+        
+        dilatekernel = np.ones((9,9), np.uint8)
+        lowdilatekernel = np.ones((5,5), np.uint8)
 
-        comb_img = np.logical_and(white_img, black_img)
+        white_img_d = cv2.dilate(white_img, dilatekernel)
+        black_img_d = cv2.dilate(black_img, dilatekernel)
+
+        white_img = cv2.dilate(white_img, lowdilatekernel)
+        black_img = cv2.dilate(black_img, lowdilatekernel)
+
+        white_img_d = white_img_d.astype(np.uint8) * 255
+        black_img_d = black_img_d.astype(np.uint8) * 255
+
+        comb_img = np.logical_and(white_img_d, black_img_d)
         comb_img = comb_img.astype(np.uint8) * 255
         
-        print("bit " + str(np.bitwise_and(6, 5)))
-        print("log " + str(np.logical_and(6, 5)))
+        #print("bit " + str(np.bitwise_and(6, 5)))
+        #print("log " + str(np.logical_and(6, 5)))
         #print(comb_img)
 
         low = 80
@@ -141,7 +134,7 @@ class ImageProcessor():
         #scv2.imshow('hallo', thresh)
         low_thr = 50
         high_thr = 150
-        edges = cv2.Canny(thresh, low_thr, high_thr)
+        edges = cv2.Canny(comb_img, low_thr, high_thr)
         rho = 1
         theta = np.pi / 180 * 1
         threshold = 50
@@ -175,22 +168,39 @@ class ImageProcessor():
         # calculates the line equations
         for line in lines:
             x1, y1, x2, y2 = line[0]
+            midx = int((x1 + x2) / 2)
+            midy = int((y1+y2)/2)
             cv2.line(copyimg, (x1, y1), (x2, y2), (255, 0, 0), 1)
             
+
             if x1 == x2:
                 continue
             slope = (y2 - y1) / (x2 - x1) # slope
 
-            if (slope < -3 or slope > 3):
+            antislope = 1/slope
+
+            # LINE COLOUR SAMPLING
+            w_counter = 0
+            b_counter = 0
+            for i in range(10):
+                if (midy + i) >= 640 or (midy + i) < 0:
+                    continue
+                if white_img[midy + i, midx] != 0:
+                    w_counter += 1
+                if black_img[midy - i, midx] != 0:
+                    b_counter += 1
+            if b_counter < 1 or w_counter < 1:
                 continue
+
 
             intercept = y1 - (slope * x1) # intercept
             linesbyslope.append((slope, intercept))
 
         if self.debug:
-            pass
-            cv2.imshow("black", black_img)
-            cv2.imshow("white", white_img)
+            #pass
+            cv2.imshow("lines", copyimg)
+            #cv2.imshow("black", black_img)
+            #cv2.imshow("white", white_img)
             #cv2.imshow("comb", comb_img)
 
         return linesbyslope
