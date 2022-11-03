@@ -85,18 +85,41 @@ class ImageProcessor():
     
 
     # will get lines from the image and return them as line equations
-    def get_lines(self, image):
+    def get_lines(self, image, fragmented):
         img = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
         # 30:400 proved to work
         gr_img = img[30:320]
         krn = 1 # kernel size for gauss
-        blur_img = cv2.GaussianBlur(gr_img, (krn, krn), 0)
+        #blur_img = cv2.GaussianBlur(gr_img, (krn, krn), 0)
         
+        
+
+        frag_sx, frag_sy = np.shape(fragmented)
+
+        white_img = np.zeros(frag_sx, frag_sy)
+        black_img = np.zeros(frag_sx, frag_sy)
+        comb_img = np.zeros(frag_sx, frag_sy)
+
+        for x in range(frag_sx):
+
+            for y in range(frag_sy):
+                if fragmented[x,y] == 5:
+                    white_img[x,y] = 1
+                elif fragmented[x,y] == 6:
+                    black_img[x,y] = 1
+            
+        dilatekernel = (3,3)
+        white_img = cv2.dilate(white_img, dilatekernel)
+        black_img = cv2.dilate(black_img, dilatekernel)
+
+        comb_img = white_img & black_img
+                
+
 
         low = 80
         high = 120
 
-        ret, thresh = cv2.threshold(blur_img, low, high, cv2.THRESH_BINARY_INV)
+        ret, thresh = cv2.threshold(gr_img, low, high, cv2.THRESH_BINARY_INV)
 
 
         # different line detection parameters
@@ -151,7 +174,9 @@ class ImageProcessor():
 
         if self.debug:
             pass
-            #cv2.imshow("lines", copyimg)
+            cv2.imshow("black", black_img)
+            cv2.imshow("white", white_img)
+            cv2.imshow("comb", comb_img)
 
         return linesbyslope
 
@@ -250,7 +275,7 @@ class ImageProcessor():
 
         if self.debug:
             self.debug_frame = np.copy(color_frame)
-        lines = self.get_lines(color_frame)
+        lines = self.get_lines(color_frame, self.fragmented)
 
         balls = self.analyze_balls(self.t_balls, self.fragmented, depth_frame, lines)
         basket_b = self.analyze_baskets(self.t_basket_b, depth_frame, debug_color=c.Color.BLUE.color.tolist())
