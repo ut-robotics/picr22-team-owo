@@ -106,11 +106,16 @@ class ImageProcessor():
         
         
         dilatekernel = np.ones((9,9), np.uint8)
-        lowdilatekernel = np.ones((5,5), np.uint8)
+        lowdilatekernel = np.ones((3,3), np.uint8)
+        erodekernel = np.ones((3,3), np.uint8)
 
+        # d notation - dilated version - used for detecting lines
         white_img_d = cv2.dilate(white_img, dilatekernel)
         black_img_d = cv2.dilate(black_img, dilatekernel)
+        white_img_d = cv2.erode(white_img_d, erodekernel)
+        black_img_d = cv2.erode(black_img_d, erodekernel)
 
+        # without d notation - a bit dilated images, used for checking colours.
         white_img = cv2.dilate(white_img, lowdilatekernel)
         black_img = cv2.dilate(black_img, lowdilatekernel)
 
@@ -133,13 +138,15 @@ class ImageProcessor():
         # different line detection parameters
         #scv2.imshow('hallo', thresh)
         low_thr = 50
-        high_thr = 150
+        high_thr = 160
         edges = cv2.Canny(comb_img, low_thr, high_thr)
         rho = 1
         theta = np.pi / 180 * 1
-        threshold = 50
-        minline = 100
+        threshold = 30
+        minline = 80
         maxgap = 40
+
+        
 
         cropped = image[30:320]
 
@@ -170,34 +177,55 @@ class ImageProcessor():
             x1, y1, x2, y2 = line[0]
             midx = int((x1 + x2) / 2)
             midy = int((y1+y2)/2)
-            cv2.line(copyimg, (x1, y1), (x2, y2), (255, 0, 0), 1)
+            robot_out = False
             
 
             if x1 == x2:
                 continue
             slope = (y2 - y1) / (x2 - x1) # slope
 
-            antislope = 1/slope
+            #antislope = 1/slope
 
             # LINE COLOUR SAMPLING
             w_counter = 0
             b_counter = 0
             for i in range(10):
-                if (midy + i) >= 640 or (midy + i) < 0:
+                if (midy + i) >= 480 or (midy + i) < 0:
+                    continue
+                if (midx >= 640 or midx < 0):
                     continue
                 if white_img[midy + i, midx] != 0:
                     w_counter += 1
                 if black_img[midy - i, midx] != 0:
                     b_counter += 1
-            if b_counter < 1 or w_counter < 1:
+            if b_counter < 2 or w_counter < 2:
+                b_counter = 0
+                w_counter = 0
+                # CHECK IF ROBOT IS OUTSIDE OF LINE
+#                for j in range(10):
+#                    if (midy + i) >= 480 or (midy + i) < 0:
+#                        continue
+#                    if white_img[midy - j, midx] != 0:
+#                        w_counter += 1
+#                    if black_img[midy + j, midx] != 0:
+#                        b_counter += 1
+#                if b_counter > 5 and w_counter > 5:
+#                    print("robot is outside according to line x1/y1-x2/y2... " + str(x1) + "/" + str(y1) + "-" + str(x2) + "/" + str(y2))
+#                    # ROBOT IS OUTSIDE THE COURT REGARDING THIS LINE
+#                    robot_out = True
+#                else: 
                 continue
+                    
+
+            cv2.line(copyimg, (x1, y1-30), (x2, y2-30), (255, 0, 0), 1)
 
 
             intercept = y1 - (slope * x1) # intercept
-            linesbyslope.append((slope, intercept))
+            linesbyslope.append((slope, intercept, robot_out))
 
         if self.debug:
             #pass
+            #cv2.imshow("edges", edges)
             cv2.imshow("lines", copyimg)
             #cv2.imshow("black", black_img)
             #cv2.imshow("white", white_img)
@@ -211,7 +239,9 @@ class ImageProcessor():
     # returns the balls from an already segmented image
     def analyze_balls(self, t_balls, fragments, depth, lines) -> list:
 
-        t_balls = cv2.dilate(t_balls, (3,3))
+        krnl = np.ones((3,3), np.uint8)
+        t_balls = cv2.dilate(t_balls, krnl)
+        t_balls = cv2.erode(t_balls, krnl)
 
         contours, hierarchy = cv2.findContours(t_balls, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -221,7 +251,7 @@ class ImageProcessor():
 
             size = cv2.contourArea(contour)
 
-            if size < 18:
+            if size < 12:
                 continue
 
             x, y, w, h = cv2.boundingRect(contour)
@@ -233,10 +263,20 @@ class ImageProcessor():
             
             aboveline = False
             if lines is not None:
-                for slope, interc in lines:
+                for slope, interc, robot_out in lines:
+#                    if robot_out:
+#                        if obj_y > (slope * obj_x + interc + 30):
+#                            
+#                            # Robot is outside of this line and the ball is too, ball will be discarded.
+#                            print("Robot AND ball " + str(obj_x) + "/" + str(obj_y) + "/" + str(obj_dst) + " outside of court")
+#                            aboveline = True
+#                            break
                     if obj_y < (slope * obj_x + interc + 30): # NB! 30 is the offset from line processing!
-                        aboveline = True
-                        break
+                        if not robot_out:
+                            print ("Ball " + str(obj_x) + "/" + str(obj_y) + "/" + str(obj_dst) + " is outside of the court")
+                            # If the robot is not outside of this line (is on the court) and the ball is, this ball is discarded
+                            aboveline = True
+                            break
                 if aboveline:
                     #print("ball at x: " + str(obj_x) + " y: " + str(obj_y) + "is above a line")
                     continue
@@ -256,12 +296,14 @@ class ImageProcessor():
     def analyze_baskets(self, t_basket, depth, debug_color = (0, 255, 255)) -> list:
         contours, hierarchy = cv2.findContours(t_basket, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
+        krnl = np.ones((3,3), np.uint8)
+        t_basket = cv2.morphologyEx(t_basket, cv2.MORPH_CLOSE, krnl)
         baskets = []
         for contour in contours:
 
             size = cv2.contourArea(contour)
 
-            if size < 80:
+            if size < 60:
                 continue
 
             x, y, w, h = cv2.boundingRect(contour)

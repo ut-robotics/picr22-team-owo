@@ -34,7 +34,7 @@ class State(Enum):
 if __name__ == "__main__":
     print("Starting...")
     log = Logging()
-    debug = True
+    debug = False
     manualcontrol = False
 
     # Setup from our code
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     middle_x = cam.rgb_width / 2
     middle_y = cam.rgb_height / 2
     # Control logic constants
-    state = State.WAIT # Initial state
+    state = State.INPUT # Initial state
     thrower_speed = 0
     first_time = True
     calibration_data = []
@@ -123,7 +123,7 @@ if __name__ == "__main__":
                 if (time.perf_counter() - start_time) > 10:
                     print("Average:", np.average(calibration_data))
                     print("Speed:", thrower_speed)
-                    state = State.BALL_INPUT
+                    state = State.INPUT
                     first_time = True
                     calibration_data = []
                     continue
@@ -144,9 +144,9 @@ if __name__ == "__main__":
                     continue
                 else:
                     if (int(time.perf_counter() * 6) % 3 == 0):
-                        robot.move(0, 0, 23)
+                        robot.move(0, 0, 20)
                     else:
-                        robot.move(0, 0, 1)
+                        robot.move(0, 0, 0)
                     #robot.move(0, 0, 6)
             # End of ball_search
             
