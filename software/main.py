@@ -62,7 +62,7 @@ if __name__ == "__main__":
     middle_x = cam.rgb_width / 2
     middle_y = cam.rgb_height / 2
     # Control logic constants
-    state = State.INPUT # Initial state
+    state = State.WAIT # Initial state
     thrower_speed = 0
     first_time = True
     calibration_data = []
@@ -131,7 +131,7 @@ if __name__ == "__main__":
                 if (processedData.basket_m.exists):
                     print("Distance:", processedData.basket_m.distance)
                     calibration_data.append(processedData.basket_m.distance)
-                    robot.throw(thrower_speed)
+                    robot.throw_raw(thrower_speed)
                 else: 
                     print("No basket")
                     continue
@@ -168,8 +168,8 @@ if __name__ == "__main__":
                         continue
                     else:
                         if interesting_ball.x > middle_x + 2 or interesting_ball.x < middle_x - 2:
-                            speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=2000, y_scale=max_speed)
-                            speed_r = -sigmoid_controller(interesting_ball.x, middle_x, x_scale=1200, y_scale=max_speed)
+                            speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=1700, y_scale=max_speed/2)
+                            speed_r = -sigmoid_controller(interesting_ball.x, middle_x, x_scale=1000, y_scale=max_speed)
                         if interesting_ball.distance > ball_good_range:
                             speed_y = sigmoid_controller(interesting_ball.distance, ball_good_range, x_scale=1400, y_scale=max_speed)
                         print(f"x: {speed_x}, y: {speed_y}, r: {speed_r}, dist: {interesting_ball.distance}, b.x: {interesting_ball.x}, b.y: {interesting_ball.y}")
@@ -235,7 +235,7 @@ if __name__ == "__main__":
                 if len(processedData.balls) > 0:
                     interesting_ball = processedData.balls[-1]
 
-                if (thrower_time_start + 2 < time.perf_counter()):
+                if (thrower_time_start + 2.5 < time.perf_counter()):
                     state = State.BALL_SEARCH
 
 
