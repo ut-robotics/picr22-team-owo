@@ -66,10 +66,12 @@ if __name__ == "__main__":
     middle_y = cam.rgb_height / 2
 
     # Referee commands
-    referee = ref_cmd.Referee_cmd_client(log)
-    ref_first_start = True
-    robot_name = "OWO"
-    referee.open()
+    ref_enabled = False
+    if ref_enabled:
+        referee = ref_cmd.Referee_cmd_client(log)
+        ref_first_start = True
+        robot_name = "OWO"
+        referee.open()
 
     try:
         while(True):
@@ -101,27 +103,28 @@ if __name__ == "__main__":
             # End of housekeeping
 
             # Referee command handling
-            msg = referee.get_cmd()
-            if msg is not None:
-                if robot_name in msg["targets"]:
-                    if msg["signal"] == "start":
-                        log.LOGI("Start signal received")
-                        # ref_first_start used if we want to differentiate between start of the match and resuming from a stop
-                        if ref_first_start:
-                            log.LOGI("Match started!")
-                            ref_first_start = False
-                            state = State.START_GO
-                            if msg["baskets"][msg["targets"].index("OWO")] == 'blue':
-                                basket_color = TargetBasket.BLUE
-                            elif msg["baskets"][msg["targets"].index("OWO")] == 'magenta':
-                                basket_color = TargetBasket.MAGENTA
+            if ref_enabled:
+                msg = referee.get_cmd()
+                if msg is not None:
+                    if robot_name in msg["targets"]:
+                        if msg["signal"] == "start":
+                            log.LOGI("Start signal received")
+                            # ref_first_start used if we want to differentiate between start of the match and resuming from a stop
+                            if ref_first_start:
+                                log.LOGI("Match started!")
+                                ref_first_start = False
+                                state = State.START_GO
+                                if msg["baskets"][msg["targets"].index("OWO")] == 'blue':
+                                    basket_color = TargetBasket.BLUE
+                                elif msg["baskets"][msg["targets"].index("OWO")] == 'magenta':
+                                    basket_color = TargetBasket.MAGENTA
+                                else:
+                                    log.LOGE("Basket color error")
                             else:
-                                log.LOGE("Basket color error")
-                        else:
-                            state = State.BALL_SEARCH
-                    elif msg["signal"] == "stop":
-                        log.LOGI("Paused signal received")
-                        state = State.PAUSED
+                                state = State.BALL_SEARCH
+                        elif msg["signal"] == "stop":
+                            log.LOGI("Paused signal received")
+                            state = State.PAUSED
             # End of referee commands
 
             # Main control logic uses a state machine
@@ -297,6 +300,7 @@ if __name__ == "__main__":
     finally:
         cv2.destroyAllWindows()
         processor.stop()
-        referee.close()
+        if ref_enabled:
+            referee.close()
         robot.close()
         log.end()
