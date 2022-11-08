@@ -13,7 +13,7 @@ class Logging():
         print("Logging started!")
         #print(logging_start_time)
         #print("logs/" + time.ctime(time.time()))
-
+        self.file = open("logs/" + time.ctime(time.time()) + ".txt", "w")
         self.red = '\033[91m'
         self.yellow = '\033[33m'
         self.green = '\u001b[32m'
@@ -22,20 +22,30 @@ class Logging():
         self.file_active = False
         return
 
+    def end(self):
+        self.LOGI("Logging ended!")
+        self.file.close()
+
     def create_timestamp(self):
         return "[" + '%.3f' % (time.perf_counter() - self.logging_start_time) + "] "
 
-    #def write_log(self, message):
-    #    return
+    def write_log(self, message):
+        self.file.write(message)
 
     def LOGE(self, message):
-        print(self.red + self.create_timestamp() + message + self.end)
+        message = self.create_timestamp() + message
+        self.write_log("ERROR   " + message + "\n")
+        print(self.red + message + self.end)
 
     def LOGW(self, message):
-        print(self.yellow + self.create_timestamp() + message + self.end)
+        message = self.create_timestamp() + message
+        self.write_log("WARNING " + message + "\n")
+        print(self.yellow + message + self.end)
 
     def LOGI(self, message):
-        print(self.create_timestamp() + message)
+        message = self.create_timestamp() + message
+        self.write_log("INFO    " + message + "\n")
+        print(message)
 
     def LOGSTATE(self, state, error=False):
         if self.previous_state != state:

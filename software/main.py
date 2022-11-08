@@ -3,7 +3,7 @@
 # Python
 import time, sys, math
 from enum import Enum
-sys.path.append("./picr22-boot-camp-programming")
+#sys.path.append("./picr22-boot-camp-programming")
 
 # Our code
 import mainboard
@@ -261,6 +261,7 @@ if __name__ == "__main__":
                     log.LOGE("Basket color invalid")
 
                 if len(processedData.balls) > 0:
+                    log.LOGI("THROW, distance: " + basket.distance)
                     interesting_ball = processedData.balls[-1]
 
                 if (thrower_time_start + 3 < time.perf_counter()):
@@ -296,4 +297,6 @@ if __name__ == "__main__":
     finally:
         cv2.destroyAllWindows()
         processor.stop()
+        referee.close()
         robot.close()
+        log.end()
