@@ -78,6 +78,7 @@ if __name__ == "__main__":
 
     try:
         while(True):
+            print(f"middle: {middle_x}/{middle_y}")
             # Getting camera data
             processedData = processor.process_frame(aligned_depth=True)
 
@@ -144,9 +145,9 @@ if __name__ == "__main__":
                     continue
                 else:
                     if (int(time.perf_counter() * 6) % 3 == 0):
-                        robot.move(0, 0, 20)
+                        robot.move(0, 0, 25)
                     else:
-                        robot.move(0, 0, 0)
+                        robot.move(0, 0, 2)
                     #robot.move(0, 0, 6)
             # End of ball_search
             
@@ -239,9 +240,9 @@ if __name__ == "__main__":
                     state = State.BALL_SEARCH
 
 
-                speed_rot = -sigmoid_controller(basket.x, middle_x, x_scale=900, y_scale=(max_speed))
+                speed_rot = -sigmoid_controller(basket.x+24, middle_x, x_scale=700, y_scale=(max_speed))
                 if (len(processedData.balls) != 0) and interesting_ball.distance > 300 and interesting_ball.distance < 600:
-                    speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=1100, y_scale=max_speed / 1.6)
+                    speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=900, y_scale=max_speed / 1.5)
                 else:
                     speed_x = 0
 

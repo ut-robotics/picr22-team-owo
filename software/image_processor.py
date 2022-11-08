@@ -85,27 +85,30 @@ class ImageProcessor():
     
 
     # will get lines from the image and return them as line equations
-    def get_lines(self, image, fragmentedblack, fragmentedwhite):
+    def get_lines(self, image, fragmented):
         img = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
         # 30:400 proved to work
-        gr_img = img[30:320]
+        gr_img = img[0:320]
         krn = 1 # kernel size for gauss
         #blur_img = cv2.GaussianBlur(gr_img, (krn, krn), 0)
         
         
 
-#        frag_sx, frag_sy = np.shape(fragmented)
-#        white_img = np.zeros((frag_sx, frag_sy))
-#        black_img = np.zeros((frag_sx, frag_sy))
+        frag_sx, frag_sy = np.shape(fragmented)
+        fragmentedwhite = np.zeros((frag_sx, frag_sy))
+        fragmentedblack = np.zeros((frag_sx, frag_sy))
+        #print(f"tere hommikust: {frag_sx} {frag_sy}")
 #        comb_img = np.zeros((frag_sx, frag_sy))
 
-        fragmentedblack[fragmentedblack == 6] = 1
-        fragmentedblack[fragmentedblack != 6] = 0
-
-        fragmentedwhite[fragmentedwhite == 5] = 1
-        fragmentedwhite[fragmentedwhite != 5] = 0
         
-#        dilatekernel = np.ones((9,9), np.uint8)
+        #fragmentedblack[fragmentedblack == 6] = 0
+        fragmentedblack[fragmented == 6] = 1
+
+        #fragmentedwhite[fragmentedwhite == 5] = 0
+        fragmentedwhite[fragmented == 5] = 1
+        
+        
+        openkernel = np.ones((3,3), np.uint8)
         lowdilatekernel = np.ones((3,3), np.uint8)
 #        erodekernel = np.ones((3,3), np.uint8)
 
@@ -116,11 +119,17 @@ class ImageProcessor():
 #        black_img_d = cv2.erode(black_img_d, erodekernel)
 
         # without d notation - a bit dilated images, used for checking colours.
+        detectionblack = cv2.morphologyEx(fragmentedblack, cv2.MORPH_CLOSE, openkernel)
+
         fragmentedwhite = cv2.dilate(fragmentedwhite, lowdilatekernel)
         fragmentedblack = cv2.dilate(fragmentedblack, lowdilatekernel)
 
-#        white_img_d = white_img_d.astype(np.uint8) * 255
-#        black_img_d = black_img_d.astype(np.uint8) * 255
+        
+
+        fragmentedwhite = fragmentedwhite.astype(np.uint8) * 255
+        fragmentedblack = fragmentedblack.astype(np.uint8) * 255
+        detectionblack = detectionblack.astype(np.uint8) * 255
+
 #        comb_img = np.logical_and(white_img_d, black_img_d)
 #        comb_img = comb_img.astype(np.uint8) * 255
         
@@ -128,8 +137,8 @@ class ImageProcessor():
         #print("log " + str(np.logical_and(6, 5)))
         #print(comb_img)
 
-        low = 80
-        high = 120
+        low = 60
+        high = 100
 
         ret, thresh = cv2.threshold(gr_img, low, high, cv2.THRESH_BINARY_INV)
 
@@ -138,16 +147,16 @@ class ImageProcessor():
         #scv2.imshow('hallo', thresh)
         low_thr = 50
         high_thr = 160
-        edges = cv2.Canny(comb_img, low_thr, high_thr)
+        edges = cv2.Canny(detectionblack, low_thr, high_thr)
         rho = 1
         theta = np.pi / 180 * 1
         threshold = 30
-        minline = 80
-        maxgap = 40
+        minline = 60
+        maxgap = 30
 
         
 
-        cropped = image[30:320]
+        cropped = image[0:320]
 
         copyimg = np.copy(cropped) * 0
 
@@ -216,18 +225,20 @@ class ImageProcessor():
                 continue
                     
 
-            cv2.line(copyimg, (x1, y1-30), (x2, y2-30), (255, 0, 0), 1)
+            cv2.line(copyimg, (x1, y1), (x2, y2), (255, 0, 0), 1)
 
 
             intercept = y1 - (slope * x1) # intercept
             linesbyslope.append((slope, intercept, robot_out))
 
+        #print("tere")
         if self.debug:
             #pass
+            #print("terre")
             #cv2.imshow("edges", edges)
             cv2.imshow("lines", copyimg)
-            #cv2.imshow("black", black_img)
-            #cv2.imshow("white", white_img)
+            cv2.imshow("black", detectionblack)
+            #cv2.imshow("white", fragmentedwhite)
             #cv2.imshow("comb", comb_img)
 
         return linesbyslope
@@ -270,7 +281,7 @@ class ImageProcessor():
 #                            print("Robot AND ball " + str(obj_x) + "/" + str(obj_y) + "/" + str(obj_dst) + " outside of court")
 #                            aboveline = True
 #                            break
-                    if obj_y < (slope * obj_x + interc + 30): # NB! 30 is the offset from line processing!
+                    if obj_y < (slope * obj_x + interc + 0): # NB! 30/0 is the offset from line processing!
                         if not robot_out:
                             print ("Ball " + str(obj_x) + "/" + str(obj_y) + "/" + str(obj_dst) + " is outside of the court")
                             # If the robot is not outside of this line (is on the court) and the ball is, this ball is discarded
@@ -341,7 +352,7 @@ class ImageProcessor():
 
         if self.debug:
             self.debug_frame = np.copy(color_frame)
-        lines = self.get_lines(color_frame, self.fragmented, self.fragmented)
+        lines = self.get_lines(color_frame, self.fragmented)
 
         balls = self.analyze_balls(self.t_balls, self.fragmented, depth_frame, lines)
         basket_b = self.analyze_baskets(self.t_basket_b, depth_frame, debug_color=c.Color.BLUE.color.tolist())
