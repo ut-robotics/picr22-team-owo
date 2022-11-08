@@ -72,7 +72,7 @@ class Mainboard():
         if distance == 0:
             return 0
         else:
-            return int(distance*0.277 + 414)
+            return int(distance*0.277 + 413)
 
     # Big math, returns speed of a wheel in mainboard units
     def calculate_wheel_speed(self, motor_num, robot_speed, robot_angle, speed_rot):

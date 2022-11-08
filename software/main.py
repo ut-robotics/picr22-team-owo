@@ -78,7 +78,7 @@ if __name__ == "__main__":
 
     try:
         while(True):
-            print(f"middle: {middle_x}/{middle_y}")
+            #print(f"middle: {middle_x}/{middle_y}")
             # Getting camera data
             processedData = processor.process_frame(aligned_depth=True)
 
