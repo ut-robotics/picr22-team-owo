@@ -182,3 +182,6 @@ Personal comments:
 
 === Mon, 07.11.22
 *Sander:* Wheel manufacturing and 3d printing 7 h +
+
+=== Tue, 08.11.22
+*Sander:* Wheel manufacturing and 3d printing 6 h +
