@@ -85,7 +85,7 @@ class ImageProcessor():
     
 
     # will get lines from the image and return them as line equations
-    def get_lines(self, image, fragmented):
+    def get_lines(self, image, fragmentedblack, fragmentedwhite):
         img = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
         # 30:400 proved to work
         gr_img = img[30:320]
@@ -94,36 +94,35 @@ class ImageProcessor():
         
         
 
-        frag_sx, frag_sy = np.shape(fragmented)
+#        frag_sx, frag_sy = np.shape(fragmented)
+#        white_img = np.zeros((frag_sx, frag_sy))
+#        black_img = np.zeros((frag_sx, frag_sy))
+#        comb_img = np.zeros((frag_sx, frag_sy))
 
-        white_img = np.zeros((frag_sx, frag_sy))
-        black_img = np.zeros((frag_sx, frag_sy))
-        comb_img = np.zeros((frag_sx, frag_sy))
+        fragmentedblack[fragmentedblack == 6] = 1
+        fragmentedblack[fragmentedblack != 6] = 0
 
-        white_img[fragmented == 5] = 1
-        black_img[fragmented == 6] = 1
-
+        fragmentedwhite[fragmentedwhite == 5] = 1
+        fragmentedwhite[fragmentedwhite != 5] = 0
         
-        
-        dilatekernel = np.ones((9,9), np.uint8)
+#        dilatekernel = np.ones((9,9), np.uint8)
         lowdilatekernel = np.ones((3,3), np.uint8)
-        erodekernel = np.ones((3,3), np.uint8)
+#        erodekernel = np.ones((3,3), np.uint8)
 
         # d notation - dilated version - used for detecting lines
-        white_img_d = cv2.dilate(white_img, dilatekernel)
-        black_img_d = cv2.dilate(black_img, dilatekernel)
-        white_img_d = cv2.erode(white_img_d, erodekernel)
-        black_img_d = cv2.erode(black_img_d, erodekernel)
+#        white_img_d = cv2.dilate(white_img, dilatekernel)
+#        black_img_d = cv2.dilate(black_img, dilatekernel)
+#        white_img_d = cv2.erode(white_img_d, erodekernel)
+#        black_img_d = cv2.erode(black_img_d, erodekernel)
 
         # without d notation - a bit dilated images, used for checking colours.
-        white_img = cv2.dilate(white_img, lowdilatekernel)
-        black_img = cv2.dilate(black_img, lowdilatekernel)
+        fragmentedwhite = cv2.dilate(fragmentedwhite, lowdilatekernel)
+        fragmentedblack = cv2.dilate(fragmentedblack, lowdilatekernel)
 
-        white_img_d = white_img_d.astype(np.uint8) * 255
-        black_img_d = black_img_d.astype(np.uint8) * 255
-
-        comb_img = np.logical_and(white_img_d, black_img_d)
-        comb_img = comb_img.astype(np.uint8) * 255
+#        white_img_d = white_img_d.astype(np.uint8) * 255
+#        black_img_d = black_img_d.astype(np.uint8) * 255
+#        comb_img = np.logical_and(white_img_d, black_img_d)
+#        comb_img = comb_img.astype(np.uint8) * 255
         
         #print("bit " + str(np.bitwise_and(6, 5)))
         #print("log " + str(np.logical_and(6, 5)))
@@ -194,9 +193,9 @@ class ImageProcessor():
                     continue
                 if (midx >= 640 or midx < 0):
                     continue
-                if white_img[midy + i, midx] != 0:
+                if fragmentedwhite[midy + i, midx] != 0:
                     w_counter += 1
-                if black_img[midy - i, midx] != 0:
+                if fragmentedblack[midy - i, midx] != 0:
                     b_counter += 1
             if b_counter < 2 or w_counter < 2:
                 b_counter = 0
@@ -342,7 +341,7 @@ class ImageProcessor():
 
         if self.debug:
             self.debug_frame = np.copy(color_frame)
-        lines = self.get_lines(color_frame, self.fragmented)
+        lines = self.get_lines(color_frame, self.fragmented, self.fragmented)
 
         balls = self.analyze_balls(self.t_balls, self.fragmented, depth_frame, lines)
         basket_b = self.analyze_baskets(self.t_basket_b, depth_frame, debug_color=c.Color.BLUE.color.tolist())
