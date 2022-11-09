@@ -185,3 +185,6 @@ Personal comments:
 
 === Tue, 08.11.22
 *Sander:* Wheel manufacturing and 3d printing 6 h +
+
+=== Wed, 09.11.22
+*Sander:* Chassis design and various improvements 3 h +
