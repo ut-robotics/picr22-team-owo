@@ -283,7 +283,7 @@ class ImageProcessor():
 #                            break
                     if obj_y < (slope * obj_x + interc + 0): # NB! 30/0 is the offset from line processing!
                         if not robot_out:
-                            print ("Ball " + str(obj_x) + "/" + str(obj_y) + "/" + str(obj_dst) + " is outside of the court")
+                            #print ("Ball " + str(obj_x) + "/" + str(obj_y) + "/" + str(obj_dst) + " is outside of the court")
                             # If the robot is not outside of this line (is on the court) and the ball is, this ball is discarded
                             aboveline = True
                             break

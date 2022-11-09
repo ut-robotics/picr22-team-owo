@@ -53,7 +53,7 @@ if __name__ == "__main__":
 
     # Control logic setup
     debug = False
-    state = State.START_WAIT # Initial state
+    state = State.BALL_SEARCH # Initial state
     thrower_speed = 0
     calib_first_time = True
     calibration_data = []
@@ -86,6 +86,8 @@ if __name__ == "__main__":
         ref_first_start = True
         robot_name = "OWO"
         referee.open()
+    if (not ref_enabled) and state == State.START_WAIT:
+        log.LOGE("Referee not enabled, but initial state is START_WAIT")
 
     if manualcontrol:
         state = State.MANUAL
@@ -229,7 +231,7 @@ if __name__ == "__main__":
                             speed_r = -sigmoid_controller(interesting_ball.x, middle_x, x_scale=1000, y_scale=max_speed)
                         if interesting_ball.distance > ball_good_range:
                             speed_y = sigmoid_controller(interesting_ball.distance, ball_good_range, x_scale=1400, y_scale=max_speed)
-                        print(f"x: {speed_x}, y: {speed_y}, r: {speed_r}, dist: {interesting_ball.distance}, b.x: {interesting_ball.x}, b.y: {interesting_ball.y}")
+                        #print(f"x: {speed_x}, y: {speed_y}, r: {speed_r}, dist: {interesting_ball.distance}, b.x: {interesting_ball.x}, b.y: {interesting_ball.y}")
                         robot.move(speed_x, speed_y, speed_r)
                 else:
                     state = State.BALL_SEARCH
@@ -258,23 +260,20 @@ if __name__ == "__main__":
                         log.LOGE("Basket color invalid")
 
                     if basket.exists:
-                        print("Basket x:", basket.x, "/", middle_x)
-                        #if (processedData.basket_m.x > (middle_x + 1) or processedData.basket_m.x < (middle_x - 1)):
+                        # print("Basket x:", basket.x, "Middle x: ", middle_x)
                         basket_tolerance = 14
                         if abs(basket.x - middle_x) < basket_tolerance:
                             state = State.BALL_THROW
                             thrower_time_start = time.perf_counter()
                             continue
-                        
                         speed_x = -sigmoid_controller(basket.x, middle_x, x_scale=1500, y_scale=(max_speed - 3))
-                        #print("rotational speed:", rot)
 
                         robot.orbit(400, speed_x, interesting_ball.distance, interesting_ball.x)
 
                     else:
                         robot.orbit(400, 2.8, interesting_ball.distance, interesting_ball.x)
                 else:
-                    print("no ball........")
+                    log.LOGW("Lost ball during orbit")
                     state = State.BALL_SEARCH
                     continue
             # End of ball_orbit
@@ -290,10 +289,10 @@ if __name__ == "__main__":
                     log.LOGE("Basket color invalid")
 
                 if len(processedData.balls) > 0:
-                    log.LOGI("THROW, distance: " + basket.distance)
                     interesting_ball = processedData.balls[-1]
 
                 if (thrower_time_start + 2.5 < time.perf_counter()):
+                    log.LOGI("THROW, distance: " + str(basket.distance))
                     state = State.BALL_SEARCH
 
 
@@ -315,7 +314,7 @@ if __name__ == "__main__":
             elif state == State.MANUAL:
                 log.LOGSTATE("manual control")
                 if xboxcont == None:
-                    print("gamepad is None, you entered this state incorrectly")
+                    log.LOGE("gamepad is None, you entered this state incorrectly")
                     continue
                 xboxcont.read_gamepad_input()
                 joyY = 0
@@ -356,7 +355,6 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt:
         print("\nExiting")
-        sys.exit()
     
     finally:
         cv2.destroyAllWindows()
@@ -364,4 +362,5 @@ if __name__ == "__main__":
         if ref_enabled:
             referee.close()
         robot.close()
-        log.end()
+        log.close()
+        sys.exit()

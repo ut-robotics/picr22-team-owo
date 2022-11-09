@@ -22,7 +22,7 @@ class Logging():
         self.file_active = False
         return
 
-    def end(self):
+    def close(self):
         self.LOGI("Logging ended!")
         self.file.close()
 

@@ -24,6 +24,10 @@ class Mainboard():
         self.pid_control_period = 1 / self.pid_control_frequency #seconds
         self.wheel_speed_to_mainboard_units = self.gearbox_ratio * self.encoder_edges_per_motor_revolution / (2 * math.pi * self.wheel_radius * self.pid_control_frequency)
         self.max_speed = max_speed
+        self.previous_x = 0
+        self.previous_y = 0
+        self.previous_r = 0
+        self.acceleration_limit = 1
 
         # Mainboard communication
         self.mainboard_hwid = "USB VID:PID=0483:5740"
@@ -84,7 +88,17 @@ class Mainboard():
     # y - forward, positive to the front
     # r - rotation, positive anticlockwise
     # While moving it also rotates the thrower with speed calculated from the distance
-    def move(self, speed_x, speed_y, speed_r, thrower_distance=0):    
+    def move(self, speed_x, speed_y, speed_r, thrower_distance=0):
+        if speed_x - self.previous_x > self.acceleration_limit:
+            speed_x = self.previous_x + self.acceleration_limit
+            self.previous_x = speed_x
+        if speed_y - self.previous_y > self.acceleration_limit:
+            speed_y = self.previous_y + self.acceleration_limit
+            self.previous_y = speed_y
+        if speed_r - self.previous_r > self.acceleration_limit:
+            speed_r = self.previous_r + self.acceleration_limit
+            self.previous_r = speed_r
+
         robot_angle = math.atan2(speed_y, speed_x)
         robot_speed = math.sqrt(math.pow(speed_x, 2) + math.pow(speed_y, 2))
         #print("Angle:", robot_angle)
@@ -119,7 +133,7 @@ class Mainboard():
         # Centering object, rotational speed adjustment
         if cur_object_x > (self.middle_x + self.buffer_x) or cur_object_x < (self.middle_x - self.buffer_x):
             speed_r += (self.middle_x - cur_object_x) / 100 * self.r_const
-        self.logger.LOGI("orbit speeds- x: " + str(speed_x) + " y: " + str(speed_y) + " r: " + str(speed_r) + " cur_object_x: " + str(cur_object_x))
+        #self.logger.LOGI("orbit speeds x: " + str(speed_x) + " y: " + str(speed_y) + " r: " + str(speed_r) + " cur_object_x: " + str(cur_object_x))
 
         #print("x:", speed_x, "y:", speed_y, "r:", speed_r, "cur_rad:", cur_radius, "cur_x:", cur_object_x)
         self.move(speed_x, speed_y, speed_r)
