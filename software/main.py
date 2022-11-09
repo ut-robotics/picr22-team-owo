@@ -40,7 +40,7 @@ if __name__ == "__main__":
     fps = 0
     frame = 0
     frame_cnt = 0
-    log = Logging()
+    log = Logging(True, True)
     log.LOGI("Starting...")
     debug = False
 
@@ -59,6 +59,8 @@ if __name__ == "__main__":
     calibration_data = []
     basketColor = TargetBasket.MAGENTA # currently defaults to magenta for testing purposes
     thrower_time_start = 0
+    start_go_time_start = 0
+    start_go_first_time = 0
 
     # Vision setup
     cam = camera.RealsenseCamera(exposure = 100)
@@ -95,8 +97,8 @@ if __name__ == "__main__":
 
 
     try:
+        # Do not add anything outside of if/elif clauses to the end of the loop, otherwise use of "continue" will not let it run
         while(True):
-            #print(f"middle: {middle_x}/{middle_y}")
             # Getting camera data
             if state == State.BALL_THROW:
                 processedData = processor.process_frame(aligned_depth=True)
@@ -193,7 +195,12 @@ if __name__ == "__main__":
                 continue
 
             elif state == State.START_GO:
-                state = State.BALL_SEARCH
+                robot.move(0, 5, 0)
+                if start_go_first_time:
+                    start_go_time_start = time.perf_counter()
+                    start_go_first_time = False
+                if (start_go_time_start + 0.5 < time.perf_counter()):
+                    state = State.BALL_SEARCH
                 continue
 
             elif state == State.BALL_SEARCH:
