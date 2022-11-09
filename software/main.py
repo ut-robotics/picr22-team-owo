@@ -3,9 +3,9 @@
 # Python
 import time, sys, math
 from enum import Enum
-#sys.path.append("./picr22-boot-camp-programming")
 
 # Our code
+import gamepad
 import mainboard
 from robot_utilities import *
 import image_processor
@@ -28,10 +28,11 @@ class State(Enum):
     BALL_MOVE = 6
     BALL_ORBIT = 7
     BALL_THROW = 8
-    # Last 2 are for thrower calibration
-    INPUT = 9
-    THROWER_CALIBRATION = 10
-
+    # These 2 are for thrower calibration
+    CALIB_INPUT = 9
+    CALIB_THROW = 10
+    # Control with XBox controller
+    MANUAL = 11
 
 if __name__ == "__main__":
     # Housekeeping setup
@@ -41,6 +42,7 @@ if __name__ == "__main__":
     frame_cnt = 0
     log = Logging()
     log.LOGI("Starting...")
+    debug = False
 
     # Mainboard stuff setup
     max_speed = 10
@@ -62,6 +64,18 @@ if __name__ == "__main__":
     cam = camera.RealsenseCamera(exposure = 100)
     processor = image_processor.ImageProcessor(cam, debug=debug)
     processor.start()
+
+    # Manual control
+    xboxcont = None
+    manualcontrol = False
+
+    # Constants etc.
+    # Housekeeping
+    start = time.time()
+    fps = 0
+    frame = 0
+    frame_cnt = 0
+    # Camera constants
     middle_x = cam.rgb_width / 2
     middle_y = cam.rgb_height / 2
 
@@ -73,8 +87,14 @@ if __name__ == "__main__":
         robot_name = "OWO"
         referee.open()
 
+    if manualcontrol:
+        state = State.MANUAL
+        xboxcont = gamepad.gamepad(file = '/dev/input/event12')
+
+
     try:
         while(True):
+            #print(f"middle: {middle_x}/{middle_y}")
             # Getting camera data
             if state == State.BALL_THROW:
                 processedData = processor.process_frame(aligned_depth=True)
@@ -140,11 +160,11 @@ if __name__ == "__main__":
             # End of inactive states
 
             # States used for thrower calibration
-            elif state == State.INPUT:
+            elif state == State.CALIB_INPUT:
                 thrower_speed = int(input("Speed:")) # Input speed for thrower
-                state = State.THROWER_CALIBRATION
+                state = State.CALIB_THROW
 
-            elif state == State.THROWER_CALIBRATION: # Spin the motor for 10 seconds with the speed given in state "input"
+            elif state == State.CALIB_THROW: # Spin the motor for 10 seconds with the speed given in state "input"
                 if calib_first_time:
                     calib_first_time = False
                     start_time = time.perf_counter()
@@ -152,7 +172,8 @@ if __name__ == "__main__":
                 if (time.perf_counter() - start_time) > 10:
                     print("Average:", np.average(calibration_data))
                     print("Speed:", thrower_speed)
-                    state = State.BALL_INPUT
+
+                    state = State.CALIB_INPUT
                     calib_first_time = True
                     calibration_data = []
                     continue
@@ -160,7 +181,7 @@ if __name__ == "__main__":
                 if (processedData.basket_m.exists):
                     print("Distance:", processedData.basket_m.distance)
                     calibration_data.append(processedData.basket_m.distance)
-                    robot.throw(thrower_speed)
+                    robot.throw_raw(thrower_speed)
                 else: 
                     print("No basket")
                     continue
@@ -179,7 +200,11 @@ if __name__ == "__main__":
                     state = State.BALL_MOVE
                     continue
                 else:
-                    robot.move(0, 0, 6)
+                    if (int(time.perf_counter() * 6) % 3 == 0):
+                        robot.move(0, 0, 25)
+                    else:
+                        robot.move(0, 0, 2)
+                    #robot.move(0, 0, 6)
             # End of ball_search
             
             # Moving towards ball
@@ -200,8 +225,8 @@ if __name__ == "__main__":
                         continue
                     else:
                         if interesting_ball.x > middle_x + 2 or interesting_ball.x < middle_x - 2:
-                            speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=2000, y_scale=max_speed)
-                            speed_r = -sigmoid_controller(interesting_ball.x, middle_x, x_scale=1200, y_scale=max_speed)
+                            speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=1700, y_scale=max_speed/2)
+                            speed_r = -sigmoid_controller(interesting_ball.x, middle_x, x_scale=1000, y_scale=max_speed)
                         if interesting_ball.distance > ball_good_range:
                             speed_y = sigmoid_controller(interesting_ball.distance, ball_good_range, x_scale=1400, y_scale=max_speed)
                         print(f"x: {speed_x}, y: {speed_y}, r: {speed_r}, dist: {interesting_ball.distance}, b.x: {interesting_ball.x}, b.y: {interesting_ball.y}")
@@ -220,7 +245,8 @@ if __name__ == "__main__":
                     # For checking if the ball is still in position
                     if interesting_ball.distance > 550:
                         log.LOGE("Invalid radius, radius: " + str(interesting_ball.distance))
-                        state = State.WAIT
+                        #state = State.WAIT
+                        state = State.BALL_SEARCH
                         continue
 
                     # Determining the correct basket
@@ -234,19 +260,19 @@ if __name__ == "__main__":
                     if basket.exists:
                         print("Basket x:", basket.x, "/", middle_x)
                         #if (processedData.basket_m.x > (middle_x + 1) or processedData.basket_m.x < (middle_x - 1)):
-                        basket_tolerance = 13
+                        basket_tolerance = 14
                         if abs(basket.x - middle_x) < basket_tolerance:
                             state = State.BALL_THROW
                             thrower_time_start = time.perf_counter()
                             continue
                         
-                        speed_x = -sigmoid_controller(basket.x, middle_x, x_scale=1500, y_scale=(max_speed - 2))
+                        speed_x = -sigmoid_controller(basket.x, middle_x, x_scale=1500, y_scale=(max_speed - 3))
                         #print("rotational speed:", rot)
 
                         robot.orbit(400, speed_x, interesting_ball.distance, interesting_ball.x)
 
                     else:
-                        robot.orbit(400, 2, interesting_ball.distance, interesting_ball.x)
+                        robot.orbit(400, 2.8, interesting_ball.distance, interesting_ball.x)
                 else:
                     print("no ball........")
                     state = State.BALL_SEARCH
@@ -267,24 +293,59 @@ if __name__ == "__main__":
                     log.LOGI("THROW, distance: " + basket.distance)
                     interesting_ball = processedData.balls[-1]
 
-                if (thrower_time_start + 3 < time.perf_counter()):
+                if (thrower_time_start + 2.5 < time.perf_counter()):
                     state = State.BALL_SEARCH
 
 
-                speed_rot = -sigmoid_controller(basket.x, middle_x, x_scale=900, y_scale=(max_speed / 2))
-                if (len(processedData.balls) != 0) and interesting_ball.distance > 400 and interesting_ball.distance < 600:
-                    speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=2200, y_scale=max_speed / 3)
+                speed_rot = -sigmoid_controller(basket.x+24, middle_x, x_scale=700, y_scale=(max_speed))
+                if (len(processedData.balls) != 0) and interesting_ball.distance > 300 and interesting_ball.distance < 600:
+                    speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=900, y_scale=max_speed / 1.5)
                 else:
                     speed_x = 0
 
-                speed_y = 0.7
+                speed_y = 1.5
 
-                if (basket.distance != math.nan):
+                if (not math.isnan(basket.distance)):
                     robot.move(speed_x, speed_y, speed_rot, int(basket.distance))
                 else: 
                     robot.move(speed_x, speed_y, speed_rot, 0)
                 continue
             # End of ball_throw
+
+            elif state == State.MANUAL:
+                log.LOGSTATE("manual control")
+                if xboxcont == None:
+                    print("gamepad is None, you entered this state incorrectly")
+                    continue
+                xboxcont.read_gamepad_input()
+                joyY = 0
+                joyX = 0
+                joyRightX = 0
+                joyRTrig = 0
+                deadzone = 0.15
+
+                if xboxcont.joystick_left_y > deadzone or xboxcont.joystick_left_y < -deadzone:
+                    joyY = xboxcont.joystick_left_y
+
+                if xboxcont.joystick_left_x > deadzone or xboxcont.joystick_left_x < -deadzone:
+                    joyX = xboxcont.joystick_left_x
+
+                if xboxcont.joystick_right_x > deadzone or xboxcont.joystick_right_x < -deadzone:
+                    joyRightX = -xboxcont.joystick_right_x
+                
+                joyRTrig = xboxcont.trigger_right
+
+                #print(str(xboxcont.joystick_left_y) + " / " + str(xboxcont.joystick_left_x))
+
+                speedy = joyY * 5
+                speedx = joyX * 5
+                speedr = joyRightX * 20
+                speedthrow = joyRTrig * 1200
+
+                print("Y: " + str(speedy) + " X: " + str(speedx) + " R: " + str(speedr))
+
+                robot.move(speedx, speedy, speedr, speedthrow)
+                
 
             else: # Unknown state
                 # Considered as an error
