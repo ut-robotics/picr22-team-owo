@@ -53,11 +53,11 @@ if __name__ == "__main__":
 
     # Control logic setup
     debug = False
-    state = State.MANUAL # <====================================================== Initial state here!
+    state = State.START_WAIT # <====================================================== Initial state here!
     thrower_speed = 0
     calib_first_time = True
     calibration_data = []
-    basket_color = TargetBasket.BLUE # currently defaults to magenta for testing purposes
+    basket_color = TargetBasket.MAGENTA # currently defaults to magenta for testing purposes
     thrower_time_start = 0
     start_go_time_start = 0
     start_go_first_time = True
@@ -69,7 +69,7 @@ if __name__ == "__main__":
 
     # Manual control
     xboxcont = None
-    manualcontrol = True
+    manualcontrol = False
 
     # Constants etc.
     # Housekeeping
@@ -202,7 +202,7 @@ if __name__ == "__main__":
                     log.LOGI("Juggernaut start")
                     start_go_time_start = time.perf_counter()
                     start_go_first_time = False
-                if (start_go_time_start + 1 < time.perf_counter()):
+                if (start_go_time_start + 0.7 < time.perf_counter()):
                     log.LOGI("Juggernaut end")
                     state = State.BALL_SEARCH
                 continue
@@ -304,16 +304,16 @@ if __name__ == "__main__":
                     log.LOGI("THROW, distance: " + str(basket.distance))
                     state = State.BALL_SEARCH
 
-
-                speed_rot = -sigmoid_controller(basket.x+24, middle_x, x_scale=700, y_scale=(max_speed))
+                log.LOGI(" Basket.x: " + str(basket.x) + " ball.x " + str(interesting_ball.x) + " ball.distance: " + str(interesting_ball.distance))
+                speed_rot = -sigmoid_controller(basket.x, middle_x, x_scale=300, y_scale=max_speed)
                 if (len(processedData.balls) != 0) and interesting_ball.distance > 300 and interesting_ball.distance < 600:
-                    speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=900, y_scale=max_speed / 1.5)
+                    speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=500, y_scale=max_speed)
                 else:
                     speed_x = 0
 
                 speed_y = 1.5
 
-                if (not math.isnan(basket.distance)):
+                if not np.isnan(basket.distance):
                     robot.move(speed_x, speed_y, speed_rot, int(basket.distance))
                 else: 
                     robot.move(speed_x, speed_y, speed_rot, 0)
