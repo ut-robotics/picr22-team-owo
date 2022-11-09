@@ -53,14 +53,14 @@ if __name__ == "__main__":
 
     # Control logic setup
     debug = False
-    state = State.BALL_SEARCH # Initial state
+    state = State.MANUAL # <====================================================== Initial state here!
     thrower_speed = 0
     calib_first_time = True
     calibration_data = []
-    basketColor = TargetBasket.MAGENTA # currently defaults to magenta for testing purposes
+    basket_color = TargetBasket.BLUE # currently defaults to magenta for testing purposes
     thrower_time_start = 0
     start_go_time_start = 0
-    start_go_first_time = 0
+    start_go_first_time = True
 
     # Vision setup
     cam = camera.RealsenseCamera(exposure = 100)
@@ -69,7 +69,7 @@ if __name__ == "__main__":
 
     # Manual control
     xboxcont = None
-    manualcontrol = False
+    manualcontrol = True
 
     # Constants etc.
     # Housekeeping
@@ -82,7 +82,7 @@ if __name__ == "__main__":
     middle_y = cam.rgb_height / 2
 
     # Referee commands
-    ref_enabled = False
+    ref_enabled = True
     if ref_enabled:
         referee = ref_cmd.Referee_cmd_client(log)
         ref_first_start = True
@@ -139,13 +139,15 @@ if __name__ == "__main__":
                                 ref_first_start = False
                                 state = State.START_GO
                                 if msg["baskets"][msg["targets"].index("OWO")] == 'blue':
+                                    log.LOGI("Blue basket selected")
                                     basket_color = TargetBasket.BLUE
                                 elif msg["baskets"][msg["targets"].index("OWO")] == 'magenta':
+                                    log.LOGI("Magenta basket selected")
                                     basket_color = TargetBasket.MAGENTA
                                 else:
                                     log.LOGE("Basket color error")
                             else:
-                                state = State.BALL_SEARCH
+                                state = State.START_GO
                         elif msg["signal"] == "stop":
                             log.LOGI("Paused signal received")
                             state = State.PAUSED
@@ -195,11 +197,13 @@ if __name__ == "__main__":
                 continue
 
             elif state == State.START_GO:
-                robot.move(0, 5, 0)
+                robot.move(0, 10, 0)
                 if start_go_first_time:
+                    log.LOGI("Juggernaut start")
                     start_go_time_start = time.perf_counter()
                     start_go_first_time = False
-                if (start_go_time_start + 0.5 < time.perf_counter()):
+                if (start_go_time_start + 1 < time.perf_counter()):
+                    log.LOGI("Juggernaut end")
                     state = State.BALL_SEARCH
                 continue
 
@@ -212,8 +216,7 @@ if __name__ == "__main__":
                     if (int(time.perf_counter() * 6) % 3 == 0):
                         robot.move(0, 0, 25)
                     else:
-                        robot.move(0, 0, 2)
-                    #robot.move(0, 0, 6)
+                        robot.move(0, 0, 3)
             # End of ball_search
             
             # Moving towards ball
@@ -254,14 +257,13 @@ if __name__ == "__main__":
                     # For checking if the ball is still in position
                     if interesting_ball.distance > 550:
                         log.LOGE("Invalid radius, radius: " + str(interesting_ball.distance))
-                        #state = State.WAIT
                         state = State.BALL_SEARCH
                         continue
 
                     # Determining the correct basket
-                    if basketColor == TargetBasket.MAGENTA:
+                    if basket_color == TargetBasket.MAGENTA:
                         basket = processedData.basket_m
-                    elif basketColor == TargetBasket.BLUE:
+                    elif basket_color == TargetBasket.BLUE:
                         basket = processedData.basket_b
                     else:
                         log.LOGE("Basket color invalid")
@@ -288,9 +290,9 @@ if __name__ == "__main__":
             elif state == State.BALL_THROW:
                 log.LOGSTATE("ball_throw")
 
-                if basketColor == TargetBasket.MAGENTA:
+                if basket_color == TargetBasket.MAGENTA:
                     basket = processedData.basket_m
-                elif basketColor == TargetBasket.BLUE:
+                elif basket_color == TargetBasket.BLUE:
                     basket = processedData.basket_b
                 else:
                     log.LOGE("Basket color invalid")
@@ -298,7 +300,7 @@ if __name__ == "__main__":
                 if len(processedData.balls) > 0:
                     interesting_ball = processedData.balls[-1]
 
-                if (thrower_time_start + 2.5 < time.perf_counter()):
+                if (thrower_time_start + 2.0 < time.perf_counter()):
                     log.LOGI("THROW, distance: " + str(basket.distance))
                     state = State.BALL_SEARCH
 
@@ -320,7 +322,7 @@ if __name__ == "__main__":
 
             elif state == State.MANUAL:
                 log.LOGSTATE("manual control")
-                if xboxcont == None:
+                if xboxcont is None:
                     log.LOGE("gamepad is None, you entered this state incorrectly")
                     continue
                 xboxcont.read_gamepad_input()
