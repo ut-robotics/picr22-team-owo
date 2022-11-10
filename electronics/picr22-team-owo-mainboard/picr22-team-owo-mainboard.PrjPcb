@@ -116,20 +116,105 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=HQJPSDGD
 
+[Document5]
+DocumentPath=productionfile.Cam
+AnnotationEnabled=1
+AnnotateStartValue=1
+AnnotationIndexControlEnabled=0
+AnnotateSuffix=
+AnnotateScope=All
+AnnotateOrder=-1
+DoLibraryUpdate=1
+DoDatabaseUpdate=1
+ClassGenCCAutoEnabled=1
+ClassGenCCAutoRoomEnabled=1
+ClassGenNCAutoScope=None
+DItemRevisionGUID=
+GenerateClassCluster=0
+DocumentUniqueId=
+
 [GeneratedDocument1]
 DocumentPath=Project Outputs for picr22-team-owo-mainboard\Design Rule Check - picr22-team-owo-mainboard.html
 DItemRevisionGUID=
 
 [GeneratedDocument2]
-DocumentPath=Project Outputs for picr22-team-owo-mainboard\picr22-team-owo-mainboard.EXTREP
+DocumentPath=Project Outputs for picr22-team-owo-mainboard\picr22-team-owo-mainboard-RoundHoles.TXT
 DItemRevisionGUID=
 
 [GeneratedDocument3]
-DocumentPath=Project Outputs for picr22-team-owo-mainboard\picr22-team-owo-mainboard.REP
+DocumentPath=Project Outputs for picr22-team-owo-mainboard\picr22-team-owo-mainboard-SlotHoles.TXT
 DItemRevisionGUID=
 
 [GeneratedDocument4]
+DocumentPath=Project Outputs for picr22-team-owo-mainboard\picr22-team-owo-mainboard.DRR
+DItemRevisionGUID=
+
+[GeneratedDocument5]
+DocumentPath=Project Outputs for picr22-team-owo-mainboard\picr22-team-owo-mainboard.EXTREP
+DItemRevisionGUID=
+
+[GeneratedDocument6]
+DocumentPath=Project Outputs for picr22-team-owo-mainboard\picr22-team-owo-mainboard.LDP
+DItemRevisionGUID=
+
+[GeneratedDocument7]
+DocumentPath=Project Outputs for picr22-team-owo-mainboard\picr22-team-owo-mainboard.REP
+DItemRevisionGUID=
+
+[GeneratedDocument8]
 DocumentPath=Project Outputs for picr22-team-owo-mainboard\picr22-team-owo-mainboard.RUL
+DItemRevisionGUID=
+
+[GeneratedDocument9]
+DocumentPath=Project Outputs for picr22-team-owo-mainboard\picr22-team-owo-mainboard_Copper_Signal_1.gbr
+DItemRevisionGUID=
+
+[GeneratedDocument10]
+DocumentPath=Project Outputs for picr22-team-owo-mainboard\picr22-team-owo-mainboard_Copper_Signal_2.gbr
+DItemRevisionGUID=
+
+[GeneratedDocument11]
+DocumentPath=Project Outputs for picr22-team-owo-mainboard\picr22-team-owo-mainboard_Copper_Signal_Bot.gbr
+DItemRevisionGUID=
+
+[GeneratedDocument12]
+DocumentPath=Project Outputs for picr22-team-owo-mainboard\picr22-team-owo-mainboard_Copper_Signal_Top.gbr
+DItemRevisionGUID=
+
+[GeneratedDocument13]
+DocumentPath=Project Outputs for picr22-team-owo-mainboard\picr22-team-owo-mainboard_Legend_Bot.gbr
+DItemRevisionGUID=
+
+[GeneratedDocument14]
+DocumentPath=Project Outputs for picr22-team-owo-mainboard\picr22-team-owo-mainboard_Legend_Top.gbr
+DItemRevisionGUID=
+
+[GeneratedDocument15]
+DocumentPath=Project Outputs for picr22-team-owo-mainboard\picr22-team-owo-mainboard_NPTH_Drill.gbr
+DItemRevisionGUID=
+
+[GeneratedDocument16]
+DocumentPath=Project Outputs for picr22-team-owo-mainboard\picr22-team-owo-mainboard_Paste_Bot.gbr
+DItemRevisionGUID=
+
+[GeneratedDocument17]
+DocumentPath=Project Outputs for picr22-team-owo-mainboard\picr22-team-owo-mainboard_Paste_Top.gbr
+DItemRevisionGUID=
+
+[GeneratedDocument18]
+DocumentPath=Project Outputs for picr22-team-owo-mainboard\picr22-team-owo-mainboard_Profile.gbr
+DItemRevisionGUID=
+
+[GeneratedDocument19]
+DocumentPath=Project Outputs for picr22-team-owo-mainboard\picr22-team-owo-mainboard_PTH_Drill.gbr
+DItemRevisionGUID=
+
+[GeneratedDocument20]
+DocumentPath=Project Outputs for picr22-team-owo-mainboard\picr22-team-owo-mainboard_Soldermask_Bot.gbr
+DItemRevisionGUID=
+
+[GeneratedDocument21]
+DocumentPath=Project Outputs for picr22-team-owo-mainboard\picr22-team-owo-mainboard_Soldermask_Top.gbr
 DItemRevisionGUID=
 
 [Configuration1]
@@ -421,6 +506,10 @@ OutputName1=NC Drill Files
 OutputDocumentPath1=
 OutputVariantName1=
 OutputDefault1=0
+Configuration1_Name1=ForceUpdateSettings
+Configuration1_Item1=False
+Configuration1_Name2=OutputConfigurationParameter1
+Configuration1_Item2=BoardEdgeRoutToolDia=2000000|GenerateBoardEdgeRout=False|GenerateDrilledSlotsG85=False|GenerateEIADrillFile=False|GenerateSeparatePlatedNonPlatedFiles=False|GenerateSeparateViaTypeFiles=False|NumberOfDecimals=4|NumberOfUnits=4|OptimizeChangeLocationCommands=True|OriginPosition=Relative|Record=DrillView|Units=Metric|ZeroesMode=SuppressTrailingZeroes|DocumentPath=C:\Users\eksia\Documents\Kooliasjad\3. semester\picr22-team-owo\electronics\picr22-team-owo-mainboard\picr22-team-owo-mainboard.PcbDoc
 OutputType2=Mask
 OutputName2=Solder/Paste Mask Prints
 OutputDocumentPath2=
@@ -471,6 +560,10 @@ OutputName10=Gerber X2 Files
 OutputDocumentPath10=
 OutputVariantName10=[No Variations]
 OutputDefault10=0
+Configuration10_Name1=ForceUpdateSettings
+Configuration10_Item1=False
+Configuration10_Name2=OutputConfigurationParameter1
+Configuration10_Item2=FileComment= |FileSubject=Autodetect|GenerateDRCRulesFile=True|GenerateReports=True|GerberUnit=Metric|IncludeUnconnectedMidLayerPads=True|MergePadAndRegion=False|MinusApertureTolerance=39|NumberOfDecimals=5|OptimizeChangeLocationCommands=True|PlotBackDrillingPairs=False|PlotBlindViasPairs=False|PlotBoardProfile=True|PlotCounterHolesPairs=False|PlotDrillDrawingPairs=False|PlotDrillGuidePairs=False|PlotMicroViasPairs=False|PlotNPTHPair0_Backdrill=False|PlotNPTHPair0_DrillType=Regular|PlotNPTHPair0_HighLayer=Top Layer|PlotNPTHPair0_LowLayer=Bottom Layer|PlotNPTHPairs=False|PlotPTHPair0_Backdrill=False|PlotPTHPair0_DrillType=Regular|PlotPTHPair0_HighLayer=Top Layer|PlotPTHPair0_LowLayer=Bottom Layer|PlotPTHPairs=False|PlotViaTypeDrillDrawingPairs=False|PlotViaTypeDrillGuidePairs=False|PlotViaTypeDrillPairs=False|PlotX2.Set=SerializeLayerHash.Version~2,ClassName~TPlotLayerStateArray,16777217~1,16777219~1,16973831~1,16973835~1,16973833~1,16973830~1,16973832~1,16842751~1,16973834~1,16777218~1|PlusApertureTolerance=39|Record=GerberX2View|Sorted=False|DocumentPath=C:\Users\eksia\Documents\Kooliasjad\3. semester\picr22-team-owo\electronics\picr22-team-owo-mainboard\picr22-team-owo-mainboard.PcbDoc
 OutputType11=Final
 OutputName11=Final Artwork Prints
 OutputDocumentPath11=
