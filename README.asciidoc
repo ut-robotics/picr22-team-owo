@@ -157,7 +157,7 @@ Personal comments:
 === Mon, 24.10.22
 *Andres:* Task reviews, NUC fixing 1 h +
 *Sander:* Chassis design and various improvements 4 h +
-*Johannes:* Task reviews, image processing modifications 4 h
+*Johannes:* Task reviews, image processing modifications 4 h +
 *Kert:* Helping with task reviews, improving the camera mount and other little tweaks 4.5 h +
 
 === Tue, 25.10.22
@@ -175,16 +175,26 @@ Personal comments:
 *Kert:* Camera mount design troubleshooting and bottom & top plate modifications 2.5 h +
 *Sander:* Various improvements and wheel manufacturing 7.5 h +
 *Artur:* Picking the microcontroller timer layout, improving the schematic and designing the pcb 4 h +
+*Johannes:* Remote control with gamepad implementation 4 h
 
 === Tue, 01.11.22
 *Sander:* Chassis design and various improvements 3 h +
 *Kert:* Chassis design and camera mount modifications 4.5 h +
 
+=== Thu, 03.11.12
+*Johannes:* Improving line detection, improving robot stability 5 h +
+
+=== Sun, 06.11.12
+*Johannes:* Line detection redesign, new thrower ramp calibration 2.5 h +
+
 === Mon, 07.11.22
 *Sander:* Wheel manufacturing and 3d printing 7 h +
+*Johannes:* New thrower ramp calibration 2.5 h +
 
 === Tue, 08.11.22
 *Sander:* Wheel manufacturing and 3d printing 6 h +
+*Johannes:* Line detection reform reform, throwing calibrations 3.5 h +
 
 === Wed, 09.11.22
 *Sander:* Chassis design and various improvements 3 h +
+*Johannes:* Robot movement and throwing stabilisations 2 h +
