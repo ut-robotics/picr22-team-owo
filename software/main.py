@@ -53,11 +53,11 @@ if __name__ == "__main__":
 
     # Control logic setup
     debug = False
-    state = State.START_WAIT # <====================================================== Initial state here!
+    state = State.WAIT # <====================================================== Initial state here!
     thrower_speed = 0
     calib_first_time = True
     calibration_data = []
-    basket_color = TargetBasket.MAGENTA # currently defaults to magenta for testing purposes
+    basket_color = TargetBasket.BLUE    # currently defaults to magenta for testing purposes
     thrower_time_start = 0
     start_go_time_start = 0
     start_go_first_time = True
@@ -82,7 +82,7 @@ if __name__ == "__main__":
     middle_y = cam.rgb_height / 2
 
     # Referee commands
-    ref_enabled = True
+    ref_enabled = False
     if ref_enabled:
         referee = ref_cmd.Referee_cmd_client(log)
         ref_first_start = True
@@ -202,7 +202,7 @@ if __name__ == "__main__":
                     log.LOGI("Juggernaut start")
                     start_go_time_start = time.perf_counter()
                     start_go_first_time = False
-                if (start_go_time_start + 0.7 < time.perf_counter()):
+                if (start_go_time_start + 0.6 < time.perf_counter()): # Yandalf - changed from 0.7 to 0.6
                     log.LOGI("Juggernaut end")
                     state = State.BALL_SEARCH
                 continue
@@ -306,7 +306,7 @@ if __name__ == "__main__":
 
                 log.LOGI(" Basket.x: " + str(basket.x) + " ball.x " + str(interesting_ball.x) + " ball.distance: " + str(interesting_ball.distance))
                 speed_rot = -sigmoid_controller(basket.x, middle_x, x_scale=300, y_scale=max_speed)
-                if (len(processedData.balls) != 0) and interesting_ball.distance > 300 and interesting_ball.distance < 600:
+                if (len(processedData.balls) != 0) and interesting_ball.distance > 250 and interesting_ball.distance < 500:
                     speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=500, y_scale=max_speed)
                 else:
                     speed_x = 0
