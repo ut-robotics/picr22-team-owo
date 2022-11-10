@@ -57,7 +57,7 @@ if __name__ == "__main__":
     thrower_speed = 0
     calib_first_time = True
     calibration_data = []
-    basket_color = TargetBasket.BLUE    # currently defaults to magenta for testing purposes
+    basket_color = TargetBasket.BLUE # currently defaults to magenta for testing purposes
     thrower_time_start = 0
     start_go_time_start = 0
     start_go_first_time = True
@@ -77,6 +77,7 @@ if __name__ == "__main__":
     fps = 0
     frame = 0
     frame_cnt = 0
+    hasthrown = False
     # Camera constants
     middle_x = cam.rgb_width / 2
     middle_y = cam.rgb_height / 2
@@ -134,22 +135,25 @@ if __name__ == "__main__":
                         if msg["signal"] == "start":
                             log.LOGI("Start signal received")
                             # ref_first_start used if we want to differentiate between start of the match and resuming from a stop
+                            if msg["baskets"][msg["targets"].index("OWO")] == 'blue':
+                                log.LOGI("Blue basket selected")
+                                basket_color = TargetBasket.BLUE
+                            elif msg["baskets"][msg["targets"].index("OWO")] == 'magenta':
+                                log.LOGI("Magenta basket selected")
+                                basket_color = TargetBasket.MAGENTA
+                            else:
+                                log.LOGE("Basket color error")
                             if ref_first_start:
                                 log.LOGI("Match started!")
                                 ref_first_start = False
                                 state = State.START_GO
-                                if msg["baskets"][msg["targets"].index("OWO")] == 'blue':
-                                    log.LOGI("Blue basket selected")
-                                    basket_color = TargetBasket.BLUE
-                                elif msg["baskets"][msg["targets"].index("OWO")] == 'magenta':
-                                    log.LOGI("Magenta basket selected")
-                                    basket_color = TargetBasket.MAGENTA
-                                else:
-                                    log.LOGE("Basket color error")
+                                start_go_time_start = time.perf_counter()
                             else:
+                                log.LOGI("Match resumed!")
                                 state = State.START_GO
+                                start_go_time_start = time.perf_counter()
                         elif msg["signal"] == "stop":
-                            log.LOGI("Paused signal received")
+                            log.LOGI("Match paused!")
                             state = State.PAUSED
             # End of referee commands
 
@@ -198,10 +202,10 @@ if __name__ == "__main__":
 
             elif state == State.START_GO:
                 robot.move(0, 10, 0)
-                if start_go_first_time:
-                    log.LOGI("Juggernaut start")
-                    start_go_time_start = time.perf_counter()
-                    start_go_first_time = False
+                #if start_go_first_time:
+                log.LOGI("Juggernaut start")
+                    
+                    #start_go_first_time = False
                 if (start_go_time_start + 0.6 < time.perf_counter()): # Yandalf - changed from 0.7 to 0.6
                     log.LOGI("Juggernaut end")
                     state = State.BALL_SEARCH
