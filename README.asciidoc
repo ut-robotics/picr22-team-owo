@@ -198,3 +198,6 @@ Personal comments:
 === Wed, 09.11.22
 *Sander:* Chassis design and various improvements 3 h +
 *Johannes:* Robot movement and throwing stabilisations 2 h +
+
+=== Thu, 10.11.22
+*Sander:* Design improvements and 3d printing, test competition 4,5 h +
