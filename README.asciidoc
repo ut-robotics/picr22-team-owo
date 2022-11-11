@@ -201,3 +201,6 @@ Personal comments:
 
 === Thu, 10.11.22
 *Sander:* Design improvements and 3d printing, test competition 4,5 h +
+
+=== Fri, 11.11.22
+*Sander:* Design improvements 2 h +
