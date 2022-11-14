@@ -191,8 +191,12 @@ Link to the robot's assembly: https://a360.co/3FA4tEU
 *Johannes:* Improving line detection, improving robot stability 5 h +
 *Andres:* Referee commands, thrower (re)design ideas, code cleanup 3 h + 
 
+=== Sat, 5.11.12
+*Artur:* Improving the pcb design 2 h +
+
 === Sun, 06.11.12
 *Johannes:* Line detection redesign, new thrower ramp calibration 2.5 h +
+*Artur:* Fixing design issues with the pcb 4 h +
 
 === Mon, 07.11.22
 *Sander:* Wheel manufacturing and 3d printing 7 h +
@@ -208,12 +212,16 @@ Link to the robot's assembly: https://a360.co/3FA4tEU
 *Sander:* Chassis design and various improvements 3 h +
 *Johannes:* Robot movement and throwing stabilisations 2 h +
 *Andres:* Merge, mechanics discussion, acceleration limiter 6.5 h +
+*Artur:* Fixing design issues with the pcb 2.5 h +
 
 === Thu, 10.11.22
 *Sander:* Design improvements and 3d printing, test competition 4,5 h +
 *Andres:* Test competition 5 h +
+*Artur:* Fixing design issues with the pcb 2.5 h +
 
 === Fri, 11.11.22
 *Sander:* Design improvements 3 h +
+*Artur:* Finalising the design 1 h +
 
 === Mon, 14.11.22
+*Artur:* Starting with the firmware 0.5 h +
