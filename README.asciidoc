@@ -2,7 +2,7 @@
 
 ==== Members: 
 * Artur Eksi
-*Sander Miller
+* Sander Miller
 * Andres Aleksander Tammer
 * Kert Karsna
 * Johannes Voldemar Langsepp
@@ -10,7 +10,7 @@
 ==== Sources:
 
 
-====Programming:
+==== Programming:
 The robot will automatically connect to the pwir wifi. Then it can be accessed via ssh using the hostname OWO.
 
 ==== Electronics:
