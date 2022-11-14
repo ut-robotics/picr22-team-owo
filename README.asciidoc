@@ -1,21 +1,26 @@
 = Team OWO
 
-Members: Artur Eksi, Sander Miller, Andres Aleksander Tammer, Kert Karsna, Johannes Voldemar Langsepp
+==== Members: 
+* Artur Eksi
+*Sander Miller
+* Andres Aleksander Tammer
+* Kert Karsna
+* Johannes Voldemar Langsepp
 
-Sources:
+==== Sources:
 
 
-Programming:
+====Programming:
 The robot will automatically connect to the pwir wifi. Then it can be accessed via ssh using the hostname OWO.
 
-Electronics:
+==== Electronics:
 
 
-Mechanics:
+==== Mechanics:
 Link to the robot's assembly: https://a360.co/3FA4tEU
 
 
-Personal comments:
+==== Personal comments:
 
 
 == BLOG
