@@ -222,6 +222,7 @@ Link to the robot's assembly: https://a360.co/3FA4tEU
 *Andres:* Test competition 5 h +
 *Artur:* Fixing design issues with the pcb 2.5 h +
 *Kert:* Test competition, support and cheering for team 4 h +
+*Johannes: * Test competition victory 6 h 
 
 === Fri, 11.11.22
 *Sander:* Design improvements 3 h +
