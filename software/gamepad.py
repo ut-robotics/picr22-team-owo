@@ -36,11 +36,15 @@ class gamepad():
         max_abs_joystick_right_x = 0xFFFF/2
         uncertainty_joystick_right_x = 2000
         max_trigger = 1023
+        self.button_b = False
+        self.button_x = False
+        self.button_y = False
 
         while True:
         #for event in self.device_file.read_loop():
             #print(str(event))
             event = self.device_file.read_one()
+            #print(event)
             if event == None:
                 break
 

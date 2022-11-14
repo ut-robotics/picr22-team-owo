@@ -78,6 +78,7 @@ if __name__ == "__main__":
     frame = 0
     frame_cnt = 0
     hasthrown = False
+    manualtriggers = 0
     # Camera constants
     middle_x = cam.rgb_width / 2
     middle_y = cam.rgb_height / 2
@@ -92,9 +93,11 @@ if __name__ == "__main__":
     if (not ref_enabled) and state == State.START_WAIT:
         log.LOGE("Referee not enabled, but initial state is START_WAIT")
 
-    if manualcontrol:
-        state = State.MANUAL
+    
+    try:
         xboxcont = gamepad.gamepad(file = '/dev/input/event12')
+    except FileNotFoundError:
+        log.LOGW("Controller not connected")
 
 
     try:
@@ -105,6 +108,29 @@ if __name__ == "__main__":
                 processedData = processor.process_frame(aligned_depth=True)
             else:
                 processedData = processor.process_frame(aligned_depth=False)
+
+            # Manual Controller managing
+            if xboxcont is not None:
+                xboxcont.read_gamepad_input()
+
+                if xboxcont.button_b:
+                    log.LOGE("Code stopped by manual kill switch..")
+                    break
+
+                if not xboxcont.button_x and manualtriggers >= 2:
+                    manualtriggers = 0
+
+                elif xboxcont.button_x and state != State.MANUAL and manualtriggers == 0:
+                    state = State.MANUAL
+                    manualtriggers += 1
+                    continue
+                elif xboxcont.button_x and state == State.MANUAL and manualtriggers == 0:
+                    state = State.BALL_SEARCH
+                    manualtriggers += 1
+                    continue
+                elif xboxcont.button_x:
+                    manualtriggers += 1
+                
 
             # Housekeeping stuff
             frame_cnt +=1
