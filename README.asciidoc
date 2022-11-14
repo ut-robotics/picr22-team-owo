@@ -230,3 +230,4 @@ Link to the robot's assembly: https://a360.co/3FA4tEU
 === Mon, 14.11.22
 *Artur:* Starting with the firmware 0.5 h +
 *Kert:* Chassis design and fixes based on feedback 1 h +
+*Sander:* Design improvements 3 h +
