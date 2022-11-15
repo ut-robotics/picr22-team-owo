@@ -69,7 +69,7 @@ if __name__ == "__main__":
 
     # Manual control
     xboxcont = None
-    manualcontrol = False
+    manualcontrol = True
 
     # Constants etc.
     # Housekeeping
