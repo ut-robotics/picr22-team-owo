@@ -15,6 +15,8 @@ import ref_cmd
 # External dependencies
 import cv2
 
+# Argparser: ref_ip, ref_port, start_state, config_file, basket, 
+
 class TargetBasket(Enum):
     MAGENTA = 1
     BLUE = 2
@@ -69,7 +71,6 @@ if __name__ == "__main__":
 
     # Manual control
     xboxcont = None
-    manualcontrol = True
 
     # Constants etc.
     # Housekeeping
@@ -224,12 +225,13 @@ if __name__ == "__main__":
             # End of states used for thrower calibration
 
             elif state == State.START_WAIT:
+                log.LOGSTATE("Start wait")
                 continue
 
             elif state == State.START_GO:
                 robot.move(0, 10, 0)
                 #if start_go_first_time:
-                log.LOGI("Juggernaut start")
+                log.LOGSTATE("Juggernaut")
                     
                     #start_go_first_time = False
                 if (start_go_time_start + 0.6 < time.perf_counter()): # Yandalf - changed from 0.7 to 0.6

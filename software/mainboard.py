@@ -34,7 +34,6 @@ class Mainboard():
         self.baud_rate = 115200
 
         # Orbiting constants
-        self.buffer_r = 1
         self.buffer_x = 1
         self.middle_x = 424
 
