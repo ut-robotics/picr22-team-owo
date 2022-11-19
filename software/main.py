@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 # Python
-import time, sys, math
+import time, sys, math, argparse
 from enum import Enum
 
 # Our code
@@ -11,6 +11,7 @@ from robot_utilities import *
 import image_processor
 import camera
 import ref_cmd
+import config_parser
 
 # External dependencies
 import cv2
@@ -36,70 +37,102 @@ class State(Enum):
     MANUAL = 11
 
 if __name__ == "__main__":
+    # Command line arguments
+    parser = argparse.ArgumentParser()
+    # Options for overriding default (config file) values for config file name, start state, referee server ip and port, basket color
+    # If the command line argument is provided it always overrides the config file value
+    parser.add_argument("-c", "--conf_file", help="config file name, do not add config folder to the name")
+    parser.add_argument("-s", "--start_state", help="State in which the robots starts", type=int)
+    parser.add_argument("--ip", help="ip adress of referee server")
+    parser.add_argument("--port", help="port of the referee server")
+    parser.add_argument("-b", "--basket", help="Into which basket robot throws balls", choices=["blue", "magenta"])
+    parser.add_argument("-d", "--debug", help="Debug mode active or not", action="store_true")
+
+    args = parser.parse_args()
+
+    # Config
+    if args.conf_file is None:
+        config = config_parser.Config_parser("default_config.toml")
+    else:
+        config = config_parser.Config_parser(args.conf_file)
+
+    if config is None:
+        # Reading the config file faileds
+        print("Reading the config failed")
+        sys.exit()
+
     # Housekeeping setup
     start = time.time()
     fps = 0
     frame = 0
     frame_cnt = 0
-    log = Logging(True, True)
+    log = Logging(config)
     log.LOGI("Starting...")
-    debug = False
 
-    # Mainboard stuff setup
-    max_speed = 10
-    max_speed_inner = 15
-    ball_good_range = 300
-    robot = mainboard.Mainboard(max_speed_inner, log)
-    robot.start()
-
-    # Control logic setup
-    debug = False
-    state = State.WAIT # <====================================================== Initial state here!
-    thrower_speed = 0
-    calib_first_time = True
-    calibration_data = []
-    basket_color = Target_basket.BLUE # currently defaults to magenta for testing purposes
+    # Logic setup
+    logic_conf = config.get_logic_dict()
+    robot_name = logic_conf["robot_name"]
+    manual_enabled = logic_conf["manual_enabled"]
+    referee_enabled = logic_conf["referee_enabled"]
+    max_speed = logic_conf["max_speed"]
     thrower_time_start = 0
     start_go_time_start = 0
     start_go_first_time = True
+    # Starting state
+    if args.start_state is None:
+        state = State(logic_conf["start_state"])
+    else:
+        state = State(args.start_state)
+    # Debug
+    if args.debug is None:
+        debug = logic_conf["debug"]
+    else:
+        debug = args.debug
+    # Basket
+    if args.basket is None:
+        basket_color = Target_basket(logic_conf["basket"])
+    else:
+        if args.basket == "blue":
+            basket_color = Target_basket.BLUE
+        elif args.basket == "magenta":
+            basket_color = Target_basket.MAGENTA
+
+    # Mainboard stuff setup
+    robot = mainboard.Mainboard(config, log)
+    robot.start()
 
     # Vision setup
-    cam = camera.RealsenseCamera(exposure = 100)
+    cam = camera.RealsenseCamera(config)
     processor = image_processor.ImageProcessor(cam, debug=debug)
     processor.start()
-
-    # Manual control
-    xbox_cont = None
-    manual_control = True
-
-    # Constants etc.
-    # Housekeeping
-    start = time.time()
-    fps = 0
-    frame = 0
-    frame_cnt = 0
-    has_thrown = False
-    manual_triggers = 0
-    # Camera constants
     middle_x = cam.rgb_width / 2
     middle_y = cam.rgb_height / 2
 
-    # Referee commands
-    ref_enabled = False
-    if ref_enabled:
-        robot_name = "OWO"
-        referee = ref_cmd.Referee_cmd_client(log)
-        ref_first_start = True
-        referee.open()
-    if (not ref_enabled) and state == State.START_WAIT:
-        log.LOGE("Referee not enabled, but initial state is START_WAIT")
-
-    
+    # Manual control setup
+    xbox_cont = None
+    manual_triggers = 0
     try:
         xbox_cont = gamepad.Gamepad(file = '/dev/input/event12')
     except FileNotFoundError:
         log.LOGW("Controller not connected")
 
+    # Referee commands
+    if referee_enabled:
+        referee = ref_cmd.Referee_cmd_client(log)
+        ref_first_start = True
+        referee.open()
+    if (not referee_enabled) and state == State.START_WAIT:
+        log.LOGE("Referee not enabled, but initial state is START_WAIT")
+
+    # State machine setup
+    ball_good_range = 300
+    has_thrown = False
+
+
+    # Calibration setup
+    thrower_speed = 0
+    calib_first_time = True
+    calibration_data = []
 
     try:
         # Do not add anything outside of if/elif state clauses to the end of the loop, otherwise use of "continue" will not let it run
@@ -111,7 +144,7 @@ if __name__ == "__main__":
                 processed_data = processor.process_frame(aligned_depth=False)
 
             # Manual Controller managing
-            if xbox_cont is not None:
+            if xbox_cont is not None and manual_enabled:
                 xbox_cont.read_gamepad_input()
 
                 if xbox_cont.button_b:
@@ -155,7 +188,7 @@ if __name__ == "__main__":
             # End of housekeeping
 
             # Referee command handling
-            if ref_enabled:
+            if referee_enabled:
                 msg = referee.get_cmd()
                 if msg is not None:
                     if robot_name in msg["targets"]:
@@ -386,7 +419,6 @@ if __name__ == "__main__":
 
                 robot.move(speedx, speedy, speedr, speedthrow)
                 
-
             else: # Unknown state
                 # Considered as an error
                 log.LOGSTATE("unknown state")

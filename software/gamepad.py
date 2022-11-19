@@ -9,10 +9,12 @@ import asyncio
 from evdev import InputDevice, ff, ecodes
 
 class Gamepad():
-    def __init__(self, file = '/dev/input/event12'):
+    def __init__(self, config):
+        conf_dict = config.get_module_dict("gamepad")
+
         #self.event_value = 0
         self.power_on = True
-        self.device_file = InputDevice(file)
+        self.device_file = InputDevice(conf_dict["port"])
         #print(str(self.device_file))
         self.joystick_left_y = 0 # values are mapped to [-1 ... 1]
         self.joystick_left_x = 0 # values are mapped to [-1 ... 1]

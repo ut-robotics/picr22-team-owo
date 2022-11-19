@@ -2,23 +2,29 @@ title = "default_config"
 
 [logic]
 debug = false
+robot_name = "OWO"
 state = 1 # WAIT: 1, START_WAIT: 3, CALIB_INPUT: 9,
 basket = 1 # MAGENTA: 1, BLUE: 2
+manual_enabled = true
+referee_enabled = false
+max_speed = 10
 
-[referee]
-enabled = true
-robot_name = "OWO"
+[modules]
+
+[modules.referee]
 ip = "192.168.3.19"
 port = "8222"
 
-[logger]
+[modules.logger]
 print_enabled = true
 file_enabled = true
 
-[manual]
+[modules.gamepad]
 port = '/dev/input/event12'
 
-[mainboard]
+[modules.mainboard]
+# Some values taken from here:
+# https://ut-robotics.github.io/picr22-home/basketball_robot_guide/software/omni_motion.html
 wheel_angles = [240, 120, 0]
 encoder_edges_per_motor_revolution = 64
 gearbox_ratio = 18.75
@@ -28,5 +34,64 @@ pid_control_frequency = 60 #Hz
 max_speed = 15
 hwid = "USB VID:PID=0483:5740"
 baud_rate = 115200
+x_buffer = 1
 r_const = 5
 y_const = 1
+
+[modules.camera]
+rgb_width = 848
+rgb_height = 480
+rgb_framerate = 60
+depth_width = 848
+depth_height = 480
+depth_framerate = 60
+exposure = 100
+white_balace = 3500
+depth_enabled = true
+
+
+[states]
+
+[states.start_go]
+juggernaut_time = 0.6
+
+[states.ball_search]
+# Should also add delay here somehow
+# Currently difficult because how it is implemented
+rotation_speed_slow = 3
+rotation_speed_fast = 25
+
+[states.ball_move]
+distance_into_orbit = 475 # mm
+distance_ball_good_range = 300 # mm
+x_speed_x_scale = 1700
+r_speed_x_scale = 1000
+y_speed_x_scale = 1400
+x_speed_y_multiplier = 0.5 # These are multipliers of max speed
+r_speed_y_multiplier = 1
+y_speed_y_multiplier = 1
+
+[states.ball_orbit]
+out_range_radius = 550
+orbit_radius = 400
+basket_x_tolerance = 14
+x_speed_x_scale = 1500
+x_speed_y_multiplier = 0.75
+no_basket_orbit_speed = 2.8
+
+[states.ball_throw]
+throw_drive_time = 2.0
+y_speed = 1.5
+r_speed_x_scale = 300
+r_speed_y_multiplier = 1
+x_speed_x_scale = 500
+x_speed_y_multiplier = 1
+ball_min_radius = 250
+ball_max_radius = 500
+
+[states.manual]
+deadzone = 0.15
+y_scaling = 5
+x_scaling = 5
+r_scaling = 20
+thrower_scaling = 1200

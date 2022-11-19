@@ -19,32 +19,25 @@ class ICamera:
 
 # Camera implementation using the pyrealsense2 provided API 
 class RealsenseCamera(ICamera):
-    def __init__(self, 
-                rgb_width = 848, 
-                rgb_height = 480,
-                rgb_framerate = 60,
-                depth_width = 848, 
-                depth_height = 480,
-                depth_framerate = 60,
-                exposure = 50, 
-                white_balace = 3500,
-                depth_enabled = True):
+    def __init__(self, config):
+        conf_dict = config.get_module_dict("camera")
 
-        self.rgb_width = rgb_width
-        self.rgb_height = rgb_height
-        self.rgb_framerate = rgb_framerate
-        self.exposure = exposure
-        self.white_balace = white_balace
+        self.rgb_width = conf_dict["rgb_width"]
+        self.rgb_height = conf_dict["rgb_height"]
+        self.rgb_framerate = conf_dict["rgb_framerate"]
+        self.exposure = conf_dict["exposure"]
+        self.white_balace = conf_dict["white_balace"]
 
-        self.depth_width = depth_width
-        self.depth_height = depth_height
-        self.depth_framerate = depth_framerate
+        self.depth_width = conf_dict["depth_width"]
+        self.depth_height = conf_dict["depth_height"]
+        self.depth_framerate = conf_dict["depth_framerate"]
 
         self.pipeline = rs.pipeline()
         self.config = rs.config()
         self.config.enable_stream(rs.stream.color, self.rgb_width, self.rgb_height, rs.format.bgr8, self.rgb_framerate)
         
-        self.depth_enabled = depth_enabled
+        self.depth_enabled = conf_dict["depth_enabled"]
+
         if self.depth_enabled:
             self.config.enable_stream(rs.stream.depth, self.depth_width, self.depth_height, rs.format.z16, self.depth_framerate)
             

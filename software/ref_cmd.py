@@ -4,9 +4,9 @@ import websocket as wsc
 import robot_utilities
 
 class Referee_cmd_client:
-    def __init__(self, logger):
-        self.ip = "192.168.3.19" #"192.168.3.220"
-        self.port = "8222"
+    def __init__(self, config, logger):
+        self.ip = config["ip"] #192.168.3.___
+        self.port = config["port"]
         self.logger = logger
         self.queue = mp.Queue()
         self.logger.LOGI("Referee cmd client initialized")

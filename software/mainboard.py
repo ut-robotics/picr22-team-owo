@@ -4,41 +4,41 @@ import math, struct, time, sys
 import numpy as np
 import serial, serial.tools.list_ports
 from robot_utilities import *
+import config_parser
 
 class SerialPortNotFound(Exception):
     def __init__(self):
         super().__init__("Serial port with given hardware id not found")
 
 class Mainboard():
-    def __init__(self, max_speed, logger):
+    def __init__(self, config, logger):
+        conf_dict = config.get_module_dict("mainboard")
+
         # General movement constants
-        # Some values taken from here:
-        # https://ut-robotics.github.io/picr22-home/basketball_robot_guide/software/omni_motion.html
-        self.wheel_angles = np.radians([240, 120, 0]) #radians
-        self.encoder_edges_per_motor_revolution = 64
-        self.gearbox_ratio = 18.75 # 19?
-        self.wheel_radius = 0.365 #meters
-        self.wheel_distance_from_center = 0.15 #meters
+        self.wheel_angles = conf_dict["wheel_angles"]
+        self.encoder_edges_per_motor_revolution = conf_dict["encoder_edges_per_motor_revolution"]
+        self.gearbox_ratio = conf_dict["gearbox_ratio"]
+        self.wheel_radius = conf_dict["wheel_radius"]
+        self.wheel_distance_from_center = conf_dict["wheel_distance_from_center"]
         self.encoder_counts_per_wheel_revolution = self.gearbox_ratio * self.encoder_edges_per_motor_revolution
-        self.pid_control_frequency = 60 #Hz
+        self.pid_control_frequency = conf_dict["pid_control_frequency"]
         self.pid_control_period = 1 / self.pid_control_frequency #seconds
         self.wheel_speed_to_mainboard_units = self.gearbox_ratio * self.encoder_edges_per_motor_revolution / (2 * math.pi * self.wheel_radius * self.pid_control_frequency)
-        self.max_speed = max_speed
+        self.max_speed = conf_dict["max_speed"]
         self.previous_x = 0
         self.previous_y = 0
         self.previous_r = 0
         self.acceleration_limit = 1
 
         # Mainboard communication
-        self.mainboard_hwid = "USB VID:PID=0483:5740"
-        self.baud_rate = 115200
+        self.mainboard_hwid = conf_dict["hwid"]
+        self.baud_rate = conf_dict["baud_rate"]
 
         # Orbiting constants
-        self.buffer_x = 1
-        self.middle_x = 424
-
-        self.r_const = 5
-        self.y_const = 1
+        self.middle_x = config.data["modules"]["camera"]["rgb_width"] / 2
+        self.buffer_x = conf_dict["x_buffer"]
+        self.r_const = conf_dict["r_const"]
+        self.y_const = conf_dict["y_const"]
         self.prev_rad = 400
 
         # Logger
