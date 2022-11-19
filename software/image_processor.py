@@ -91,16 +91,12 @@ class ImageProcessor():
         gr_img = img[0:320]
         krn = 1 # kernel size for gauss
         #blur_img = cv2.GaussianBlur(gr_img, (krn, krn), 0)
-        
-        
 
         frag_sx, frag_sy = np.shape(fragmented)
         fragmented_white = np.zeros((frag_sx, frag_sy))
         fragmented_black = np.zeros((frag_sx, frag_sy))
         #print(f"tere hommikust: {frag_sx} {frag_sy}")
-#        comb_img = np.zeros((frag_sx, frag_sy))
 
-        
         #fragmentedblack[fragmentedblack == 6] = 0
         fragmented_black[fragmented == 6] = 1
 
@@ -110,32 +106,16 @@ class ImageProcessor():
         
         open_kernel = np.ones((3,3), np.uint8)
         lowdilate_kernel = np.ones((3,3), np.uint8)
-#        erodekernel = np.ones((3,3), np.uint8)
 
-        # d notation - dilated version - used for detecting lines
-#        white_img_d = cv2.dilate(white_img, dilatekernel)
-#        black_img_d = cv2.dilate(black_img, dilatekernel)
-#        white_img_d = cv2.erode(white_img_d, erodekernel)
-#        black_img_d = cv2.erode(black_img_d, erodekernel)
-
-        # without d notation - a bit dilated images, used for checking colours.
         detection_black = cv2.morphologyEx(fragmented_black, cv2.MORPH_CLOSE, open_kernel)
 
         fragmented_white = cv2.dilate(fragmented_white, lowdilate_kernel)
         fragmented_black = cv2.dilate(fragmented_black, lowdilate_kernel)
 
-        
-
         fragmented_white = fragmented_white.astype(np.uint8) * 255
         fragmented_black = fragmented_black.astype(np.uint8) * 255
         detection_black = detection_black.astype(np.uint8) * 255
 
-#        comb_img = np.logical_and(white_img_d, black_img_d)
-#        comb_img = comb_img.astype(np.uint8) * 255
-        
-        #print("bit " + str(np.bitwise_and(6, 5)))
-        #print("log " + str(np.logical_and(6, 5)))
-        #print(comb_img)
 
         low = 60
         high = 100
@@ -153,8 +133,6 @@ class ImageProcessor():
         threshold = 30
         minline = 60
         maxgap = 30
-
-        
 
         cropped = image[0:320]
 
@@ -185,8 +163,6 @@ class ImageProcessor():
             x1, y1, x2, y2 = line[0]
             midx = int((x1 + x2) / 2)
             midy = int((y1+y2)/2)
-            robot_out = False
-            
 
             if x1 == x2:
                 continue
@@ -195,9 +171,10 @@ class ImageProcessor():
             #antislope = 1/slope
 
             # LINE COLOUR SAMPLING
+            sample_length = 10
             w_counter = 0
             b_counter = 0
-            for i in range(10):
+            for i in range(sample_length):
                 if (midy + i) >= 480 or (midy + i) < 0:
                     continue
                 if (midx >= 640 or midx < 0):
@@ -209,19 +186,6 @@ class ImageProcessor():
             if b_counter < 2 or w_counter < 2:
                 b_counter = 0
                 w_counter = 0
-                # CHECK IF ROBOT IS OUTSIDE OF LINE
-#                for j in range(10):
-#                    if (midy + i) >= 480 or (midy + i) < 0:
-#                        continue
-#                    if white_img[midy - j, midx] != 0:
-#                        w_counter += 1
-#                    if black_img[midy + j, midx] != 0:
-#                        b_counter += 1
-#                if b_counter > 5 and w_counter > 5:
-#                    print("robot is outside according to line x1/y1-x2/y2... " + str(x1) + "/" + str(y1) + "-" + str(x2) + "/" + str(y2))
-#                    # ROBOT IS OUTSIDE THE COURT REGARDING THIS LINE
-#                    robot_out = True
-#                else: 
                 continue
                     
 
@@ -231,9 +195,7 @@ class ImageProcessor():
             intercept = y1 - (slope * x1) # intercept
             lines_by_slope.append((slope, intercept, robot_out))
 
-        #print("tere")
         if self.debug:
-            #pass
             #print("terre")
             #cv2.imshow("edges", edges)
             cv2.imshow("lines", copy_img)
@@ -274,13 +236,6 @@ class ImageProcessor():
             above_line = False
             if lines is not None:
                 for slope, interc, robot_out in lines:
-#                    if robot_out:
-#                        if obj_y > (slope * obj_x + interc + 30):
-#                            
-#                            # Robot is outside of this line and the ball is too, ball will be discarded.
-#                            print("Robot AND ball " + str(obj_x) + "/" + str(obj_y) + "/" + str(obj_dst) + " outside of court")
-#                            aboveline = True
-#                            break
                     if obj_y < (slope * obj_x + interc + 0): # NB! 30/0 is the offset from line processing!
                         if not robot_out:
                             #print ("Ball " + str(obj_x) + "/" + str(obj_y) + "/" + str(obj_dst) + " is outside of the court")
