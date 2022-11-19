@@ -10,8 +10,10 @@ import numpy as np
 class Logging():
     def __init__(self, config):
         self.logging_start_time = time.perf_counter()
-        self.file_active = config["file_active"]
-        self.print_active = config["print_active"]
+        config_dict = config.get_module_dict("logger")
+
+        self.file_active = config_dict["file_active"]
+        self.print_active = config_dict["print_active"]
         self.red = '\033[91m'
         self.yellow = '\033[33m'
         self.green = '\u001b[32m'
