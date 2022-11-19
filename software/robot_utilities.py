@@ -12,8 +12,8 @@ class Logging():
         self.logging_start_time = time.perf_counter()
         config_dict = config.get_module_dict("logger")
 
-        self.file_active = config_dict["file_active"]
-        self.print_active = config_dict["print_active"]
+        self.file_active = config_dict["file_enabled"]
+        self.print_active = config_dict["print_enabled"]
         self.red = '\033[91m'
         self.yellow = '\033[33m'
         self.green = '\u001b[32m'

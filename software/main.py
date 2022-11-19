@@ -55,8 +55,9 @@ if __name__ == "__main__":
         config = config_parser.Config_parser("default_config.toml")
     else:
         config = config_parser.Config_parser(args.conf_file)
-
-    if config is None:
+    
+    config.parse()
+    if len(config.data) == 0:
         # Reading the config file faileds
         print("Reading the config failed")
         sys.exit()
@@ -112,7 +113,7 @@ if __name__ == "__main__":
     xbox_cont = None
     manual_triggers = 0
     try:
-        xbox_cont = gamepad.Gamepad(file = '/dev/input/event12')
+        xbox_cont = gamepad.Gamepad(config)
     except FileNotFoundError:
         log.LOGW("Controller not connected")
 
@@ -432,7 +433,7 @@ if __name__ == "__main__":
     finally:
         cv2.destroyAllWindows()
         processor.stop()
-        if ref_enabled:
+        if referee_enabled:
             referee.close()
         robot.close()
         log.close()

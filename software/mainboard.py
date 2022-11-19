@@ -13,9 +13,9 @@ class SerialPortNotFound(Exception):
 class Mainboard():
     def __init__(self, config, logger):
         conf_dict = config.get_module_dict("mainboard")
-
+        print(conf_dict)
         # General movement constants
-        self.wheel_angles = conf_dict["wheel_angles"]
+        self.wheel_angles = np.radians(conf_dict["wheel_angles"])
         self.encoder_edges_per_motor_revolution = conf_dict["encoder_edges_per_motor_revolution"]
         self.gearbox_ratio = conf_dict["gearbox_ratio"]
         self.wheel_radius = conf_dict["wheel_radius"]

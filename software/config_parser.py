@@ -11,8 +11,9 @@ class Config_parser():
         try:
             self.data = tomli.load(f)
         except tomli.decoder.TomlDecodeError:
-            print("Invalid config filename!")
+            print("ERROR: Invalid config filename:", self.filename)
         f.close()
+        print(self.data)
 
     def print_config(self):
         print("Title:", self.data["title"])
@@ -40,13 +41,13 @@ class Config_parser():
         try:
             return self.data["modules"][module_key]
         except KeyError:
-            print("ERROR: Invalid module name")
+            print("ERROR: Invalid module name:", module_key)
 
     def get_state_dict(self, state_key):
         try:
             return self.data["states"][state_key]
         except KeyError:
-            print("ERROR: Invalid state name")
+            print("ERROR: Invalid state name:", state_key)
 
 
 

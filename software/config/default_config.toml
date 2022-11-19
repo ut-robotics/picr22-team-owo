@@ -3,7 +3,7 @@ title = "default_config"
 [logic]
 debug = false
 robot_name = "OWO"
-state = 1 # WAIT: 1, START_WAIT: 3, CALIB_INPUT: 9,
+start_state = 1 # WAIT: 1, START_WAIT: 3, CALIB_INPUT: 9,
 basket = 1 # MAGENTA: 1, BLUE: 2
 manual_enabled = true
 referee_enabled = false
