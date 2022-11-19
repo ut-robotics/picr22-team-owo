@@ -57,7 +57,7 @@ if __name__ == "__main__":
     thrower_speed = 0
     calib_first_time = True
     calibration_data = []
-    basket_color = Target_basket.BLUE # currently defaults to magenta for testing purposes
+    basket_color = Target_basket.MAGENTA # currently defaults to magenta for testing purposes
     thrower_time_start = 0
     start_go_time_start = 0
     start_go_first_time = True
@@ -78,7 +78,9 @@ if __name__ == "__main__":
     frame = 0
     frame_cnt = 0
     has_thrown = False
-    manual_triggers = 0
+    manual_triggers = 0  # for detecting a single button press
+    basket_change_triggers = 0 # for detecting a single button press
+
     # Camera constants
     middle_x = cam.rgb_width / 2
     middle_y = cam.rgb_height / 2
@@ -110,13 +112,18 @@ if __name__ == "__main__":
                 processed_data = processor.process_frame(aligned_depth=False)
 
             # Manual Controller managing
-            if xbox_cont is not None:
+            if manual_control and xbox_cont is not None:
                 xbox_cont.read_gamepad_input()
 
+                if state == State.WAIT:
+                    state = State.MANUAL
+                
                 if xbox_cont.button_b:
                     log.LOGE("Code stopped by manual kill switch..")
                     break
 
+                # For changing between manual and autonomous modes
+                # This trickery required because of controller API
                 if not xbox_cont.button_x and manual_triggers >= 2:
                     manual_triggers = 0
 
@@ -124,13 +131,29 @@ if __name__ == "__main__":
                     state = State.MANUAL
                     manual_triggers += 1
                     continue
+
                 elif xbox_cont.button_x and state == State.MANUAL and manual_triggers == 0:
                     state = State.BALL_SEARCH
                     manual_triggers += 1
                     continue
+                
                 elif xbox_cont.button_x:
                     manual_triggers += 1
-                
+
+                # For changing target basket
+                if not xbox_cont.button_y and basket_change_triggers >= 2:
+                    basket_change_triggers = 0
+
+                elif xbox_cont.button_y and basket_change_triggers == 0:
+                    if basket_color == TargetBasket.BLUE:
+                        basket_color = TargetBasket.MAGENTA
+                    elif basket_color == TargetBasket.MAGENTA:
+                        basket_color = TargetBasket.BLUE
+                    basket_change_triggers += 1
+
+                elif xbox_cont.button_y:
+                    basket_change_triggers += 1
+
 
             # Housekeeping stuff
             frame_cnt +=1
@@ -150,6 +173,7 @@ if __name__ == "__main__":
                 cv2.imshow('debug', debug_frame)
                 k = cv2.waitKey(1) & 0xff
                 if k == ord('q'):
+                    log.LOGI("q pressed on debug screen")
                     break
             # End of housekeeping
 
@@ -181,6 +205,7 @@ if __name__ == "__main__":
                         elif msg["signal"] == "stop":
                             log.LOGI("Match paused!")
                             state = State.PAUSED
+
             # End of referee commands
 
             # Main control logic uses a state machine
@@ -192,6 +217,7 @@ if __name__ == "__main__":
                 continue
 
             if state == State.PAUSED:
+                log.LOGSTATE("paused")
                 continue
             # End of inactive states
 
@@ -224,15 +250,14 @@ if __name__ == "__main__":
             # End of states used for thrower calibration
 
             elif state == State.START_WAIT:
+                log.LOGSTATE("waiting for start")
                 continue
 
             elif state == State.START_GO:
                 robot.move(0, 10, 0)
-                #if start_go_first_time:
-                log.LOGI("Juggernaut start")
-                    
-                    #start_go_first_time = False
-                if (start_go_time_start + 0.6 < time.perf_counter()): # Yandalf - changed from 0.7 to 0.6
+                log.LOGSTATE("Juggernaut start")
+
+                if (start_go_time_start + 0.6 < time.perf_counter()):
                     log.LOGI("Juggernaut end")
                     state = State.BALL_SEARCH
                 continue
@@ -300,12 +325,12 @@ if __name__ == "__main__":
 
                     if basket.exists:
                         # print("Basket x:", basket.x, "Middle x: ", middle_x)
-                        basket_tolerance = 14
+                        basket_tolerance = 17
                         if abs(basket.x - middle_x) < basket_tolerance:
                             state = State.BALL_THROW
                             thrower_time_start = time.perf_counter()
                             continue
-                        speed_x = -sigmoid_controller(basket.x, middle_x, x_scale=1500, y_scale=(max_speed - 3))
+                        speed_x = -sigmoid_controller(basket.x, middle_x, x_scale=1400, y_scale=(max_speed - 3))
 
                         robot.orbit(400, speed_x, interesting_ball.distance, interesting_ball.x)
 
@@ -335,9 +360,9 @@ if __name__ == "__main__":
                     state = State.BALL_SEARCH
 
                 log.LOGI(" Basket.x: " + str(basket.x) + " ball.x " + str(interesting_ball.x) + " ball.distance: " + str(interesting_ball.distance))
-                speed_rot = -sigmoid_controller(basket.x, middle_x, x_scale=300, y_scale=max_speed)
+                speed_rot = -sigmoid_controller(basket.x, middle_x, x_scale=350, y_scale=max_speed)
                 if (len(processed_data.balls) != 0) and interesting_ball.distance > 250 and interesting_ball.distance < 500:
-                    speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=500, y_scale=max_speed)
+                    speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=600, y_scale=max_speed)
                 else:
                     speed_x = 0
 
@@ -378,7 +403,7 @@ if __name__ == "__main__":
                 speedy = joyY * 5
                 speedx = joyX * 5
                 speedr = joyRightX * 20
-                speedthrow = joyRTrig * 1200
+                speedthrow = joyRTrig * 4500
 
                 print("Y: " + str(speedy) + " X: " + str(speedx) + " R: " + str(speedr))
 
