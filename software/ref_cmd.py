@@ -24,7 +24,7 @@ class Referee_cmd_client:
         self.logger.LOGI("Referee cmd client closed")
 
     def connect(self):
-        for i in range(10): # Make 5 attempts at connecting
+        for i in range(10): # Make 10 attempts at connecting
             try:
                 self.ws.connect("ws://" + self.ip + ":" + self.port)
             except ConnectionRefusedError:

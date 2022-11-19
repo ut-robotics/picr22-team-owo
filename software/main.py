@@ -16,8 +16,7 @@ import ref_cmd
 import cv2
 
 # Argparser: ref_ip, ref_port, start_state, config_file, basket, 
-
-class TargetBasket(Enum):
+class Target_basket(Enum):
     MAGENTA = 1
     BLUE = 2
 
@@ -59,7 +58,7 @@ if __name__ == "__main__":
     thrower_speed = 0
     calib_first_time = True
     calibration_data = []
-    basket_color = TargetBasket.BLUE # currently defaults to magenta for testing purposes
+    basket_color = Target_basket.BLUE # currently defaults to magenta for testing purposes
     thrower_time_start = 0
     start_go_time_start = 0
     start_go_first_time = True
@@ -70,7 +69,8 @@ if __name__ == "__main__":
     processor.start()
 
     # Manual control
-    xboxcont = None
+    xbox_cont = None
+    manual_control = True
 
     # Constants etc.
     # Housekeeping
@@ -78,8 +78,8 @@ if __name__ == "__main__":
     fps = 0
     frame = 0
     frame_cnt = 0
-    hasthrown = False
-    manualtriggers = 0
+    has_thrown = False
+    manual_triggers = 0
     # Camera constants
     middle_x = cam.rgb_width / 2
     middle_y = cam.rgb_height / 2
@@ -87,50 +87,50 @@ if __name__ == "__main__":
     # Referee commands
     ref_enabled = False
     if ref_enabled:
+        robot_name = "OWO"
         referee = ref_cmd.Referee_cmd_client(log)
         ref_first_start = True
-        robot_name = "OWO"
         referee.open()
     if (not ref_enabled) and state == State.START_WAIT:
         log.LOGE("Referee not enabled, but initial state is START_WAIT")
 
     
     try:
-        xboxcont = gamepad.gamepad(file = '/dev/input/event12')
+        xbox_cont = gamepad.Gamepad(file = '/dev/input/event12')
     except FileNotFoundError:
         log.LOGW("Controller not connected")
 
 
     try:
-        # Do not add anything outside of if/elif clauses to the end of the loop, otherwise use of "continue" will not let it run
+        # Do not add anything outside of if/elif state clauses to the end of the loop, otherwise use of "continue" will not let it run
         while(True):
             # Getting camera data
             if state == State.BALL_THROW:
-                processedData = processor.process_frame(aligned_depth=True)
+                processed_data = processor.process_frame(aligned_depth=True)
             else:
-                processedData = processor.process_frame(aligned_depth=False)
+                processed_data = processor.process_frame(aligned_depth=False)
 
             # Manual Controller managing
-            if xboxcont is not None:
-                xboxcont.read_gamepad_input()
+            if xbox_cont is not None:
+                xbox_cont.read_gamepad_input()
 
-                if xboxcont.button_b:
+                if xbox_cont.button_b:
                     log.LOGE("Code stopped by manual kill switch..")
                     break
 
-                if not xboxcont.button_x and manualtriggers >= 2:
-                    manualtriggers = 0
+                if not xbox_cont.button_x and manual_triggers >= 2:
+                    manual_triggers = 0
 
-                elif xboxcont.button_x and state != State.MANUAL and manualtriggers == 0:
+                elif xbox_cont.button_x and state != State.MANUAL and manual_triggers == 0:
                     state = State.MANUAL
-                    manualtriggers += 1
+                    manual_triggers += 1
                     continue
-                elif xboxcont.button_x and state == State.MANUAL and manualtriggers == 0:
+                elif xbox_cont.button_x and state == State.MANUAL and manual_triggers == 0:
                     state = State.BALL_SEARCH
-                    manualtriggers += 1
+                    manual_triggers += 1
                     continue
-                elif xboxcont.button_x:
-                    manualtriggers += 1
+                elif xbox_cont.button_x:
+                    manual_triggers += 1
                 
 
             # Housekeeping stuff
@@ -142,12 +142,12 @@ if __name__ == "__main__":
                 fps = 30 / (end - start)
                 start = end
                 log.LOGI("FPS: {}, framecount: {}".format(fps, frame_cnt))
-                log.LOGI("ball_count: {}".format(len(processedData.balls)))
+                log.LOGI("ball_count: {}".format(len(processed_data.balls)))
             # End of housekeeping stuff
 
             # Debug frame (turn off when over ssh)
             if debug:
-                debug_frame = processedData.debug_frame
+                debug_frame = processed_data.debug_frame
                 cv2.imshow('debug', debug_frame)
                 k = cv2.waitKey(1) & 0xff
                 if k == ord('q'):
@@ -162,12 +162,12 @@ if __name__ == "__main__":
                         if msg["signal"] == "start":
                             log.LOGI("Start signal received")
                             # ref_first_start used if we want to differentiate between start of the match and resuming from a stop
-                            if msg["baskets"][msg["targets"].index("OWO")] == 'blue':
+                            if msg["baskets"][msg["targets"].index(robot_name)] == 'blue':
                                 log.LOGI("Blue basket selected")
-                                basket_color = TargetBasket.BLUE
-                            elif msg["baskets"][msg["targets"].index("OWO")] == 'magenta':
+                                basket_color = Target_basket.BLUE
+                            elif msg["baskets"][msg["targets"].index(robot_name)] == 'magenta':
                                 log.LOGI("Magenta basket selected")
-                                basket_color = TargetBasket.MAGENTA
+                                basket_color = Target_basket.MAGENTA
                             else:
                                 log.LOGE("Basket color error")
                             if ref_first_start:
@@ -215,9 +215,9 @@ if __name__ == "__main__":
                     calibration_data = []
                     continue
 
-                if (processedData.basket_m.exists):
-                    print("Distance:", processedData.basket_m.distance)
-                    calibration_data.append(processedData.basket_m.distance)
+                if (processed_data.basket_m.exists):
+                    print("Distance:", processed_data.basket_m.distance)
+                    calibration_data.append(processed_data.basket_m.distance)
                     robot.throw_raw(thrower_speed)
                 else: 
                     print("No basket")
@@ -241,7 +241,7 @@ if __name__ == "__main__":
 
             elif state == State.BALL_SEARCH:
                 log.LOGSTATE("ball_search")
-                if len(processedData.balls) > 0:
+                if len(processed_data.balls) > 0:
                     state = State.BALL_MOVE
                     continue
                 else:
@@ -254,14 +254,14 @@ if __name__ == "__main__":
             # Moving towards ball
             elif state == State.BALL_MOVE:
                 log.LOGSTATE("ball_move")
-                if len(processedData.balls) > 0:
+                if len(processed_data.balls) > 0:
                     # Movement logic
                     speed_x = 0
                     speed_y = 0
                     speed_r = 0
 
                     # Choosing the closest ball
-                    interesting_ball = processedData.balls[-1]
+                    interesting_ball = processed_data.balls[-1]
                     #print("Ball:", interesting_ball)
 
                     if interesting_ball.distance <= 475:
@@ -283,8 +283,8 @@ if __name__ == "__main__":
             # Orbiting around ball until correct basket is found
             elif state == State.BALL_ORBIT:
                 log.LOGSTATE("ball_orbit")
-                if len(processedData.balls) > 0:
-                    interesting_ball = processedData.balls[-1]
+                if len(processed_data.balls) > 0:
+                    interesting_ball = processed_data.balls[-1]
 
                     # For checking if the ball is still in position
                     if interesting_ball.distance > 550:
@@ -293,10 +293,10 @@ if __name__ == "__main__":
                         continue
 
                     # Determining the correct basket
-                    if basket_color == TargetBasket.MAGENTA:
-                        basket = processedData.basket_m
-                    elif basket_color == TargetBasket.BLUE:
-                        basket = processedData.basket_b
+                    if basket_color == Target_basket.MAGENTA:
+                        basket = processed_data.basket_m
+                    elif basket_color == Target_basket.BLUE:
+                        basket = processed_data.basket_b
                     else:
                         log.LOGE("Basket color invalid")
 
@@ -322,15 +322,15 @@ if __name__ == "__main__":
             elif state == State.BALL_THROW:
                 log.LOGSTATE("ball_throw")
 
-                if basket_color == TargetBasket.MAGENTA:
-                    basket = processedData.basket_m
-                elif basket_color == TargetBasket.BLUE:
-                    basket = processedData.basket_b
+                if basket_color == Target_basket.MAGENTA:
+                    basket = processed_data.basket_m
+                elif basket_color == Target_basket.BLUE:
+                    basket = processed_data.basket_b
                 else:
                     log.LOGE("Basket color invalid")
 
-                if len(processedData.balls) > 0:
-                    interesting_ball = processedData.balls[-1]
+                if len(processed_data.balls) > 0:
+                    interesting_ball = processed_data.balls[-1]
 
                 if (thrower_time_start + 2.0 < time.perf_counter()):
                     log.LOGI("THROW, distance: " + str(basket.distance))
@@ -338,7 +338,7 @@ if __name__ == "__main__":
 
                 log.LOGI(" Basket.x: " + str(basket.x) + " ball.x " + str(interesting_ball.x) + " ball.distance: " + str(interesting_ball.distance))
                 speed_rot = -sigmoid_controller(basket.x, middle_x, x_scale=300, y_scale=max_speed)
-                if (len(processedData.balls) != 0) and interesting_ball.distance > 250 and interesting_ball.distance < 500:
+                if (len(processed_data.balls) != 0) and interesting_ball.distance > 250 and interesting_ball.distance < 500:
                     speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=500, y_scale=max_speed)
                 else:
                     speed_x = 0
@@ -354,26 +354,26 @@ if __name__ == "__main__":
 
             elif state == State.MANUAL:
                 log.LOGSTATE("manual control")
-                if xboxcont is None:
+                if xbox_cont is None:
                     log.LOGE("gamepad is None, you entered this state incorrectly")
                     continue
-                xboxcont.read_gamepad_input()
+                xbox_cont.read_gamepad_input()
                 joyY = 0
                 joyX = 0
                 joyRightX = 0
                 joyRTrig = 0
                 deadzone = 0.15
 
-                if xboxcont.joystick_left_y > deadzone or xboxcont.joystick_left_y < -deadzone:
-                    joyY = xboxcont.joystick_left_y
+                if xbox_cont.joystick_left_y > deadzone or xbox_cont.joystick_left_y < -deadzone:
+                    joyY = xbox_cont.joystick_left_y
 
-                if xboxcont.joystick_left_x > deadzone or xboxcont.joystick_left_x < -deadzone:
-                    joyX = xboxcont.joystick_left_x
+                if xbox_cont.joystick_left_x > deadzone or xbox_cont.joystick_left_x < -deadzone:
+                    joyX = xbox_cont.joystick_left_x
 
-                if xboxcont.joystick_right_x > deadzone or xboxcont.joystick_right_x < -deadzone:
-                    joyRightX = -xboxcont.joystick_right_x
+                if xbox_cont.joystick_right_x > deadzone or xbox_cont.joystick_right_x < -deadzone:
+                    joyRightX = -xbox_cont.joystick_right_x
                 
-                joyRTrig = xboxcont.trigger_right
+                joyRTrig = xbox_cont.trigger_right
 
                 #print(str(xboxcont.joystick_left_y) + " / " + str(xboxcont.joystick_left_x))
 
