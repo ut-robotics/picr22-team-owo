@@ -8,7 +8,7 @@ script is tested on a raspberry pi 3
 import asyncio
 from evdev import InputDevice, ff, ecodes
 
-class gamepad():
+class Gamepad():
     def __init__(self, file = '/dev/input/event12'):
         #self.event_value = 0
         self.power_on = True
