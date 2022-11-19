@@ -141,18 +141,8 @@ class ImageProcessor():
         # here happens the magic
         lines = cv2.HoughLinesP(edges, rho, theta, threshold, np.array([]), minline, maxgap)
         
-        selected_lines = []
-        selected_lines_list = []
-        selected_lines_weights = []
-
-        avg_lines = []
-
         lines_by_slope = []
         
-        points = []
-
-        first_line = True
-
         #print("lines: ", len(lines))
         if lines is None:
             return
@@ -193,7 +183,7 @@ class ImageProcessor():
 
 
             intercept = y1 - (slope * x1) # intercept
-            lines_by_slope.append((slope, intercept, robot_out))
+            lines_by_slope.append((slope, intercept))
 
         if self.debug:
             #print("terre")
@@ -235,13 +225,12 @@ class ImageProcessor():
             
             above_line = False
             if lines is not None:
-                for slope, interc, robot_out in lines:
+                for slope, interc in lines:
                     if obj_y < (slope * obj_x + interc + 0): # NB! 30/0 is the offset from line processing!
-                        if not robot_out:
-                            #print ("Ball " + str(obj_x) + "/" + str(obj_y) + "/" + str(obj_dst) + " is outside of the court")
-                            # If the robot is not outside of this line (is on the court) and the ball is, this ball is discarded
-                            above_line = True
-                            break
+                        #print ("Ball " + str(obj_x) + "/" + str(obj_y) + "/" + str(obj_dst) + " is outside of the court")
+                        # If the robot is not outside of this line (is on the court) and the ball is, this ball is discarded
+                        above_line = True
+                        break
                 if above_line:
                     #print("ball at x: " + str(obj_x) + " y: " + str(obj_y) + "is above a line")
                     continue
