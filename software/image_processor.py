@@ -261,7 +261,7 @@ class ImageProcessor():
 
             size = cv2.contourArea(contour)
 
-            if size < 12:
+            if size < 16:
                 continue
 
             x, y, w, h = cv2.boundingRect(contour)
