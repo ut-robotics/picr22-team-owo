@@ -128,6 +128,47 @@ if __name__ == "__main__":
     # State machine setup
     ball_good_range = 300
     has_thrown = False
+    # start_go
+    juggernaut_time = config.get_state_dict("start_go")["juggernaut_time"]
+    # ball_search
+    ball_search_dict = config.get_state_dict("ball_search")
+    rotation_speed_slow = ball_search_dict["rotation_speed_slow"]
+    rotation_speed_fast = ball_search_dict["rotation_speed_fast"]
+    # ball_move
+    ball_move_dict = config.get_state_dict("ball_move")
+    distance_into_orbit = ball_move_dict["distance_into_orbit"]
+    distance_ball_good_range = ball_move_dict["distance_ball_good_range"]
+    x_speed_x_scale = ball_move_dict["x_speed_x_scale"]
+    r_speed_x_scale = ball_move_dict["r_speed_x_scale"]
+    y_speed_x_scale = ball_move_dict["y_speed_x_scale"]
+    x_speed_y_multiplier = ball_move_dict["x_speed_y_multiplier"]
+    r_speed_y_multiplier = ball_move_dict["r_speed_y_multiplier"]
+    y_speed_y_multiplier = ball_move_dict["y_speed_y_multiplier"]
+    # ball_orbit
+    ball_orbit_dict = config.get_state_dict("ball_orbit")
+    out_of_range_radius = ball_orbit_dict["out_of_range_radius"]
+    orbit_radius = ball_orbit_dict["orbit_radius"]
+    basket_x_tolerance = ball_orbit_dict["basket_x_tolerance"]
+    x_speed_x_scale = ball_orbit_dict["x_speed_x_scale"]
+    x_speed_y_multiplier = ball_orbit_dict["x_speed_y_multiplier"]
+    no_basket_orbit_speed = ball_orbit_dict["no_basket_orbit_speed"]
+    # ball_throw
+    ball_throw_dict = config.get_state_dict("ball_throw")
+    bt_throw_drive_time = ball_throw_dict["throw_drive_time"]
+    bt_y_speed = ball_throw_dict["y_speed"]
+    bt_r_speed_x_scale = ball_throw_dict["r_speed_x_scale"]
+    bt_r_speed_y_multiplier = ball_throw_dict["r_speed_y_multiplier"]
+    bt_x_speed_x_scale = ball_throw_dict["x_speed_x_scale"]
+    bt_x_speed_y_multiplier = ball_throw_dict["x_speed_y_multiplier"]
+    bt_ball_min_radius = ball_throw_dict["ball_min_radius"]
+    bt_ball_max_radius = ball_throw_dict["ball_max_radius"]
+    # manual
+    manual_dict = config.get_state_dict("manual")
+    m_deadzone = manual_dict["deadzone"]
+    m_y_scaling = manual_dict["y_scaling"]
+    m_x_scaling = manual_dict["x_scaling"]
+    m_r_scaling = manual_dict["r_scaling"]
+    m_thrower_scaling = manual_dict["thrower_scaling"]
 
 
     # Calibration setup
@@ -268,7 +309,7 @@ if __name__ == "__main__":
                 log.LOGSTATE("Juggernaut")
                     
                     #start_go_first_time = False
-                if (start_go_time_start + 0.6 < time.perf_counter()): # Yandalf - changed from 0.7 to 0.6
+                if (start_go_time_start + juggernaut_time < time.perf_counter()): # Yandalf - changed from 0.7 to 0.6
                     log.LOGI("Juggernaut end")
                     state = State.BALL_SEARCH
                 continue
@@ -280,9 +321,9 @@ if __name__ == "__main__":
                     continue
                 else:
                     if (int(time.perf_counter() * 6) % 3 == 0):
-                        robot.move(0, 0, 25)
+                        robot.move(0, 0, rotation_speed_fast)
                     else:
-                        robot.move(0, 0, 3)
+                        robot.move(0, 0, rotation_speed_slow)
             # End of ball_search
             
             # Moving towards ball
@@ -298,15 +339,15 @@ if __name__ == "__main__":
                     interesting_ball = processed_data.balls[-1]
                     #print("Ball:", interesting_ball)
 
-                    if interesting_ball.distance <= 475:
+                    if interesting_ball.distance <= distance_into_orbit:
                         state = State.BALL_ORBIT
                         continue
                     else:
                         if interesting_ball.x > middle_x + 2 or interesting_ball.x < middle_x - 2:
-                            speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=1700, y_scale=max_speed/2)
-                            speed_r = -sigmoid_controller(interesting_ball.x, middle_x, x_scale=1000, y_scale=max_speed)
-                        if interesting_ball.distance > ball_good_range:
-                            speed_y = sigmoid_controller(interesting_ball.distance, ball_good_range, x_scale=1400, y_scale=max_speed)
+                            speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=x_speed_x_scale, y_scale=max_speed*x_speed_y_multiplier)
+                            speed_r = -sigmoid_controller(interesting_ball.x, middle_x, x_scale=r_speed_x_scale, y_scale=max_speed*r_speed_y_multiplier)
+                        if interesting_ball.distance > distance_ball_good_range:
+                            speed_y = sigmoid_controller(interesting_ball.distance, ball_good_range, x_scale=y_speed_x_scale, y_scale=max_speed*y_speed_y_multiplier)
                         #print(f"x: {speed_x}, y: {speed_y}, r: {speed_r}, dist: {interesting_ball.distance}, b.x: {interesting_ball.x}, b.y: {interesting_ball.y}")
                         robot.move(speed_x, speed_y, speed_r)
                 else:
@@ -321,7 +362,7 @@ if __name__ == "__main__":
                     interesting_ball = processed_data.balls[-1]
 
                     # For checking if the ball is still in position
-                    if interesting_ball.distance > 550:
+                    if interesting_ball.distance > out_of_range_radius:
                         log.LOGE("Invalid radius, radius: " + str(interesting_ball.distance))
                         state = State.BALL_SEARCH
                         continue
@@ -336,17 +377,16 @@ if __name__ == "__main__":
 
                     if basket.exists:
                         # print("Basket x:", basket.x, "Middle x: ", middle_x)
-                        basket_tolerance = 14
-                        if abs(basket.x - middle_x) < basket_tolerance:
+                        if abs(basket.x - middle_x) < basket_x_tolerance:
                             state = State.BALL_THROW
                             thrower_time_start = time.perf_counter()
                             continue
-                        speed_x = -sigmoid_controller(basket.x, middle_x, x_scale=1500, y_scale=(max_speed - 3))
+                        speed_x = -sigmoid_controller(basket.x, middle_x, x_scale=x_speed_x_scale, y_scale=max_speed*x_speed_y_multiplier)
 
-                        robot.orbit(400, speed_x, interesting_ball.distance, interesting_ball.x)
+                        robot.orbit(orbit_radius, speed_x, interesting_ball.distance, interesting_ball.x)
 
                     else:
-                        robot.orbit(400, 2.8, interesting_ball.distance, interesting_ball.x)
+                        robot.orbit(orbit_radius, no_basket_orbit_speed, interesting_ball.distance, interesting_ball.x)
                 else:
                     log.LOGW("Lost ball during orbit")
                     state = State.BALL_SEARCH
@@ -366,23 +406,21 @@ if __name__ == "__main__":
                 if len(processed_data.balls) > 0:
                     interesting_ball = processed_data.balls[-1]
 
-                if (thrower_time_start + 2.0 < time.perf_counter()):
+                if (thrower_time_start + bt_throw_drive_time < time.perf_counter()):
                     log.LOGI("THROW, distance: " + str(basket.distance))
                     state = State.BALL_SEARCH
 
                 log.LOGI(" Basket.x: " + str(basket.x) + " ball.x " + str(interesting_ball.x) + " ball.distance: " + str(interesting_ball.distance))
-                speed_rot = -sigmoid_controller(basket.x, middle_x, x_scale=300, y_scale=max_speed)
-                if (len(processed_data.balls) != 0) and interesting_ball.distance > 250 and interesting_ball.distance < 500:
-                    speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=500, y_scale=max_speed)
+                speed_rot = -sigmoid_controller(basket.x, middle_x, x_scale=bt_r_speed_x_scale, y_scale=max_speed*bt_r_speed_y_multiplier)
+                if (len(processed_data.balls) != 0) and interesting_ball.distance > bt_ball_min_radius and interesting_ball.distance < bt_ball_max_radius:
+                    speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=bt_x_speed_x_scale, y_scale=max_speed*bt_r_speed_y_multiplier)
                 else:
                     speed_x = 0
 
-                speed_y = 1.5
-
                 if not np.isnan(basket.distance):
-                    robot.move(speed_x, speed_y, speed_rot, int(basket.distance))
+                    robot.move(speed_x, bt_y_speed, speed_rot, int(basket.distance))
                 else: 
-                    robot.move(speed_x, speed_y, speed_rot, 0)
+                    robot.move(speed_x, bt_y_speed, speed_rot, 0)
                 continue
             # End of ball_throw
 
@@ -396,25 +434,24 @@ if __name__ == "__main__":
                 joyX = 0
                 joyRightX = 0
                 joyRTrig = 0
-                deadzone = 0.15
 
-                if xbox_cont.joystick_left_y > deadzone or xbox_cont.joystick_left_y < -deadzone:
+                if xbox_cont.joystick_left_y > m_deadzone or xbox_cont.joystick_left_y < -m_deadzone:
                     joyY = xbox_cont.joystick_left_y
 
-                if xbox_cont.joystick_left_x > deadzone or xbox_cont.joystick_left_x < -deadzone:
+                if xbox_cont.joystick_left_x > m_deadzone or xbox_cont.joystick_left_x < -m_deadzone:
                     joyX = xbox_cont.joystick_left_x
 
-                if xbox_cont.joystick_right_x > deadzone or xbox_cont.joystick_right_x < -deadzone:
+                if xbox_cont.joystick_right_x > m_deadzone or xbox_cont.joystick_right_x < -m_deadzone:
                     joyRightX = -xbox_cont.joystick_right_x
                 
                 joyRTrig = xbox_cont.trigger_right
 
                 #print(str(xboxcont.joystick_left_y) + " / " + str(xboxcont.joystick_left_x))
 
-                speedy = joyY * 5
-                speedx = joyX * 5
-                speedr = joyRightX * 20
-                speedthrow = joyRTrig * 1200
+                speedy = joyY * m_y_scaling
+                speedx = joyX * m_x_scaling
+                speedr = joyRightX * m_r_scaling
+                speedthrow = joyRTrig * m_thrower_scaling
 
                 print("Y: " + str(speedy) + " X: " + str(speedx) + " R: " + str(speedr))
 

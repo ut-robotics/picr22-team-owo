@@ -72,7 +72,7 @@ r_speed_y_multiplier = 1
 y_speed_y_multiplier = 1
 
 [states.ball_orbit]
-out_range_radius = 550
+out_of_range_radius = 550
 orbit_radius = 400
 basket_x_tolerance = 14
 x_speed_x_scale = 1500
