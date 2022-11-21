@@ -270,6 +270,9 @@ class ImageProcessor():
             xs	= np.array(np.linspace(x + w/2, self.camera.rgb_width / 2, num=len(ys)), dtype=np.uint16)
 
             obj_x, obj_y, obj_dst = calculatePosition(h, w, depth, x, y)
+
+            if obj_y > 445:
+                continue
             
             above_line = False
             if lines is not None:
