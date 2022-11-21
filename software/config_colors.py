@@ -4,6 +4,14 @@ import _pickle as pickle
 import camera
 import image_processor
 from Color import *
+import config_parser
+
+config = config_parser.Config_parser("default_config.toml")
+config.parse()
+if len(config.data) == 0:
+    # Reading the config file failed
+    print("Reading the config failed")
+
 
 def nothing(x):
     pass
@@ -22,7 +30,7 @@ except:
 #camera instance for normal web cameras
 #cap = camera.OpenCVCamera(id = 2)
 # camera instance for realsense cameras
-cap = camera.RealsenseCamera(exposure = 100)
+cap = camera.RealsenseCamera(config)
 
 processor = image_processor.ImageProcessor(cap, debug=True)
 

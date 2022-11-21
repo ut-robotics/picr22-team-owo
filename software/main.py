@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 # Python
-import time, sys, math, argparse
+import time, sys, argparse
 from enum import Enum
 
 # Our code
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     
     config.parse()
     if len(config.data) == 0:
-        # Reading the config file faileds
+        # Reading the config file failed
         print("Reading the config failed")
         sys.exit()
 
