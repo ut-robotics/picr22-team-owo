@@ -234,4 +234,4 @@ Link to the robot's assembly: https://a360.co/3FA4tEU
 *Sander:* Design improvements 3 h +
 
 === Mon, 21.11.22
-*Sander:* Design improvements and CAM 4 h +
+*Sander:* Design improvements and CAM 5 h +
