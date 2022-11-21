@@ -35,6 +35,8 @@ class State(Enum):
     CALIB_THROW = 10
     # Control with XBox controller
     MANUAL = 11
+    # Timeout state
+    TIMEOUT = 12
 
 if __name__ == "__main__":
     # Command line arguments
@@ -77,8 +79,6 @@ if __name__ == "__main__":
     referee_enabled = logic_conf["referee_enabled"]
     max_speed = logic_conf["max_speed"]
     thrower_time_start = 0
-    start_go_time_start = 0
-    start_go_first_time = True
     # Starting state
     if args.start_state is None:
         state = State(logic_conf["start_state"])
@@ -130,6 +130,8 @@ if __name__ == "__main__":
     has_thrown = False
     # start_go
     juggernaut_time = config.get_state_dict("start_go")["juggernaut_time"]
+    start_go_time_start = 0
+    start_go_first_time = True
     # ball_search
     ball_search_dict = config.get_state_dict("ball_search")
     rotation_speed_slow = ball_search_dict["rotation_speed_slow"]
@@ -169,6 +171,10 @@ if __name__ == "__main__":
     m_x_scaling = manual_dict["x_scaling"]
     m_r_scaling = manual_dict["r_scaling"]
     m_thrower_scaling = manual_dict["thrower_scaling"]
+
+    # Manual control state automatic switching when controller connected
+    if xbox_cont != None:
+        state = State.MANUAL
 
 
     # Calibration setup

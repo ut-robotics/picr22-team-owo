@@ -85,7 +85,7 @@ y_speed = 1.5
 r_speed_x_scale = 300
 r_speed_y_multiplier = 1
 x_speed_x_scale = 500
-x_speed_y_multiplier = 1
+x_speed_y_multiplier = 0.5
 ball_min_radius = 250
 ball_max_radius = 500
 
