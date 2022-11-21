@@ -52,6 +52,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+
     # Config
     if args.conf_file is None:
         config = config_parser.Config_parser("default_config.toml")
@@ -71,6 +72,7 @@ if __name__ == "__main__":
     frame_cnt = 0
     log = Logging(config)
     log.LOGI("Starting...")
+    state_start_timestamp = time.time()
 
     # Logic setup
     logic_conf = config.get_logic_dict()
@@ -181,8 +183,11 @@ if __name__ == "__main__":
     thrower_speed = 0
     calib_first_time = True
     calibration_data = []
+    
 
     try:
+        # Initialize previous state variable to the starting state
+        prev_state = state
         # Do not add anything outside of if/elif state clauses to the end of the loop, otherwise use of "continue" will not let it run
         while(True):
             # Getting camera data
@@ -213,6 +218,9 @@ if __name__ == "__main__":
                 elif xbox_cont.button_x:
                     manual_triggers += 1
                 
+            if prev_state != state:
+                state_start_timestamp = time.time()
+                prev_state = state
 
             # Housekeeping stuff
             frame_cnt +=1
@@ -277,6 +285,24 @@ if __name__ == "__main__":
                 continue
             # End of inactive states
 
+            # State for triggered timeout from other states
+            elif state == State.TIMEOUT:
+                log.LOGSTATE("timeout")
+                timeout_speed_x = 2
+                timeout_speed_y = 5
+                timeout_speed_rot = 0
+                timeout_duration = 0.5
+                if time.time() > state_start_timestamp + timeout_duration:
+                    state = State.BALL_SEARCH
+                    continue
+
+                if basket.exists:
+                    if basket.distance < 500:
+                        timeout_speed_y = -5
+                        timeout_speed_rot = 15
+
+                robot.move(timeout_speed_x, timeout_speed_y, timeout_speed_rot)
+
             # States used for thrower calibration
             elif state == State.CALIB_INPUT:
                 thrower_speed = int(input("Speed:")) # Input speed for thrower
@@ -334,6 +360,10 @@ if __name__ == "__main__":
             
             # Moving towards ball
             elif state == State.BALL_MOVE:
+                timeout_trig_move = 10
+                if time.time() > state_start_timestamp + timeout_trig_move:
+                    state = State.TIMEOUT
+                    continue
                 log.LOGSTATE("ball_move")
                 if len(processed_data.balls) > 0:
                     # Movement logic
@@ -363,6 +393,10 @@ if __name__ == "__main__":
 
             # Orbiting around ball until correct basket is found
             elif state == State.BALL_ORBIT:
+                timeout_trig_orbit = 5
+                if time.time() > state_start_timestamp + timeout_trig_orbit:
+                    state = State.TIMEOUT
+                    continue
                 log.LOGSTATE("ball_orbit")
                 if len(processed_data.balls) > 0:
                     interesting_ball = processed_data.balls[-1]
