@@ -5,8 +5,9 @@ import robot_utilities
 
 class Referee_cmd_client:
     def __init__(self, config, logger):
-        self.ip = config["ip"] #192.168.3.___
-        self.port = config["port"]
+        conf_dict = config.get_module_dict("referee")
+        self.ip = conf_dict["ip"] #IPs used in pwir: 192.168.3.___
+        self.port = conf_dict["port"]
         self.logger = logger
         self.queue = mp.Queue()
         self.logger.LOGI("Referee cmd client initialized")

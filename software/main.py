@@ -144,8 +144,9 @@ if __name__ == "__main__":
     ball_search_ball_time = 0
     search_counter = 0
     search_state = Search_state.ROTATE_SLOW
+    search_range_enabled = True
     ball_search_dict = config.get_state_dict("ball_search")
-    ball_search_rotation_count = ball_search_dict["rotation_count"]
+    ball_search_count_patrol = ball_search_dict["count_patrol"]
     ball_search_slow_time = ball_search_dict["slow_time"]
     ball_search_fast_time = ball_search_dict["fast_time"]
     rotation_speed_slow = ball_search_dict["rotation_speed_slow"]
@@ -360,23 +361,37 @@ if __name__ == "__main__":
 
             elif state == State.BALL_SEARCH:
                 log.LOGSTATE("ball_search")
-                #if len(processed_data.balls) > 0:
-                #    state = State.BALL_MOVE
-                #    continue
-                if search_counter > ball_search_rotation_count:
-                    log.LOGI("Count reached!")
-                    # To drive we go
+
+                if len(processed_data.balls) > 0:
+                    closest_ball = processed_data.balls[-1]
+                    state = State.BALL_MOVE
+                    continue
+
+                if search_counter > ball_search_count_patrol:
+                    if basket_color == Target_basket.MAGENTA:
+                        basket = processed_data.basket_m
+                    elif basket_color == Target_basket.BLUE:
+                        basket = processed_data.basket_b
+                    else:
+                        log.LOGE("Basket color invalid")
+
+                    if basket.exists:
+                        state = State.BALL_PATROL
+                        search_counter = 0
+                        ball_search_first_time = True
+                        continue
 
                 if search_state == Search_state.ROTATE_SLOW:
-                    search_counter += 1
                     if ball_search_first_time:
+                        search_counter += 1
+                        ball_search_first_time = False
                         ball_search_start = time.perf_counter()
-                    elif time.perf_counter() > ball_search_start + ball_search_slow_time:
+                    if time.perf_counter() > ball_search_start + ball_search_slow_time:
                         search_state = Search_state.ROTATE_FAST
                     robot.move(0, 0, rotation_speed_slow)
-
                 elif search_state == Search_state.ROTATE_FAST:
                     if time.perf_counter() > ball_search_start + ball_search_slow_time + ball_search_fast_time:
+                        ball_search_first_time = True
                         search_state = Search_state.ROTATE_SLOW
                     robot.move(0, 0, rotation_speed_fast)
                 else:
@@ -385,7 +400,20 @@ if __name__ == "__main__":
                     continue
 
             elif state == State.BALL_PATROL:
-                pass
+                log.LOGSTATE("ball_patrol")
+                
+                if len(processed_data.balls) > 0:
+                    closest_ball = processed_data.balls[-1]
+                    state = State.BALL_MOVE
+                    continue
+
+                if basket_color == Target_basket.MAGENTA:
+                    basket = processed_data.basket_m
+                elif basket_color == Target_basket.BLUE:
+                    basket = processed_data.basket_b
+                else:
+                    log.LOGE("Basket color invalid")
+                
             # End of ball_search
             
             # Moving towards ball
@@ -536,8 +564,6 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt:
         print("\nExiting")
-    
-    finally:
         cv2.destroyAllWindows()
         processor.stop()
         if referee_enabled:

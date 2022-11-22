@@ -56,11 +56,11 @@ depth_enabled = true
 juggernaut_time = 0.6
 
 [states.ball_search]
-slow_time = 0.3
-fast_time = 0.2
-rotation_count = 10
+slow_time = 0.22
+fast_time = 0.24
+count_patrol = 12
 rotation_speed_slow = 3
-rotation_speed_fast = 25
+rotation_speed_fast = 30    
 
 [states.ball_move]
 distance_into_orbit = 475 # mm

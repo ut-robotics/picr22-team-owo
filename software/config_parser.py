@@ -13,7 +13,6 @@ class Config_parser():
         except tomli.decoder.TomlDecodeError:
             print("ERROR: Invalid config filename:", self.filename)
         f.close()
-        print(self.data)
 
     def print_config(self):
         print("Title:", self.data["title"])
