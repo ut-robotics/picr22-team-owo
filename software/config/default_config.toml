@@ -3,7 +3,7 @@ title = "default_config"
 [logic]
 debug = false
 robot_name = "OWO"
-start_state = 1 # WAIT: 1, START_WAIT: 3, CALIB_INPUT: 9,
+start_state = 1
 basket = 1 # MAGENTA: 1, BLUE: 2
 manual_enabled = true
 referee_enabled = false
@@ -56,8 +56,9 @@ depth_enabled = true
 juggernaut_time = 0.6
 
 [states.ball_search]
-# Should also add delay here somehow
-# Currently difficult because how it is implemented
+slow_time = 0.3
+fast_time = 0.2
+rotation_count = 10
 rotation_speed_slow = 3
 rotation_speed_fast = 25
 

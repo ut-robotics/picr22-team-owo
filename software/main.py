@@ -27,16 +27,21 @@ class State(Enum):
     START_WAIT = 3
     START_GO = 4
     BALL_SEARCH = 5
-    BALL_MOVE = 6
-    BALL_ORBIT = 7
-    BALL_THROW = 8
+    BALL_PATROL = 6
+    BALL_MOVE = 7
+    BALL_ORBIT = 8
+    BALL_THROW = 9
     # These 2 are for thrower calibration
-    CALIB_INPUT = 9
-    CALIB_THROW = 10
+    CALIB_INPUT = 10
+    CALIB_THROW = 11
     # Control with XBox controller
-    MANUAL = 11
+    MANUAL = 12
     # Timeout state
-    TIMEOUT = 12
+    TIMEOUT = 13
+
+class Search_state(Enum):
+    ROTATE_SLOW = 1
+    ROTATE_FAST = 2
 
 if __name__ == "__main__":
     # Command line arguments
@@ -133,7 +138,14 @@ if __name__ == "__main__":
     start_go_time_start = 0
     start_go_first_time = True
     # ball_search
+    ball_search_first_time = True
+    ball_search_ball_time = 0
+    search_counter = 0
+    search_state = Search_state.ROTATE_SLOW
     ball_search_dict = config.get_state_dict("ball_search")
+    ball_search_rotation_count = ball_search_dict["rotation_count"]
+    ball_search_slow_time = ball_search_dict["slow_time"]
+    ball_search_fast_time = ball_search_dict["fast_time"]
     rotation_speed_slow = ball_search_dict["rotation_speed_slow"]
     rotation_speed_fast = ball_search_dict["rotation_speed_fast"]
     # ball_move
@@ -322,14 +334,32 @@ if __name__ == "__main__":
 
             elif state == State.BALL_SEARCH:
                 log.LOGSTATE("ball_search")
-                if len(processed_data.balls) > 0:
-                    state = State.BALL_MOVE
-                    continue
+                #if len(processed_data.balls) > 0:
+                #    state = State.BALL_MOVE
+                #    continue
+                if search_counter > ball_search_rotation_count:
+                    log.LOGI("Count reached!")
+                    # To drive we go
+
+                if search_state == Search_state.ROTATE_SLOW:
+                    search_counter += 1
+                    if ball_search_first_time:
+                        ball_search_start = time.perf_counter()
+                    elif time.perf_counter() > ball_search_start + ball_search_slow_time:
+                        search_state = Search_state.ROTATE_FAST
+                    robot.move(0, 0, rotation_speed_slow)
+
+                elif search_state == Search_state.ROTATE_FAST:
+                    if time.perf_counter() > ball_search_start + ball_search_slow_time + ball_search_fast_time:
+                        search_state = Search_state.ROTATE_SLOW
+                    robot.move(0, 0, rotation_speed_fast)
                 else:
-                    if (int(time.perf_counter() * 6) % 3 == 0):
-                        robot.move(0, 0, rotation_speed_fast)
-                    else:
-                        robot.move(0, 0, rotation_speed_slow)
+                    log.LOGE("Invalid search_state, defaulting to ROTATE_SLOW")
+                    search_state = Search_state.ROTATE_SLOW
+                    continue
+
+            elif state == State.BALL_PATROL:
+                pass
             # End of ball_search
             
             # Moving towards ball
