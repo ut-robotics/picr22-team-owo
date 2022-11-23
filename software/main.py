@@ -151,6 +151,15 @@ if __name__ == "__main__":
     ball_search_fast_time = ball_search_dict["fast_time"]
     rotation_speed_slow = ball_search_dict["rotation_speed_slow"]
     rotation_speed_fast = ball_search_dict["rotation_speed_fast"]
+    # ball_patrol
+    ball_patrol_dict = config.get_state_dict("ball_patrol")
+    patrol_active_basket = basket_color
+    patrol_x_speed_y_multiplier = ball_patrol_dict["x_speed_y_multiplier"]
+    patrol_r_speed_y_multiplier = ball_patrol_dict["r_speed_y_multiplier"]
+    patrol_x_speed_x_scale = ball_patrol_dict["x_speed_x_scale"]
+    patrol_r_speed_x_scale = ball_patrol_dict["r_speed_x_scale"]
+    patrol_y_speed = ball_patrol_dict["y_speed"]
+    patrol_range = ball_patrol_dict["range"]
     # ball_move
     ball_move_dict = config.get_state_dict("ball_move")
     distance_into_orbit = ball_move_dict["distance_into_orbit"]
@@ -190,7 +199,6 @@ if __name__ == "__main__":
     # Manual control state automatic switching when controller connected
     if xbox_cont != None:
         state = State.MANUAL
-
 
     # Calibration setup
     thrower_speed = 0
@@ -364,6 +372,7 @@ if __name__ == "__main__":
 
                 if len(processed_data.balls) > 0:
                     closest_ball = processed_data.balls[-1]
+                    search_counter = 0
                     state = State.BALL_MOVE
                     continue
 
@@ -400,19 +409,42 @@ if __name__ == "__main__":
                     continue
 
             elif state == State.BALL_PATROL:
+                timeout_trig_patrol = 12
+                if time.time() > state_start_timestamp + timeout_trig_move:
+                    state = State.TIMEOUT
+                    continue
                 log.LOGSTATE("ball_patrol")
-                
+
+                if patrol_active_basket == Target_basket.MAGENTA:
+                    basket = processed_data.basket_m
+                elif patrol_active_basket == Target_basket.BLUE:
+                    basket = processed_data.basket_b
+
+                if basket.exists and basket.distance < patrol_range:
+                    if patrol_active_basket == Target_basket.MAGENTA:
+                        patrol_active_basket = Target_basket.BLUE
+                    else:
+                        patrol_active_basket = Target_basket.MAGENTA
+                    state = State.BALL_SEARCH
+                    robot.move(0,-5,0)
+                    continue
+
                 if len(processed_data.balls) > 0:
                     closest_ball = processed_data.balls[-1]
+                    if patrol_active_basket == Target_basket.MAGENTA:
+                        patrol_active_basket = Target_basket.BLUE
+                    else:
+                        patrol_active_basket = Target_basket.MAGENTA
                     state = State.BALL_MOVE
                     continue
 
-                if basket_color == Target_basket.MAGENTA:
-                    basket = processed_data.basket_m
-                elif basket_color == Target_basket.BLUE:
-                    basket = processed_data.basket_b
+                if basket.exists:
+                    speed_x = sigmoid_controller(basket.x, middle_x, x_scale=patrol_x_speed_x_scale, y_scale=max_speed*patrol_x_speed_y_multiplier)
+                    speed_r = -sigmoid_controller(basket.x, middle_x, x_scale=patrol_r_speed_x_scale, y_scale=max_speed*patrol_r_speed_y_multiplier)
+                    speed_y = patrol_y_speed
+                    robot.move(speed_x, speed_y, speed_r)
                 else:
-                    log.LOGE("Basket color invalid")
+                    robot.move(0, 0, 15)
                 
             # End of ball_search
             
@@ -508,7 +540,7 @@ if __name__ == "__main__":
                     log.LOGI("THROW, distance: " + str(basket.distance))
                     state = State.BALL_SEARCH
 
-                log.LOGI(" Basket.x: " + str(basket.x) + " ball.x " + str(interesting_ball.x) + " ball.distance: " + str(interesting_ball.distance))
+                #log.LOGI(" Basket.x: " + str(basket.x) + " ball.x " + str(interesting_ball.x) + " ball.distance: " + str(interesting_ball.distance))
                 speed_rot = -sigmoid_controller(basket.x, middle_x, x_scale=bt_r_speed_x_scale, y_scale=max_speed*bt_r_speed_y_multiplier)
                 if (len(processed_data.balls) != 0) and interesting_ball.distance > bt_ball_min_radius and interesting_ball.distance < bt_ball_max_radius:
                     speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=bt_x_speed_x_scale, y_scale=max_speed*bt_r_speed_y_multiplier)
@@ -551,7 +583,7 @@ if __name__ == "__main__":
                 speedr = joyRightX * m_r_scaling
                 speedthrow = joyRTrig * m_thrower_scaling
 
-                print("Y: " + str(speedy) + " X: " + str(speedx) + " R: " + str(speedr))
+                #print("Y: " + str(speedy) + " X: " + str(speedx) + " R: " + str(speedr))
 
                 robot.move(speedx, speedy, speedr, speedthrow)
                 

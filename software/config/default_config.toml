@@ -60,7 +60,15 @@ slow_time = 0.22
 fast_time = 0.24
 count_patrol = 12
 rotation_speed_slow = 3
-rotation_speed_fast = 30    
+rotation_speed_fast = 30
+
+[states.ball_patrol]
+range = 1300
+y_speed = 3
+x_speed_x_scale = 1700
+r_speed_x_scale = 1000
+x_speed_y_multiplier = 0.5 # These are multipliers of max speed
+r_speed_y_multiplier = 1
 
 [states.ball_move]
 distance_into_orbit = 475 # mm
@@ -74,7 +82,7 @@ y_speed_y_multiplier = 1
 
 [states.ball_orbit]
 out_of_range_radius = 550
-orbit_radius = 400
+orbit_radius = 350
 basket_x_tolerance = 14
 x_speed_x_scale = 1500
 x_speed_y_multiplier = 0.75
@@ -83,9 +91,9 @@ no_basket_orbit_speed = 2.8
 [states.ball_throw]
 throw_drive_time = 2.0
 y_speed = 1.5
-r_speed_x_scale = 300
-r_speed_y_multiplier = 1
-x_speed_x_scale = 500
+r_speed_x_scale = 250 # basket
+r_speed_y_multiplier = 0.8
+x_speed_x_scale = 500 # ball
 x_speed_y_multiplier = 0.5
 ball_min_radius = 250
 ball_max_radius = 500
