@@ -2,18 +2,18 @@ title = "default_config"
 
 [logic]
 debug = false
-robot_name = "OWO"
-start_state = 1
+robot_name = "owo"
+start_state = 3
 basket = 1 # MAGENTA: 1, BLUE: 2
 manual_enabled = true
-referee_enabled = false
+referee_enabled = true
 max_speed = 10
 
 [modules]
 
 [modules.referee]
-ip = "192.168.3.19"
-port = "8222"
+ip = "192.168.3.220"
+port = "8111"
 
 [modules.logger]
 print_enabled = true

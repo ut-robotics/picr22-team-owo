@@ -126,7 +126,7 @@ if __name__ == "__main__":
 
     # Referee commands
     if referee_enabled:
-        referee = ref_cmd.Referee_cmd_client(log)
+        referee = ref_cmd.Referee_cmd_client(config, log)
         ref_first_start = True
         referee.open()
     if (not referee_enabled) and state == State.START_WAIT:
@@ -212,7 +212,7 @@ if __name__ == "__main__":
         # Do not add anything outside of if/elif state clauses to the end of the loop, otherwise use of "continue" will not let it run
         while(True):
             # Getting camera data
-            if state == State.BALL_THROW:
+            if state == State.BALL_THROW or state == State.BALL_ORBIT:
                 processed_data = processor.process_frame(aligned_depth=True)
             else:
                 processed_data = processor.process_frame(aligned_depth=False)
@@ -409,8 +409,8 @@ if __name__ == "__main__":
                     continue
 
             elif state == State.BALL_PATROL:
-                timeout_trig_patrol = 12
-                if time.time() > state_start_timestamp + timeout_trig_move:
+                timeout_trig_patrol = 15
+                if time.time() > state_start_timestamp + timeout_trig_patrol:
                     state = State.TIMEOUT
                     continue
                 log.LOGSTATE("ball_patrol")
@@ -444,7 +444,7 @@ if __name__ == "__main__":
                     speed_y = patrol_y_speed
                     robot.move(speed_x, speed_y, speed_r)
                 else:
-                    robot.move(0, 0, 15)
+                    robot.move(0, 0, 11)
                 
             # End of ball_search
             
@@ -492,10 +492,10 @@ if __name__ == "__main__":
                     interesting_ball = processed_data.balls[-1]
 
                     # For checking if the ball is still in position
-                    if interesting_ball.distance > out_of_range_radius:
-                        log.LOGE("Invalid radius, radius: " + str(interesting_ball.distance))
-                        state = State.BALL_SEARCH
-                        continue
+                    #if interesting_ball.distance > out_of_range_radius:
+                    #    log.LOGE("Invalid radius, radius: " + str(interesting_ball.distance))
+                    #    state = State.BALL_SEARCH
+                    #    continue
 
                     # Determining the correct basket
                     if basket_color == Target_basket.MAGENTA:

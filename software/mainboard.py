@@ -54,15 +54,16 @@ class Mainboard():
 
         for port, _, hwid in sorted(port_list):
             devices[hwid] = port
-
+        print("len", len(devices))
         for hwid in devices.keys():
+            print("device:", hwid, devices[hwid])
             if self.mainboard_hwid in hwid:
                 serial_port = devices[hwid]
                 break
         
         if serial_port is None:
             self.logger.LOGE("Cannot connect to mainboard")
-            raise SerialPortNotFound 
+            raise SerialPortNotFound
         self.ser = serial.Serial(serial_port, self.baud_rate)
 
     def close(self):
@@ -76,7 +77,7 @@ class Mainboard():
         else:
             # int(distance*0.277 + 413)
             # return int(distance*0.275 + 411)
-            return int(distance*0.271 + 416)
+            return int(distance*0.273 + 414)
 
     # Big math, returns speed of a wheel in mainboard units
     def calculate_wheel_speed(self, motor_num, robot_speed, robot_angle, speed_rot):
@@ -126,9 +127,9 @@ class Mainboard():
         speed_r = 1000 * speed_x / radius
 
         # Correct radius check
-        if cur_radius > 600:
-            self.logger.LOGE("Invalid radius, radius: " + str(cur_radius))
-            return
+        #if cur_radius > 600:
+        #    self.logger.LOGE("Invalid radius, radius: " + str(cur_radius))
+        #    return
         # Radius adjustment
         if cur_radius > (radius + self.buffer_x) or cur_radius < (radius - self.buffer_x):
             speed_y -= (radius - cur_radius) / 100 * self.y_const
