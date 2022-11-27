@@ -238,3 +238,6 @@ Link to the robot's assembly: https://a360.co/3FA4tEU
 
 === Fri, 25.11.22
 *Sander:* Wheel manufacturing and assembling thrower 5 h +
+
+=== Sat, 26.11.22
+*Sander:* Design improvements 4 h +
