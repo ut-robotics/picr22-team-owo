@@ -135,7 +135,7 @@ Link to the robot's assembly: https://a360.co/3FA4tEU
 === Mon, 17.10.22
 *Artur:* Designing the mainboard pcb 3 h +
 *Sander:* Thrower design improvements 4.5 h +
-*Johannes:* Code improvements 1.5 h 
+*Johannes:* Code improvements 1.5 h +
 *Andres:* Progress report, code improvements based on feedback 4.5 h +
 *Kert:* Started working on camera mount & design 4 h +
 
@@ -261,3 +261,6 @@ Link to the robot's assembly: https://a360.co/3FA4tEU
 
 === Sat, 26.11.22
 *Sander:* Design improvements 4 h +
+
+=== Sun, 27.11.22
+*Andres:* Behavior analysis, progress report
