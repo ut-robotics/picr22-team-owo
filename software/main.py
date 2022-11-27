@@ -53,7 +53,7 @@ if __name__ == "__main__":
 
     # Control logic setup
     debug = False
-    state = State.WAIT # <====================================================== Initial state here!
+    state = State.START_WAIT # <====================================================== Initial state here!
     thrower_speed = 0
     calib_first_time = True
     calibration_data = []
@@ -86,9 +86,9 @@ if __name__ == "__main__":
     middle_y = cam.rgb_height / 2
 
     # Referee commands
-    ref_enabled = False
+    ref_enabled = True
     if ref_enabled:
-        robot_name = "OWO"
+        robot_name = "owo"
         referee = ref_cmd.Referee_cmd_client(log)
         ref_first_start = True
         referee.open()
@@ -145,10 +145,10 @@ if __name__ == "__main__":
                     basket_change_triggers = 0
 
                 elif xbox_cont.button_y and basket_change_triggers == 0:
-                    if basket_color == TargetBasket.BLUE:
-                        basket_color = TargetBasket.MAGENTA
-                    elif basket_color == TargetBasket.MAGENTA:
-                        basket_color = TargetBasket.BLUE
+                    if basket_color == Target_basket.BLUE:
+                        basket_color = Target_basket.MAGENTA
+                    elif basket_color == Target_basket.MAGENTA:
+                        basket_color = Target_basket.BLUE
                     basket_change_triggers += 1
 
                 elif xbox_cont.button_y:
@@ -310,10 +310,10 @@ if __name__ == "__main__":
                     interesting_ball = processed_data.balls[-1]
 
                     # For checking if the ball is still in position
-                    if interesting_ball.distance > 550:
-                        log.LOGE("Invalid radius, radius: " + str(interesting_ball.distance))
-                        state = State.BALL_SEARCH
-                        continue
+                    #if interesting_ball.distance > 550:
+                    #    log.LOGE("Invalid radius, radius: " + str(interesting_ball.distance))
+                    #    state = State.BALL_SEARCH
+                    #    continue
 
                     # Determining the correct basket
                     if basket_color == Target_basket.MAGENTA:

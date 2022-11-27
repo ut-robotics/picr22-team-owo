@@ -91,18 +91,6 @@ class Mainboard():
     # r - rotation, positive anticlockwise
     # While moving it also rotates the thrower with speed calculated from the distance
     def move(self, speed_x, speed_y, speed_r, thrower_distance=0):
-        """
-        if speed_x - self.previous_x > self.acceleration_limit:
-            speed_x = self.previous_x + self.acceleration_limit
-        if speed_y - self.previous_y > self.acceleration_limit:
-            speed_y = self.previous_y + self.acceleration_limit
-        if speed_r - self.previous_r > self.acceleration_limit:
-            speed_r = self.previous_r + self.acceleration_limit
-        self.previous_x = speed_x
-        self.previous_y = speed_y
-        self.previous_r = speed_r
-        """
-
         robot_angle = math.atan2(speed_y, speed_x)
         robot_speed = math.sqrt(math.pow(speed_x, 2) + math.pow(speed_y, 2))
         #print("Angle:", robot_angle)
@@ -128,9 +116,9 @@ class Mainboard():
         speed_r = 1000 * speed_x / radius
 
         # Correct radius check
-        if cur_radius > 600:
-            self.logger.LOGE("Invalid radius, radius: " + str(cur_radius))
-            return
+        #if cur_radius > 600:
+        #    self.logger.LOGE("Invalid radius, radius: " + str(cur_radius))
+        #    return
         # Radius adjustment
         if cur_radius > (radius + self.buffer_x) or cur_radius < (radius - self.buffer_x):
             speed_y -= (radius - cur_radius) / 100 * self.y_const
