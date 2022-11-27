@@ -263,4 +263,4 @@ Link to the robot's assembly: https://a360.co/3FA4tEU
 *Sander:* Design improvements 4 h +
 
 === Sun, 27.11.22
-*Andres:* Behavior analysis, progress report
+*Andres:* Behavior analysis, progress report 3 h +
