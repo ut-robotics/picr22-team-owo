@@ -233,24 +233,28 @@ Link to the robot's assembly: https://a360.co/3FA4tEU
 *Artur:* Starting with the firmware 0.5 h +
 *Kert:* Chassis design and fixes based on feedback 1 h +
 *Sander:* Design improvements 3 h +
+*Johannes:* Progress report and manual control 3.5 h +
 
 === Tue, 15.11.22
 *Andres:* Merging, referee reconnect 1 h +
 
 === Thu, 17.11.22
 *Andres:* Config, other minor improvements 3 h +
+*Johannes:* Minor improvements and stability 2.5 h + 
 
 === Sat, 19.11.22
 *Andres:* Pull request feedback, argparse, config 8 h +
+*Johannes:* Pull request feedback 1 h +
 *Artur:* Soldering the mainboard 7 h +
 
-=== Mon, 20.11.22
+=== Sun, 20.11.22
 *Artur:* Soldering and debugging the mainboard 5 h +
 
 === Mon, 21.11.22
 *Andres:* Meeting, planning, config files, search algorithms 5 h +
 *Sander:* Design improvements and CAM 5 h +
 *Artur:* Soldering the mainboard 6 h +
+*Johannes:* Meeting, timeout algorithms 4 h +
 
 === Tue, 22.11.22
 *Andres:* Search algorithms with movement 3.5 h +
@@ -259,9 +263,11 @@ Link to the robot's assembly: https://a360.co/3FA4tEU
 === Wed, 23.11.22
 *Andres:* Search algorithms with movement, cleaning the robot 3.5 h +
 *Artur:* Writing firmware for the mainboard 1 h
+*Johannes:* Minor stability improvements 1.5 h +
 
 === Thu, 24.11.22
 *Andres:* Second test competition 3.5 h +
+*Johannes:* Second test competition 4.5 h +
 
 === Fri, 25.11.22
 *Sander:* Wheel manufacturing and assembling thrower 5 h +
