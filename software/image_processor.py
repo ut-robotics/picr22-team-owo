@@ -236,8 +236,8 @@ class ImageProcessor():
             #pass
             #print("terre")
             #cv2.imshow("edges", edges)
-            cv2.imshow("lines", copy_img)
-            cv2.imshow("black", detection_black)
+            #cv2.imshow("lines", copy_img)
+            #cv2.imshow("black", detection_black)
             #cv2.imshow("white", fragmentedwhite)
             #cv2.imshow("comb", comb_img)
 
@@ -307,10 +307,13 @@ class ImageProcessor():
 
     # same thing for baskets
     def analyze_baskets(self, t_basket, depth, debug_color = (0, 255, 255)) -> list:
-        contours, hierarchy = cv2.findContours(t_basket, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
 
         krnl = np.ones((3,3), np.uint8)
         t_basket = cv2.morphologyEx(t_basket, cv2.MORPH_CLOSE, krnl)
+
+        contours, hierarchy = cv2.findContours(t_basket, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
         baskets = []
         for contour in contours:
 
