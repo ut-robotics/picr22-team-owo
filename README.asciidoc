@@ -255,19 +255,22 @@ Link to the robot's assembly: https://a360.co/3FA4tEU
 *Sander:* Design improvements and CAM 5 h +
 *Artur:* Soldering the mainboard 6 h +
 *Johannes:* Meeting, timeout algorithms 4 h +
+*Kert:* Final adjustments before the new robot mill 6.5 h +
 
 === Tue, 22.11.22
 *Andres:* Search algorithms with movement 3.5 h +
-*Artur:* Soldering the mainboard 2.5 h
+*Artur:* Soldering the mainboard 2.5 h +
 
 === Wed, 23.11.22
 *Andres:* Search algorithms with movement, cleaning the robot 3.5 h +
-*Artur:* Writing firmware for the mainboard 1 h
+*Artur:* Writing firmware for the mainboard 1 h +
 *Johannes:* Minor stability improvements 1.5 h +
+*Kert:* Milling the new robot 6.5 h +
 
 === Thu, 24.11.22
 *Andres:* Second test competition 3.5 h +
 *Johannes:* Second test competition 4.5 h +
+*Kert:* Second test competition 4 h +
 
 === Fri, 25.11.22
 *Sander:* Wheel manufacturing and assembling thrower 5 h +
