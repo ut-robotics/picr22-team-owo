@@ -280,3 +280,6 @@ Link to the robot's assembly: https://a360.co/3FA4tEU
 
 === Sun, 27.11.22
 *Andres:* Behavior analysis, progress report 3 h +
+
+=== Mon, 28.11.22
+*Sander:* 3d printing and drilling holes 5.5 h +
