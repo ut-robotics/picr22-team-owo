@@ -242,16 +242,23 @@ Link to the robot's assembly: https://a360.co/3FA4tEU
 
 === Sat, 19.11.22
 *Andres:* Pull request feedback, argparse, config 8 h +
+*Artur:* Soldering the mainboard 7 h +
+
+=== Mon, 20.11.22
+*Artur:* Soldering and debugging the mainboard 5 h +
 
 === Mon, 21.11.22
 *Andres:* Meeting, planning, config files, search algorithms 5 h +
 *Sander:* Design improvements and CAM 5 h +
+*Artur:* Soldering the mainboard 6 h +
 
 === Tue, 22.11.22
 *Andres:* Search algorithms with movement 3.5 h +
+*Artur:* Soldering the mainboard 2.5 h
 
 === Wed, 23.11.22
 *Andres:* Search algorithms with movement, cleaning the robot 3.5 h +
+*Artur:* Writing firmware for the mainboard 1 h
 
 === Thu, 24.11.22
 *Andres:* Second test competition 3.5 h +
