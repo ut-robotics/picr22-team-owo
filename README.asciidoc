@@ -283,3 +283,6 @@ Link to the robot's assembly: https://a360.co/3FA4tEU
 
 === Mon, 28.11.22
 *Sander:* 3d printing and drilling holes 5.5 h +
+
+=== Tue, 29.11.22
+*Sander:* Assembling the robot 2.5 h +
