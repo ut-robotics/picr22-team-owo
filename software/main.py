@@ -33,6 +33,7 @@ class State(Enum):
     CALIB_THROW = 10
     # Control with XBox controller
     MANUAL = 11
+    TIMEOUT = 12
 
 if __name__ == "__main__":
     # Housekeeping setup
@@ -103,13 +104,19 @@ if __name__ == "__main__":
 
 
     try:
+        # Initializing the previous-state variable
+        prev_state = State.WAIT
         # Do not add anything outside of if/elif state clauses to the end of the loop, otherwise use of "continue" will not let it run
         while(True):
             # Getting camera data
-            if state == State.BALL_THROW:
+            if state == State.BALL_THROW or state == State.BALL_ORBIT:
                 processed_data = processor.process_frame(aligned_depth=True)
             else:
                 processed_data = processor.process_frame(aligned_depth=False)
+
+            if prev_state != state:
+                state_start_timestamp = time.time()
+                prev_state = state
 
             # Manual Controller managing
             if manual_control and xbox_cont is not None:
@@ -221,6 +228,23 @@ if __name__ == "__main__":
                 continue
             # End of inactive states
 
+            elif state == State.TIMEOUT:
+                log.LOGSTATE("timeout")
+                timeout_speed_x = 2
+                timeout_speed_y = 5
+                timeout_speed_rot = 0
+                timeout_duration = 0.5
+                if time.time() > state_start_timestamp + timeout_duration:
+                    state = State.BALL_SEARCH
+                    continue
+
+                if basket.exists:
+                    if basket.distance < 500:
+                        timeout_speed_y = -5
+                        timeout_speed_rot = 15
+
+                robot.move(timeout_speed_x, timeout_speed_y, timeout_speed_rot)
+
             # States used for thrower calibration
             elif state == State.CALIB_INPUT:
                 thrower_speed = int(input("Speed:")) # Input speed for thrower
@@ -305,6 +329,12 @@ if __name__ == "__main__":
 
             # Orbiting around ball until correct basket is found
             elif state == State.BALL_ORBIT:
+
+                timeout_trig_orbit = 5
+                if time.time() > state_start_timestamp + timeout_trig_orbit:
+                    state = State.TIMEOUT
+                    continue
+
                 log.LOGSTATE("ball_orbit")
                 if len(processed_data.balls) > 0:
                     interesting_ball = processed_data.balls[-1]
