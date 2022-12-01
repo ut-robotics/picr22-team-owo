@@ -6,8 +6,10 @@ import numpy as np
 import cv2
 import Color as c
 import math
+from numba import njit
 
 # position calculation helper function
+@njit
 def calculatePosition(height, width, depth, origx, origy):
     x = int(origx + (width/2))
     y = int(origy + (height/2))
@@ -82,7 +84,6 @@ class ImageProcessor():
     def start(self):
         self.camera.open()
 
-    
 
     # will get lines from the image and return them as line equations
     def get_lines(self, image, fragmented):
@@ -116,11 +117,12 @@ class ImageProcessor():
         fragmented_black = fragmented_black.astype(np.uint8) * 255
         detection_black = detection_black.astype(np.uint8) * 255
 
+        # fragmented_white, fragmented_black, detection_black = process_line_images(fragmented)
 
-        low = 60
-        high = 100
+        #low = 60
+        #high = 100
 
-        ret, thresh = cv2.threshold(gr_img, low, high, cv2.THRESH_BINARY_INV)
+        #ret, thresh = cv2.threshold(gr_img, low, high, cv2.THRESH_BINARY_INV)
 
 
         # different line detection parameters
@@ -192,6 +194,7 @@ class ImageProcessor():
             #cv2.imshow("black", detection_black)
             #cv2.imshow("white", fragmentedwhite)
             #cv2.imshow("comb", comb_img)
+            pass
 
         return lines_by_slope
 

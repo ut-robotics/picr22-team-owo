@@ -54,7 +54,7 @@ if __name__ == "__main__":
 
     # Control logic setup
     debug = False
-    state = State.START_WAIT # <====================================================== Initial state here!
+    state = State.WAIT # <====================================================== Initial state here!
     thrower_speed = 0
     calib_first_time = True
     calibration_data = []
@@ -87,7 +87,7 @@ if __name__ == "__main__":
     middle_y = cam.rgb_height / 2
 
     # Referee commands
-    ref_enabled = True
+    ref_enabled = False
     if ref_enabled:
         robot_name = "owo"
         referee = ref_cmd.Referee_cmd_client(log)
@@ -449,6 +449,9 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt:
         print("\nExiting")
+
+    except Exception as e:
+        print(e)
     
     finally:
         cv2.destroyAllWindows()
