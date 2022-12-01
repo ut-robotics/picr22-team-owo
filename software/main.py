@@ -84,6 +84,7 @@ if __name__ == "__main__":
     robot_name = logic_conf["robot_name"]
     manual_enabled = logic_conf["manual_enabled"]
     referee_enabled = logic_conf["referee_enabled"]
+    #referee_enabled = False
     max_speed = logic_conf["max_speed"]
     thrower_time_start = 0
     # Starting state

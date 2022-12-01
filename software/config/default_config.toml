@@ -12,8 +12,8 @@ max_speed = 10
 [modules]
 
 [modules.referee]
-ip = "192.168.3.220"
-port = "8111"
+ip = "192.168.3.69"
+port = "8222"
 
 [modules.logger]
 print_enabled = true
