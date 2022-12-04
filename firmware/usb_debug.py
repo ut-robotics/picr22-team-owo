@@ -32,7 +32,7 @@ class Mainboard():
         self.max_speed = max_speed
 
         # Mainboard communication
-        self.mainboard_hwid = "USB VID:PID=01E3:166C"
+        self.mainboard_hwid = "USB VID:PID=0483:5740"
         self.baud_rate = 115200
 
         # Orbiting constants
@@ -162,6 +162,7 @@ if __name__ == "__main__":
     robot.start()
     try: 
         while(True):
+            time.sleep(0.01)
             robot.test_motors()
     except KeyboardInterrupt:
         print("\nExiting")

@@ -117,6 +117,13 @@ void motor_status_update() {
 	}
 
 }
+// Borrowed from last years Kurgimopeed team, temporary
+void wake_drivers_up() {
+	HAL_GPIO_WritePin(GPIOB, MSLEEP_Pin, GPIO_PIN_RESET);
+	for(uint16_t i = 0; i < 100; i++) __asm("nop");
+	HAL_GPIO_WritePin(GPIOB, MSLEEP_Pin, GPIO_PIN_SET);
+	for(uint16_t i = 0; i < 10; i++) __asm("nop");
+}
 /* USER CODE END 0 */
 
 /**
@@ -163,20 +170,27 @@ int main(void)
 	    .speed[1] = 0,
 	    .speed[2] = 0,
         .delimiter = 0xAAAA
-    };
-  HAL_GPIO_TogglePin(MSLEEP_GPIO_Port, MSLEEP_Pin); // MSLEEP -> HIGH, activates motor drivers
-
+  };
+  //HAL_GPIO_TogglePin(MSLEEP_GPIO_Port, MSLEEP_Pin); // MSLEEP -> HIGH, activates motor drivers
+  HAL_GPIO_WritePin(GPIOB, MSLEEP_Pin, GPIO_PIN_SET);
+  HAL_Delay(100);
+  wake_drivers_up();
+  HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1);
+  HAL_TIMEx_PWMN_Start(&htim8, TIM_CHANNEL_2);
+  HAL_TIMEx_PWMN_Start(&htim8, TIM_CHANNEL_3);
+  TIM8->CCR1 = 13107;
+  TIM8->CCR2 = 13107;
+  TIM8->CCR3 = 13107;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
-
     if (isCommandReceived) {
     	isCommandReceived = 0;
     	motor_status_update();
+    	wake_drivers_up();
 		HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
 
 		feedback.speed[0] = motor_status[0].target_speed; // In the current state it retuns the uint8 version without direction, whoops!
@@ -185,6 +199,7 @@ int main(void)
 
 		CDC_Transmit_FS(&feedback, sizeof(feedback));
 	}
+    /* USER CODE END WHILE */
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

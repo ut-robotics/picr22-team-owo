@@ -64,8 +64,8 @@ all: main-build
 main-build: picr22-team-OWO.elf secondary-outputs
 
 # Tool invocations
-picr22-team-OWO.elf picr22-team-OWO.map: $(OBJS) $(USER_OBJS) C:\Users\eksia\STM32CubeIDE\workspace_1.10.1\Testproject\STM32G441KBTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "picr22-team-OWO.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\eksia\STM32CubeIDE\workspace_1.10.1\Testproject\STM32G441KBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="picr22-team-OWO.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+picr22-team-OWO.elf picr22-team-OWO.map: $(OBJS) $(USER_OBJS) C:\Users\eksia\Documents\Kooliasjad\3.\ semester\picr22-team-owo\firmware\picr22-team-owo\STM32G441KBTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "picr22-team-OWO.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\eksia\Documents\Kooliasjad\3. semester\picr22-team-owo\firmware\picr22-team-owo\STM32G441KBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="picr22-team-OWO.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
