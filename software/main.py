@@ -33,7 +33,11 @@ class State(Enum):
     CALIB_THROW = 10
     # Control with XBox controller
     MANUAL = 11
+    # Timeout states
     TIMEOUT = 12
+    # New robot states
+    BALL_EAT = 13
+    BASKET_SEARCH = 14
 
 if __name__ == "__main__":
     # Housekeeping setup
@@ -54,6 +58,7 @@ if __name__ == "__main__":
 
     # Control logic setup
     debug = False
+    new_robot = False
     state = State.WAIT # <====================================================== Initial state here!
     thrower_speed = 0
     calib_first_time = True
@@ -214,6 +219,14 @@ if __name__ == "__main__":
                             state = State.PAUSED
 
             # End of referee commands
+            
+            # ----- NEW ROBOT BALL-IN SENSOR HANDLING -----
+            
+            # If a ball is currently in the belly of the beast, find a basket
+            ball_in_robot = False # <--- THIS NEEDS REPLACEMENT AS A VALUE OBTAINED FROM THE MAINBOARD
+            
+            if ball_in_robot and (state == State.BALL_SEARCH or state == State.BALL_MOVE or state == State.BALL_EAT):
+                state = State.BASKET_FIND
 
             # Main control logic uses a state machine
             # Inactive states
@@ -371,9 +384,76 @@ if __name__ == "__main__":
                     state = State.BALL_SEARCH
                     continue
             # End of ball_orbit
+            
+            # -----START OF STATES FOR NEW ROBOT-----
+            
+            # Ball eating state
+            elif state == State.BALL_EAT:
+                log.LOGSTATE("ball_eat")
+                # Maximum time to stay in this state, in seconds.
+                max_time_in_ball_eat = 4
+                # Speed for eating servo, units undetermined, current value temporary
+                eat_servo_speed = 10
+                
+                if state_start_timestamp + max_time_in_ball_eat < time.time():
+                    # Default movement values
+                    speed_x = 0 
+                    speed_y = 3 # <--- Change this to change the forward movement speed of this state
+                    speed_r = 0
+                    interesting_ball = None
+                    
+                    # When back-wheel movement is ready, it should be implemented into this state.
+                    
+                    if (processed_data.balls) > 0:
+                        interesting_ball = processed_data.balls[-1]
+                        if interesting_ball.distance > 550:
+                            interesting_ball = None
+                        
+                    # scale values need testing
+                    if interesting_ball != None:
+                        speed_r = -sigmoid_controller(interesting_ball.x, middle_x, x_scale=800, y_scale=max_speed)
+                    
+                    # +++ ADD EATING SERVO CONTROL HERE +++
+                    
+                    robot.move(speed_x, speed_y, speed_r)
+                    continue
+                
+                else:
+                    state = State.BALL_SEARCH
+                    continue
+            # end of ball eating
+            
+            # State of the new robot for finding the basket when ball is eaten
+            elif state == State.BASKET_FIND:
+                timeout_trig_basket_find = 4
+                if time.time() > state_start_timestamp + timeout_trig_basket_find:
+                    state = State.TIMEOUT
+                    continue
+                log.LOGSTATE("basket_find")
+                
+                # Default movement values
+                speed_x = 0 
+                speed_y = 0
+                speed_r = 10 # <--- Change this to change the basket finding rotation speed
+                    
+                # Determining the correct basket
+                if basket_color == Target_basket.MAGENTA:
+                    basket = processed_data.basket_m
+                elif basket_color == Target_basket.BLUE:
+                    basket = processed_data.basket_b
+                else:
+                    log.LOGE("Basket color invalid")
+                        
+                # If basket is found, go to throwing, NB! Basket centering done entirely in throw
+                if basket.exists:
+                    state = State.BALL_THROW
+                        
+                robot.move(speed_x, speed_y, speed_r)
+                continue
 
             elif state == State.BALL_THROW:
                 log.LOGSTATE("ball_throw")
+                time_in_throw = 2.5
 
                 if basket_color == Target_basket.MAGENTA:
                     basket = processed_data.basket_m
@@ -385,23 +465,58 @@ if __name__ == "__main__":
                 if len(processed_data.balls) > 0:
                     interesting_ball = processed_data.balls[-1]
 
-                if (thrower_time_start + 2.0 < time.perf_counter()):
+                if (thrower_time_start + time_in_throw < time.perf_counter()):
                     log.LOGI("THROW, distance: " + str(basket.distance))
                     state = State.BALL_SEARCH
+                
+                if not new_robot:
 
-                log.LOGI(" Basket.x: " + str(basket.x) + " ball.x " + str(interesting_ball.x) + " ball.distance: " + str(interesting_ball.distance))
-                speed_rot = -sigmoid_controller(basket.x, middle_x, x_scale=350, y_scale=max_speed)
-                if (len(processed_data.balls) != 0) and interesting_ball.distance > 250 and interesting_ball.distance < 500:
-                    speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=600, y_scale=max_speed)
-                else:
-                    speed_x = 0
+                    log.LOGI(" Basket.x: " + str(basket.x) + " ball.x " + str(interesting_ball.x) + " ball.distance: " + str(interesting_ball.distance))
+                    speed_rot = -sigmoid_controller(basket.x, middle_x, x_scale=350, y_scale=max_speed)
+                    if (len(processed_data.balls) != 0) and interesting_ball.distance > 250 and interesting_ball.distance < 500:
+                        speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=600, y_scale=max_speed)
+                    else:
+                        speed_x = 0
 
-                speed_y = 1.5
+                    speed_y = 1.5
 
-                if not np.isnan(basket.distance):
-                    robot.move(speed_x, speed_y, speed_rot, int(basket.distance))
-                else: 
-                    robot.move(speed_x, speed_y, speed_rot, 0)
+                    if not np.isnan(basket.distance):
+                        robot.move(speed_x, speed_y, speed_rot, int(basket.distance))
+                    else: 
+                        robot.move(speed_x, speed_y, speed_rot, 0)
+                
+                # Throwing logic for the new robot
+                elif new_robot:
+                    if not ball_in_robot:
+                        log.LOGE("Entered throw with no ball in robot, what's going on?")
+                    else:
+                        # Default movement values
+                        speed_x = 0 
+                        speed_y = 0
+                        speed_r = 0
+                        maximum_basket_error = 1
+                        
+                        # Speed calculations
+                        log.LOGI(" Basket.x: " + str(basket.x))
+                        speed_r = -sigmoid_controller(basket.x, middle_x, x_scale=350, y_scale=max_speed)
+                        
+                        # If basket is in the middle of the screen.
+                        if abs(middle_x - basket.x) <= maximum_basket_error:
+                            # Smoother correction still in place just in case.
+                            speed_r = -sigmoid_controller(basket.x, middle_x, x_scale=800, y_scale=max_speed)
+                            
+                            # Worth considering - saving last known basket distance.
+                            if not np.isnan(basket.distance):
+                                robot.move(speed_x, speed_y, speed_r, int(basket.distance))
+                            else: 
+                                robot.move(speed_x, speed_y, speed_r, 0)
+                                
+                        # This means basket needs centering
+                        else:   
+                            robot.move(speed_x, speed_y, speed_r, 0)
+                            
+                        # IDEA: Consider ending this state when ball_in_robot has not been true for some fraction of a second
+                        
                 continue
             # End of ball_throw
 
