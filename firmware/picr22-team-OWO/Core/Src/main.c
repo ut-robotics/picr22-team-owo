@@ -22,7 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "usbd_cdc_if.h" // (1)
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -68,7 +68,55 @@ static void MX_TIM6_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+typedef struct Motor_Status {
+	uint8_t target_speed; // still undetermined
+	uint8_t direction; // 1 = forward, 0 = backward
+	int16_t enc_pos; // current encoder position
+	int16_t prev_enc_pos; // previous encoder position, unknown if this is currently in the right place
+} Motor_Status;
 
+Motor_Status motor_status[3] = {0};
+
+typedef struct Command {
+  int16_t speed[3]; // array of all of the motor speeds
+  uint16_t thrower_speed; // thrower motor speed
+  uint16_t delimiter;
+} Command;
+
+typedef struct Feedback {
+  int16_t speed[3];
+  uint16_t delimiter;
+} Feedback;
+
+Command command = {.speed[0] = 0, .speed[1] = 0, .speed[2] = 0, .thrower_speed = 0, .delimiter = 0}; // (4)
+volatile uint8_t isCommandReceived = 0; // (5)
+
+void CDC_On_Receive(uint8_t* buffer, uint32_t* length) { // command recieve callback, copies data to command struct
+  if (*length == sizeof(Command)) {
+    memcpy(&command, buffer, sizeof(Command));
+    if (command.delimiter == 0xAAAA) {
+      isCommandReceived = 1;
+    }
+  }
+}
+
+void enc_init() { //CHANNEL ORDER MAY BE REVERSED, PLEASE CHECK BEFORE DEBUGGING OTHER POSSIBLE SOURCES
+	HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_1 | TIM_CHANNEL_2); // Motor 1
+	HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_1 | TIM_CHANNEL_2); // Motor 2
+	HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_1 | TIM_CHANNEL_2); // Motor 3
+}
+
+void motor_status_update() {
+	for (uint8_t i = 0; i<3; i++) {
+		if (command.speed[i] >= 0) {
+			motor_status[i].direction = 1;
+		} else {
+			motor_status[i].direction = 0;
+		}
+		motor_status[i].target_speed = command.speed[i];
+	}
+
+}
 /* USER CODE END 0 */
 
 /**
@@ -108,6 +156,15 @@ int main(void)
   MX_TIM6_Init();
   MX_USB_Device_Init();
   /* USER CODE BEGIN 2 */
+  enc_init();
+
+  Feedback feedback = {
+	    .speed[0] = 0,
+	    .speed[1] = 0,
+	    .speed[2] = 0,
+        .delimiter = 0xAAAA
+    };
+  HAL_GPIO_TogglePin(MSLEEP_GPIO_Port, MSLEEP_Pin); // MSLEEP -> HIGH, activates motor drivers
 
   /* USER CODE END 2 */
 
@@ -117,6 +174,17 @@ int main(void)
   {
     /* USER CODE END WHILE */
 
+    if (isCommandReceived) {
+    	isCommandReceived = 0;
+    	motor_status_update();
+		HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
+
+		feedback.speed[0] = motor_status[0].target_speed; // In the current state it retuns the uint8 version without direction, whoops!
+		feedback.speed[1] = motor_status[1].target_speed;
+		feedback.speed[2] = motor_status[2].target_speed;
+
+		CDC_Transmit_FS(&feedback, sizeof(feedback));
+	}
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
