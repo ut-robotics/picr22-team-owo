@@ -37,7 +37,7 @@ class State(Enum):
     TIMEOUT = 12
     # New robot states
     BALL_EAT = 13
-    BASKET_SEARCH = 14
+    BASKET_FIND = 14
 
 if __name__ == "__main__":
     # Housekeeping setup
