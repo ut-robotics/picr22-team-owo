@@ -4,6 +4,12 @@ import math, struct, time, sys
 import numpy as np
 import serial, serial.tools.list_ports
 from robot_utilities import *
+from enum import Enum
+
+class Eating_servo_state(Enum):
+    OFF = 1
+    EAT = 2
+    THROW = 3
 
 class SerialPortNotFound(Exception):
     def __init__(self):
@@ -42,6 +48,16 @@ class Mainboard():
         self.y_const = 1
         self.prev_rad = 400
 
+        # New robot throwing logic
+        self.eating_servo_speed = 0
+        self.ball_in_robot = False
+        self.throwing_angle_data = [{"angle": 59, "min_r": 1900, "max_r": 2500, "slope": 0.275, "constant": 420},
+                                    {"angle": 63, "min_r": 900, "max_r": 2000, "slope": 0.275, "constant": 420},
+                                    {"angle": 67, "min_r": 400, "max_r": 1000, "slope": 0.275, "constant": 420}]
+        self.active_slope = self.throwing_angle_data[0]["slope"] # Default to long range at the start (start for far corner)
+        self.active_constant = self.throwing_angle_data[0]["constant"]
+        self.angle = self.throwing_angle_data[0]["angle"]
+
         # Logger
         self.logger = logger
 
@@ -78,7 +94,7 @@ class Mainboard():
         else:
             # int(distance*0.277 + 413)
             # return int(distance*0.275 + 411)
-            return int(distance*0.275 + 420)
+            return int(distance*self.active_slope + self.active_constant)
 
     # Big math, returns speed of a wheel in mainboard units
     def calculate_wheel_speed(self, motor_num, robot_speed, robot_angle, speed_rot):
@@ -132,9 +148,32 @@ class Mainboard():
         self.prev_rad = cur_radius
 
     # Moves forward with constant speed with the first two wheel and makes direction adjustments with the back wheel
-    def move_backwheel_adjust(speed_y, cur_object_x):
-        pass
+    def move_backwheel_adjust(self, speed_y, cur_object_x):
+        speed_backwheel = -sigmoid_controller(cur_object_x, self.middle_x, x_scale=50, y_scale=4) # x and y scale need testing
+        
+        front_motor_speeds = []
+        for i in range(2):
+            front_motor_speeds.append(int(self.calculate_wheel_speed(i+1, speed_y, math.pi/2, 0)))
 
+        self.send_data(front_motor_speeds[0], front_motor_speeds[1], speed_backwheel, 0)
+
+    def eating_servo(self, eating_servo_state): # three states: inactive, eating, sending ball to thrower
+        if eating_servo_state == Eating_servo_state.OFF:
+            self.eating_servo_speed = 0
+        elif eating_servo_state == Eating_servo_state.EAT: # EAT and THROW speeds need to be tested
+            self.eating_servo_speed = 1
+        elif eating_servo_state == Eating_servo_state.THROW:
+            self.eating_servo_speed = 2
+        else:
+            logger.LOGE("Invalid eating_servo_state")
+
+    def choose_thrower_angle(self, basket_distance):
+        for i in range(len(self.throwing_angle_data)):
+            if basket_distance >= self.throwing_angle_data[i]["min_r"] and basket_distance <= self.throwing_angle_data[i]["max_r"]:
+                self.active_constant = self.throwing_angle_data[i]["constant"]
+                self.active_slope = self.throwing_angle_data[i]["slope"]
+                self.active_angle = self.throwing_angle_data[i]["angle"]
+                return
 
     # Throw ball to a basket at given distance
     # Discrete call not continuous, use within a loop
@@ -153,7 +192,7 @@ class Mainboard():
     def send_data(self, speed1, speed2, speed3, thrower_speed):
         disable_failsafe = 0
         delimiter = 0xAAAA
-        data = struct.pack('<hhhHBH', speed1, speed2, speed3, thrower_speed, disable_failsafe, delimiter)
+        data = struct.pack('<hhhHBH', speed1, speed2, speed3, thrower_speed, disable_failsafe, delimiter) # TODO add active angle, eating servo speed for new robot
         self.ser.write(data)
 
     def receive_data(self):

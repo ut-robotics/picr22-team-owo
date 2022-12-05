@@ -47,7 +47,6 @@ if __name__ == "__main__":
     frame_cnt = 0
     log = Logging(True, True)
     log.LOGI("Starting...")
-    debug = False
 
     # Mainboard stuff setup
     max_speed = 10
@@ -79,10 +78,6 @@ if __name__ == "__main__":
 
     # Constants etc.
     # Housekeeping
-    start = time.time()
-    fps = 0
-    frame = 0
-    frame_cnt = 0
     has_thrown = False
     manual_triggers = 0  # for detecting a single button press
     basket_change_triggers = 0 # for detecting a single button press
@@ -90,6 +85,9 @@ if __name__ == "__main__":
     # Camera constants
     middle_x = cam.rgb_width / 2
     middle_y = cam.rgb_height / 2
+
+    # Throwing
+    throw_angle_chosen = False
 
     # Referee commands
     ref_enabled = False
@@ -114,7 +112,7 @@ if __name__ == "__main__":
         # Do not add anything outside of if/elif state clauses to the end of the loop, otherwise use of "continue" will not let it run
         while(True):
             # Getting camera data
-            if state == State.BALL_THROW or state == State.BALL_ORBIT:
+            if state == State.BALL_THROW or state == State.BALL_ORBIT:         # <== TODO New robot states here 
                 processed_data = processor.process_frame(aligned_depth=True)
             else:
                 processed_data = processor.process_frame(aligned_depth=False)
@@ -407,15 +405,13 @@ if __name__ == "__main__":
                     if (processed_data.balls) > 0:
                         interesting_ball = processed_data.balls[-1]
                         if interesting_ball.distance > 550:
-                            interesting_ball = None
+                            interesting_ball = None # Could use some kind of previous value here?
                         
-                    # scale values need testing
                     if interesting_ball != None:
-                        speed_r = -sigmoid_controller(interesting_ball.x, middle_x, x_scale=800, y_scale=max_speed)
+                        robot.move_backwheel_adjust(speed_y, interesting_ball.x)
                     
                     # +++ ADD EATING SERVO CONTROL HERE +++
-                    
-                    robot.move(speed_x, speed_y, speed_r)
+                    # robot.eating_servo(mainboard.Eating_servo_state.EAT)
                     continue
                 
                 else:
@@ -447,6 +443,8 @@ if __name__ == "__main__":
                 # If basket is found, go to throwing, NB! Basket centering done entirely in throw
                 if basket.exists:
                     state = State.BALL_THROW
+                    continue
+                # Need to check basket distance here, so that wouldn't be too close or too far away
                         
                 robot.move(speed_x, speed_y, speed_r)
                 continue
@@ -465,7 +463,7 @@ if __name__ == "__main__":
                 if len(processed_data.balls) > 0:
                     interesting_ball = processed_data.balls[-1]
 
-                if (thrower_time_start + time_in_throw < time.perf_counter()):
+                if (thrower_time_start + time_in_throw < time.perf_counter()): # Should this be outside "if not new_robot?"
                     log.LOGI("THROW, distance: " + str(basket.distance))
                     state = State.BALL_SEARCH
                 
@@ -491,8 +489,6 @@ if __name__ == "__main__":
                         log.LOGE("Entered throw with no ball in robot, what's going on?")
                     else:
                         # Default movement values
-                        speed_x = 0 
-                        speed_y = 0
                         speed_r = 0
                         maximum_basket_error = 1
                         
@@ -502,20 +498,30 @@ if __name__ == "__main__":
                         
                         # If basket is in the middle of the screen.
                         if abs(middle_x - basket.x) <= maximum_basket_error:
+
+                            # Choose correct thrower angle
+                            if not throw_angle_chosen:
+                                if not np.isnan(basket.distance):
+                                    mainboard.choose_thrower_angle(basket.distance)
+                                    throw_angle_chosen = True
+
                             # Smoother correction still in place just in case.
                             speed_r = -sigmoid_controller(basket.x, middle_x, x_scale=800, y_scale=max_speed)
-                            
+
                             # Worth considering - saving last known basket distance.
                             if not np.isnan(basket.distance):
-                                robot.move(speed_x, speed_y, speed_r, int(basket.distance))
+                                robot.move(0, 0, speed_r, int(basket.distance))
                             else: 
-                                robot.move(speed_x, speed_y, speed_r, 0)
+                                robot.move(0, 0, speed_r, 0)
                                 
                         # This means basket needs centering
                         else:   
-                            robot.move(speed_x, speed_y, speed_r, 0)
+                            robot.move(0, 0, speed_r, 0)
                             
                         # IDEA: Consider ending this state when ball_in_robot has not been true for some fraction of a second
+                        # if exiting this state:
+                            # throw_angle_chosen = False
+                            # continue
                         
                 continue
             # End of ball_throw
