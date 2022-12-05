@@ -24,6 +24,10 @@ class Mainboard():
         self.pid_control_period = 1 / self.pid_control_frequency #seconds
         self.wheel_speed_to_mainboard_units = self.gearbox_ratio * self.encoder_edges_per_motor_revolution / (2 * math.pi * self.wheel_radius * self.pid_control_frequency)
         self.max_speed = max_speed
+        self.previous_x = 0
+        self.previous_y = 0
+        self.previous_r = 0
+        self.acceleration_limit = 1
 
         # Mainboard communication
         self.mainboard_hwid = "USB VID:PID=0483:5740"
@@ -72,7 +76,9 @@ class Mainboard():
         if distance == 0:
             return 0
         else:
-            return int(distance*0.3186512 + 440.0378)
+            # int(distance*0.277 + 413)
+            # return int(distance*0.275 + 411)
+            return int(distance*0.270 + 425)
 
     # Big math, returns speed of a wheel in mainboard units
     def calculate_wheel_speed(self, motor_num, robot_speed, robot_angle, speed_rot):
@@ -84,7 +90,7 @@ class Mainboard():
     # y - forward, positive to the front
     # r - rotation, positive anticlockwise
     # While moving it also rotates the thrower with speed calculated from the distance
-    def move(self, speed_x, speed_y, speed_r, thrower_distance=0):    
+    def move(self, speed_x, speed_y, speed_r, thrower_distance=0):
         robot_angle = math.atan2(speed_y, speed_x)
         robot_speed = math.sqrt(math.pow(speed_x, 2) + math.pow(speed_y, 2))
         #print("Angle:", robot_angle)
@@ -110,20 +116,25 @@ class Mainboard():
         speed_r = 1000 * speed_x / radius
 
         # Correct radius check
-        if cur_radius > 600:
-            self.logger.LOGE("Invalid radius, radius: " + str(cur_radius))
-            return
+        #if cur_radius > 600:
+        #    self.logger.LOGE("Invalid radius, radius: " + str(cur_radius))
+        #    return
         # Radius adjustment
         if cur_radius > (radius + self.buffer_x) or cur_radius < (radius - self.buffer_x):
             speed_y -= (radius - cur_radius) / 100 * self.y_const
         # Centering object, rotational speed adjustment
         if cur_object_x > (self.middle_x + self.buffer_x) or cur_object_x < (self.middle_x - self.buffer_x):
             speed_r += (self.middle_x - cur_object_x) / 100 * self.r_const
-        self.logger.LOGI("orbit speeds- x: " + str(speed_x) + " y: " + str(speed_y) + " r: " + str(speed_r) + " cur_object_x: " + str(cur_object_x))
+        #self.logger.LOGI("orbit speeds x: " + str(speed_x) + " y: " + str(speed_y) + " r: " + str(speed_r) + " cur_object_x: " + str(cur_object_x))
 
         #print("x:", speed_x, "y:", speed_y, "r:", speed_r, "cur_rad:", cur_radius, "cur_x:", cur_object_x)
         self.move(speed_x, speed_y, speed_r)
         self.prev_rad = cur_radius
+
+    # Moves forward with constant speed with the first two wheel and makes direction adjustments with the back wheel
+    def move_backwheel_adjust(speed_y, cur_object_x):
+        pass
+
 
     # Throw ball to a basket at given distance
     # Discrete call not continuous, use within a loop
