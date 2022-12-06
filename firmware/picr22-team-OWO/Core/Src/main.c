@@ -47,6 +47,7 @@ TIM_HandleTypeDef htim4;
 TIM_HandleTypeDef htim6;
 TIM_HandleTypeDef htim8;
 TIM_HandleTypeDef htim15;
+DMA_HandleTypeDef hdma_tim2_ch1;
 
 /* USER CODE BEGIN PV */
 
@@ -55,6 +56,7 @@ TIM_HandleTypeDef htim15;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM1_Init(void);
@@ -79,8 +81,6 @@ typedef struct Motor_Status {
 	float deriv_const;
 } Motor_Status;
 
-Motor_Status motor_status[3] = {0};
-
 typedef struct Command {
   int16_t speed[3]; // array of all of the motor speeds, CURRENTLY int16_t DUE TO TESTING WITH RAW MOTOR VALUES, MOVE BACK TO int8_t
   uint16_t thrower_speed; // thrower motor speed
@@ -93,8 +93,13 @@ typedef struct Feedback {
   uint16_t delimiter;
 } Feedback;
 
+// Motor structs for all 3 motors
+Motor_Status motor_status[3] = {0};
 // Prefilled command struct
 Command command = {.speed[0] = 0, .speed[1] = 0, .speed[2] = 0, .thrower_speed = 0, .delimiter = 0};
+// Array for thrower pwm data to be transmitted using the Dshot protocol, PREFILLED with 0, bits 17-20 will ALWAYS be zeros.
+uint16_t thrower_data[20] = {0};
+
 volatile uint8_t isCommandReceived = 0;
 
 // Copies the recieved command into the command struct
@@ -122,7 +127,8 @@ void pwm_init() {
     HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1);
     HAL_TIMEx_PWMN_Start(&htim8, TIM_CHANNEL_2);
     HAL_TIMEx_PWMN_Start(&htim8, TIM_CHANNEL_3);
-
+    //TIM15->CCR1 = 32000;
+    //HAL_TIM_PWM_Start(&htim15, TIM_CHANNEL_1);
 }
 
 // Updates the motor's speed and direction from the command struct
@@ -146,7 +152,7 @@ uint16_t motor_pwm(uint8_t mot_id) {
 	uint16_t pwm = 0;
 	uint16_t new_pos = 0;
 
-	// for some reason case 0 and 2 are inverted
+	// for some reason case 0 and 2 are inverted, most likely from using complementary timer channels
 	switch (mot_id) {
 		case 0:
 			new_pos = TIM3->CNT;
@@ -163,9 +169,13 @@ uint16_t motor_pwm(uint8_t mot_id) {
 	motor_status[mot_id].enc_pos = new_pos;
 	motor_status[mot_id].enc_change = pos_change;
 
-	uint16_t error = motor_status[mot_id].target_speed - pos_change;
+	int16_t error = motor_status[mot_id].target_speed - pos_change;
 	motor_status[mot_id].integral += error;
-	uint16_t pid_speed = error * 5 + (uint16_t)(motor_status[mot_id].integral * 0.1);
+	int16_t pid_speed = error * 5 + (int16_t)(motor_status[mot_id].integral * 0.1);
+
+	if (pid_speed < 0) {
+		pid_speed = 0;
+	}
 
 	if (speed > 0) {
 		pwm = 4500 + pid_speed * 700; // Effectively linear
@@ -200,6 +210,24 @@ void wake_drivers_up() {
 	HAL_GPIO_WritePin(GPIOB, MSLEEP_Pin, GPIO_PIN_RESET);
 	for(uint16_t i = 0; i < 350; i++) __asm("nop");
 	HAL_GPIO_WritePin(GPIOB, MSLEEP_Pin, GPIO_PIN_SET);
+}
+// Sends DSHOT150  PWM commands, commented throughly for the enjoyment of the reader :D
+void thrower_pwm(uint16_t thrower_speed) {
+	HAL_TIM_PWM_Stop_DMA(&htim2, TIM_CHANNEL_1);					// Stop transmitting previous thrower value
+
+	uint16_t packet = thrower_speed << 1; 							// Shift left to make room for telemetry bit (left as 0)
+	uint16_t crc = (packet ^ (packet >> 4) ^ (packet >> 8)) & 0x0F; // CRC calculation shenanigans
+	packet = (packet << 4) | crc; 									// Add CRC value to the packet
+
+	for (int i=15; i>=0; i--){										// Loop through the entire packet, adds the most significant bit to the array first
+		if (packet & (1<<i)){										// i counts down, 15-i counts up
+			thrower_data[15-i] = 798;								// PWM values determined by timer speeds
+		} else {
+			thrower_data[15-i] = 399;
+		}
+	}
+	HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
+	HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, (uint32_t *)thrower_data, 20); // Each pulse draws takes its length from array
 }
 
 // 100 Hz callback
@@ -244,6 +272,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
   MX_TIM1_Init();
@@ -279,6 +308,7 @@ int main(void)
 
     	wake_drivers_up();
     	motor_status_update();
+    	thrower_pwm(command.thrower_speed);
 
 		feedback.speed[0] = motor_status[0].target_speed; // In the current state it retuns the uint8 version without direction, whoops!
 		feedback.speed[1] = motor_status[1].target_speed;
@@ -288,6 +318,7 @@ int main(void)
 		feedback.change[1] = motor_status[1].enc_change;
 		feedback.change[2] = motor_status[2].enc_change;
 
+		//feedback.thowerinf = throwtemp;
 		CDC_Transmit_FS(&feedback, sizeof(feedback));
 	}
     /* USER CODE END WHILE */
@@ -416,7 +447,7 @@ static void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 0;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 4.294967295E9;
+  htim2.Init.Period = 1066;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
@@ -727,6 +758,23 @@ static void MX_TIM15_Init(void)
 
   /* USER CODE END TIM15_Init 2 */
   HAL_TIM_MspPostInit(&htim15);
+
+}
+
+/**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMAMUX1_CLK_ENABLE();
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
 
 }
 

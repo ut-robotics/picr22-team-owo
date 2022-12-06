@@ -118,7 +118,7 @@ class Mainboard():
     def throw_raw(self, strength):
         if 48 <= strength and strength <= 2047:
             self.send_data(0, 0, 0, strength)
-            #print(self.receive_data())
+            print(self.receive_data())
 
     def send_data(self, speed1, speed2, speed3, thrower_speed):
         disableFailsafe= 0
@@ -135,7 +135,7 @@ class Mainboard():
     # Rotates all wheels with speed 100, useful for sanity checking
     def test_motors(self):
         try:
-            robot.send_data(0, 5, 0, 0)
+            robot.send_data(5, 5, 5, 0)
             print(robot.receive_data())
         except KeyboardInterrupt:
             print("\nExiting")
@@ -164,7 +164,9 @@ if __name__ == "__main__":
         counter = 1
         speed= 5
         while(True):
-            robot.test_motors()
+            #robot.test_motors()
+            #robot.throw_raw(1046)
+            robot.move(0,0,0,0)
             time.sleep(0.05)
             # robot.send_data(0, speed, 0, 0)
             # print(robot.receive_data())
@@ -173,8 +175,8 @@ if __name__ == "__main__":
             # if counter == 1000:
             #     counter = 0
             #     speed = 0
-            time.sleep(0.05)
-            counter += 1
+            #time.sleep(0.05)
+            #counter += 1
     except KeyboardInterrupt:
         print("\nExiting")
         robot.send_data(0, 0, 0, 0)
