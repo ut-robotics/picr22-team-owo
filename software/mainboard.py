@@ -123,6 +123,9 @@ class Mainboard():
         self.send_data(motor_speeds[0], motor_speeds[1], motor_speeds[2], self.calculate_throw_strength(thrower_distance))
         #print("Actual:", self.receive_data())
 
+        # +++ NEW ROBOT STUFF, uncomment this +++
+        # act_speed1, act_speed2, act_speed3, ball_in, delim = self.receive_data()
+
     # Orbit around something with constant linear (sideways) speed, cur values allow for adjustments in speed, to make it more precise
     # speed - positive value starts orbiting anticlockwise (robot moves right)
     # radius, cur_radius in millimeters
@@ -132,8 +135,8 @@ class Mainboard():
         speed_r = 1000 * speed_x / radius
 
         # Correct radius check
-        #if cur_radius > 600:
-        #    self.logger.LOGE("Invalid radius, radius: " + str(cur_radius))
+        if cur_radius > 600:
+            self.logger.LOGE("Invalid radius, radius: " + str(cur_radius))
         #    return
         # Radius adjustment
         if cur_radius > (radius + self.buffer_x) or cur_radius < (radius - self.buffer_x):
@@ -156,6 +159,9 @@ class Mainboard():
             front_motor_speeds.append(int(self.calculate_wheel_speed(i+1, speed_y, math.pi/2, 0)))
 
         self.send_data(front_motor_speeds[0], front_motor_speeds[1], speed_backwheel, 0)
+
+        # +++ NEW ROBOT STUFF, uncomment this +++
+        # act_speed1, act_speed2, act_speed3, ball_in, delim = self.receive_data()
 
     def eating_servo(self, eating_servo_state): # three states: inactive, eating, sending ball to thrower
         if eating_servo_state == Eating_servo_state.OFF:
@@ -197,8 +203,8 @@ class Mainboard():
 
     def receive_data(self):
         received_data = self.ser.read(size=8)
-        actual_speed1, actual_speed2, actual_speed3, feedback_delimiter = struct.unpack('<hhhH', received_data)
-        return actual_speed1, actual_speed2, actual_speed3, feedback_delimiter
+        actual_speed1, actual_speed2, actual_speed3, feedback_delimiter = struct.unpack('<hhhH', received_data) #TODO add ball-in 
+        return actual_speed1, actual_speed2, actual_speed3, feedback_delimiter # TODO add ball-in
 
 
     # Rotates all wheels with speed 10, useful for sanity checking

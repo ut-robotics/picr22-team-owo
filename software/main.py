@@ -88,6 +88,10 @@ if __name__ == "__main__":
 
     # Throwing
     throw_angle_chosen = False
+    last_known_basket_distance = 0
+    throw_ending_in_progress = False
+    throw_ending_start_time = 0
+    throw_ending_delay = 0.5
 
     # Referee commands
     ref_enabled = False
@@ -457,6 +461,13 @@ if __name__ == "__main__":
                 log.LOGSTATE("ball_throw")
                 time_in_throw = 2.5
 
+                if new_robot and throw_ending_in_progress and throw_ending_start_time + throw_ending_delay < time.time():
+                    # End throw state for new robot, back to ball search
+                    throw_angle_chosen = False
+                    throw_ending_in_progress = False
+                    state = State.BALL_SEARCH
+                    continue
+
                 if basket_color == Target_basket.MAGENTA:
                     basket = processed_data.basket_m
                 elif basket_color == Target_basket.BLUE:
@@ -467,11 +478,13 @@ if __name__ == "__main__":
                 if len(processed_data.balls) > 0:
                     interesting_ball = processed_data.balls[-1]
 
-                if (thrower_time_start + time_in_throw < time.perf_counter()): # Should this be outside "if not new_robot?"
-                    log.LOGI("THROW, distance: " + str(basket.distance))
-                    state = State.BALL_SEARCH
                 
                 if not new_robot:
+
+                    if (thrower_time_start + time_in_throw < time.perf_counter()):
+                        log.LOGI("THROW, distance: " + str(basket.distance))
+                        state = State.BALL_SEARCH
+                
 
                     log.LOGI(" Basket.x: " + str(basket.x) + " ball.x " + str(interesting_ball.x) + " ball.distance: " + str(interesting_ball.distance))
                     speed_rot = -sigmoid_controller(basket.x, middle_x, x_scale=350, y_scale=max_speed)
@@ -484,13 +497,16 @@ if __name__ == "__main__":
 
                     if not np.isnan(basket.distance):
                         robot.move(speed_x, speed_y, speed_rot, int(basket.distance))
+                        last_known_basket_distance = int(basket.distance)
                     else: 
-                        robot.move(speed_x, speed_y, speed_rot, 0)
+                        robot.move(speed_x, speed_y, speed_rot, last_known_basket_distance)
                 
                 # Throwing logic for the new robot
                 elif new_robot:
-                    if not ball_in_robot:
-                        log.LOGE("Entered throw with no ball in robot, what's going on?")
+                    if not ball_in_robot and not throw_ending_in_progress:
+                        log.LOGW("Entered throw with no ball in robot, starting countdown to end throw...")
+                        throw_ending_start_time = time.time()
+                        throw_ending_in_progress = True
                     else:
                         # Default movement values
                         speed_r = 0
@@ -512,20 +528,16 @@ if __name__ == "__main__":
                             # Smoother correction still in place just in case.
                             speed_r = -sigmoid_controller(basket.x, middle_x, x_scale=800, y_scale=max_speed)
 
-                            # Worth considering - saving last known basket distance.
+                            # Worth considering - saving last known basket distance. ++DONE++
                             if not np.isnan(basket.distance):
-                                robot.move(0, 0, speed_r, int(basket.distance))
+                                robot.move(speed_x, speed_y, speed_rot, int(basket.distance))
+                                last_known_basket_distance = int(basket.distance)
                             else: 
-                                robot.move(0, 0, speed_r, 0)
+                                robot.move(speed_x, speed_y, speed_rot, last_known_basket_distance)
                                 
                         # This means basket needs centering
                         else:   
                             robot.move(0, 0, speed_r, 0)
-                            
-                        # IDEA: Consider ending this state when ball_in_robot has not been true for some fraction of a second
-                        # if exiting this state:
-                            # throw_angle_chosen = False
-                            # continue
                         
                 continue
             # End of ball_throw
