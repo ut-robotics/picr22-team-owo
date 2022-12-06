@@ -289,3 +289,6 @@ Link to the robot's assembly: https://a360.co/3FA4tEU
 
 === Mon, 05.12.22
 *Sander:* Assembling the robot 4 h +
+
+=== Tue, 06.12.22
+*Sander:* Assembling the robot 2 h +
