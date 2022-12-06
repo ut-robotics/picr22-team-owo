@@ -112,7 +112,7 @@ if __name__ == "__main__":
         # Do not add anything outside of if/elif state clauses to the end of the loop, otherwise use of "continue" will not let it run
         while(True):
             # Getting camera data
-            if state == State.BALL_THROW or state == State.BALL_ORBIT:         # <== TODO New robot states here 
+            if state == State.BALL_THROW or state == State.BASKET_FIND or state == State.BALL_EAT:
                 processed_data = processor.process_frame(aligned_depth=True)
             else:
                 processed_data = processor.process_frame(aligned_depth=False)
@@ -323,7 +323,10 @@ if __name__ == "__main__":
                     #print("Ball:", interesting_ball)
 
                     if interesting_ball.distance <= 475:
-                        state = State.BALL_ORBIT
+                        if not new_robot:
+                            state = State.BALL_ORBIT
+                        elif new_robot:
+                            state = State.BALL_EAT
                         continue
                     else:
                         if interesting_ball.x > middle_x + 2 or interesting_ball.x < middle_x - 2:
@@ -339,6 +342,7 @@ if __name__ == "__main__":
             # End of ball_move
 
             # Orbiting around ball until correct basket is found
+            # THIS STATE NOW OBSOLETE
             elif state == State.BALL_ORBIT:
 
                 timeout_trig_orbit = 5
@@ -429,7 +433,7 @@ if __name__ == "__main__":
                 
                 # Default movement values
                 speed_x = 0 
-                speed_y = 0
+                speed_y = 0 
                 speed_r = 10 # <--- Change this to change the basket finding rotation speed
                     
                 # Determining the correct basket
