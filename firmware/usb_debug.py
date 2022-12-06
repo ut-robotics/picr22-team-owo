@@ -26,7 +26,7 @@ class Mainboard():
         self.wheel_radius = 0.365 #meters
         self.wheel_distance_from_center = 0.15 #meters
         self.encoder_counts_per_wheel_revolution = self.gearbox_ratio * self.encoder_edges_per_motor_revolution
-        self.pid_control_frequency = 60 #Hz
+        self.pid_control_frequency = 100 #Hz
         self.pid_control_period = 1 / self.pid_control_frequency #seconds
         self.wheel_speed_to_mainboard_units = self.gearbox_ratio * self.encoder_edges_per_motor_revolution / (2 * math.pi * self.wheel_radius * self.pid_control_frequency)
         self.max_speed = max_speed
@@ -127,15 +127,15 @@ class Mainboard():
         self.ser.write(data)
 
     def receive_data(self):
-        received_data = self.ser.read(size=8)
-        actual_speed1, actual_speed2, actual_speed3, feedback_delimiter = struct.unpack('<hhhH', received_data)
-        return actual_speed1, actual_speed2, actual_speed3, feedback_delimiter
+        received_data = self.ser.read(size=14)
+        actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, feedback_delimiter = struct.unpack('<hhhhhhH', received_data)
+        return actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, feedback_delimiter
 
 
-    # Rotates all wheels with speed 10, useful for sanity checking
+    # Rotates all wheels with speed 100, useful for sanity checking
     def test_motors(self):
         try:
-            robot.send_data(10, 10, 10, 0)
+            robot.send_data(0, 5, 0, 0)
             print(robot.receive_data())
         except KeyboardInterrupt:
             print("\nExiting")
@@ -158,11 +158,23 @@ class Mainboard():
             sys.exit()
 
 if __name__ == "__main__":
-    robot = Mainboard(10)
+    robot = Mainboard(300)
     robot.start()
     try: 
+        counter = 1
+        speed= 5
         while(True):
-            time.sleep(0.01)
             robot.test_motors()
+            time.sleep(0.05)
+            # robot.send_data(0, speed, 0, 0)
+            # print(robot.receive_data())
+            # if counter % 100 == 0:
+            #     speed += 5
+            # if counter == 1000:
+            #     counter = 0
+            #     speed = 0
+            time.sleep(0.05)
+            counter += 1
     except KeyboardInterrupt:
         print("\nExiting")
+        robot.send_data(0, 0, 0, 0)

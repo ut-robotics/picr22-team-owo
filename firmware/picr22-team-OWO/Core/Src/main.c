@@ -69,28 +69,35 @@ static void MX_TIM6_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 typedef struct Motor_Status {
-	uint8_t target_speed; // still undetermined
+	uint16_t target_speed; // in encoder units
 	uint8_t direction; // 1 = forward, 0 = backward
 	int16_t enc_pos; // current encoder position
-	int16_t prev_enc_pos; // previous encoder position, unknown if this is currently in the right place
+	int16_t enc_change; // Change of the encoder, currently used for debugging purposes
+	int16_t integral; // PID stuff borrowed from kurgimopeed
+	float flat_const;
+	float int_const;
+	float deriv_const;
 } Motor_Status;
 
 Motor_Status motor_status[3] = {0};
 
 typedef struct Command {
-  int16_t speed[3]; // array of all of the motor speeds
+  int16_t speed[3]; // array of all of the motor speeds, CURRENTLY int16_t DUE TO TESTING WITH RAW MOTOR VALUES, MOVE BACK TO int8_t
   uint16_t thrower_speed; // thrower motor speed
   uint16_t delimiter;
 } Command;
 
 typedef struct Feedback {
   int16_t speed[3];
+  int16_t change[3];
   uint16_t delimiter;
 } Feedback;
 
-Command command = {.speed[0] = 0, .speed[1] = 0, .speed[2] = 0, .thrower_speed = 0, .delimiter = 0}; // (4)
-volatile uint8_t isCommandReceived = 0; // (5)
+// Prefilled command struct
+Command command = {.speed[0] = 0, .speed[1] = 0, .speed[2] = 0, .thrower_speed = 0, .delimiter = 0};
+volatile uint8_t isCommandReceived = 0;
 
+// Copies the recieved command into the command struct
 void CDC_On_Receive(uint8_t* buffer, uint32_t* length) { // command recieve callback, copies data to command struct
   if (*length == sizeof(Command)) {
     memcpy(&command, buffer, sizeof(Command));
@@ -100,29 +107,112 @@ void CDC_On_Receive(uint8_t* buffer, uint32_t* length) { // command recieve call
   }
 }
 
-void enc_init() { //CHANNEL ORDER MAY BE REVERSED, PLEASE CHECK BEFORE DEBUGGING OTHER POSSIBLE SOURCES
-	HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_1 | TIM_CHANNEL_2); // Motor 1
+// Initialises the encoders
+void enc_init() {
+	HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_1 | TIM_CHANNEL_2); // Motor 1 ?
 	HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_1 | TIM_CHANNEL_2); // Motor 2
-	HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_1 | TIM_CHANNEL_2); // Motor 3
+	HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_1 | TIM_CHANNEL_2); // Motor 3 ?
 }
 
+// Initialises the PWMs
+void pwm_init() {
+	TIM8->CCR2 = 0;
+	TIM8->CCR1 = 0;
+	TIM8->CCR3 = 0;
+    HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1);
+    HAL_TIMEx_PWMN_Start(&htim8, TIM_CHANNEL_2);
+    HAL_TIMEx_PWMN_Start(&htim8, TIM_CHANNEL_3);
+
+}
+
+// Updates the motor's speed and direction from the command struct
 void motor_status_update() {
 	for (uint8_t i = 0; i<3; i++) {
 		if (command.speed[i] >= 0) {
 			motor_status[i].direction = 1;
+			if (command.speed[i] == 1) {command.speed[i] = 2;} // Everybody gangsta till the input speed is 1
+			motor_status[i].target_speed = command.speed[i];
 		} else {
 			motor_status[i].direction = 0;
+			if (command.speed[i] == -1) {command.speed[i] = -2;} // Everybody gangsta till the input speed is -1
+			motor_status[i].target_speed = -(command.speed[i]);
 		}
-		motor_status[i].target_speed = command.speed[i];
+	}
+}
+
+// Converts internal encoder speed to a PWM value
+uint16_t motor_pwm(uint8_t mot_id) {
+	uint16_t speed = motor_status[mot_id].target_speed;
+	uint16_t pwm = 0;
+	uint16_t new_pos = 0;
+
+	// for some reason case 0 and 2 are inverted
+	switch (mot_id) {
+		case 0:
+			new_pos = TIM3->CNT;
+			break;
+		case 1:
+			new_pos = TIM1->CNT;
+			break;
+		case 2:
+			new_pos = TIM4->CNT;
+			break;
+	}
+	int16_t pos_change = abs((int16_t)new_pos - motor_status[mot_id].enc_pos);
+
+	motor_status[mot_id].enc_pos = new_pos;
+	motor_status[mot_id].enc_change = pos_change;
+
+	uint16_t error = motor_status[mot_id].target_speed - pos_change;
+	motor_status[mot_id].integral += error;
+	uint16_t pid_speed = error * 5 + (uint16_t)(motor_status[mot_id].integral * 0.1);
+
+	if (speed > 0) {
+		pwm = 4500 + pid_speed * 700; // Effectively linear
 	}
 
+	if (pwm > 49151) { // emergency limiter, set to 75% currently (49151)
+		pwm = 49151;
+	}
+
+	return pwm;
 }
-// Borrowed from last years Kurgimopeed team, temporary
+
+// Toggles the direction pin
+void motor_direction(uint8_t mot_id) {
+	switch(mot_id) {
+		case 0:
+			HAL_GPIO_WritePin(GPIOA, M1D_Pin, motor_status[0].direction);
+			break;
+		case 1:
+			HAL_GPIO_WritePin(GPIOA, M2D_Pin, motor_status[1].direction);
+			break;
+		case 2:
+			HAL_GPIO_WritePin(GPIOB, M3D_Pin, motor_status[2].direction);
+			break;
+	}
+}
+
+// Sends a very short ground pulse to the sleep pin of the motor controllers
 void wake_drivers_up() {
-	HAL_GPIO_WritePin(GPIOB, MSLEEP_Pin, GPIO_PIN_RESET);
-	for(uint16_t i = 0; i < 100; i++) __asm("nop");
 	HAL_GPIO_WritePin(GPIOB, MSLEEP_Pin, GPIO_PIN_SET);
-	for(uint16_t i = 0; i < 10; i++) __asm("nop");
+	for(uint16_t i = 0; i < 350; i++) __asm("nop");
+	HAL_GPIO_WritePin(GPIOB, MSLEEP_Pin, GPIO_PIN_RESET);
+	for(uint16_t i = 0; i < 350; i++) __asm("nop");
+	HAL_GPIO_WritePin(GPIOB, MSLEEP_Pin, GPIO_PIN_SET);
+}
+
+// 100 Hz callback
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+	HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin); // lights!!!
+
+	TIM8->CCR2 = motor_pwm(0); // Motor 1
+	TIM8->CCR1 = motor_pwm(1); // Motor 2
+	TIM8->CCR3 = motor_pwm(2); // Motor 3
+
+	motor_direction(0); // Motor 1
+	motor_direction(1); // Motor 2
+	motor_direction(2); // Motor 3
 }
 /* USER CODE END 0 */
 
@@ -163,24 +253,21 @@ int main(void)
   MX_TIM6_Init();
   MX_USB_Device_Init();
   /* USER CODE BEGIN 2 */
-  enc_init();
-
   Feedback feedback = {
 	    .speed[0] = 0,
 	    .speed[1] = 0,
 	    .speed[2] = 0,
+		.change[0] = 0,
+		.change[1] = 0,
+		.change[2] = 0,
         .delimiter = 0xAAAA
   };
-  //HAL_GPIO_TogglePin(MSLEEP_GPIO_Port, MSLEEP_Pin); // MSLEEP -> HIGH, activates motor drivers
-  HAL_GPIO_WritePin(GPIOB, MSLEEP_Pin, GPIO_PIN_SET);
+  HAL_TIM_Base_Start_IT(&htim6);
   HAL_Delay(100);
+  enc_init();
+  pwm_init();
   wake_drivers_up();
-  HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1);
-  HAL_TIMEx_PWMN_Start(&htim8, TIM_CHANNEL_2);
-  HAL_TIMEx_PWMN_Start(&htim8, TIM_CHANNEL_3);
-  TIM8->CCR1 = 13107;
-  TIM8->CCR2 = 13107;
-  TIM8->CCR3 = 13107;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -189,17 +276,22 @@ int main(void)
   {
     if (isCommandReceived) {
     	isCommandReceived = 0;
-    	motor_status_update();
+
     	wake_drivers_up();
-		HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
+    	motor_status_update();
 
 		feedback.speed[0] = motor_status[0].target_speed; // In the current state it retuns the uint8 version without direction, whoops!
 		feedback.speed[1] = motor_status[1].target_speed;
 		feedback.speed[2] = motor_status[2].target_speed;
 
+		feedback.change[0] = motor_status[0].enc_change;
+		feedback.change[1] = motor_status[1].enc_change;
+		feedback.change[2] = motor_status[2].enc_change;
+
 		CDC_Transmit_FS(&feedback, sizeof(feedback));
 	}
     /* USER CODE END WHILE */
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -216,20 +308,21 @@ void SystemClock_Config(void)
 
   /** Configure the main internal regulator output voltage
   */
-  HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1);
+  HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1_BOOST);
 
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_HSI48;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV1;
-  RCC_OscInitStruct.PLL.PLLN = 12;
+  RCC_OscInitStruct.PLL.PLLN = 20;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV4;
+  RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
   RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
@@ -240,12 +333,12 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
   {
     Error_Handler();
   }
@@ -467,7 +560,7 @@ static void MX_TIM6_Init(void)
 
   /* USER CODE END TIM6_Init 1 */
   htim6.Instance = TIM6;
-  htim6.Init.Prescaler = 0;
+  htim6.Init.Prescaler = 23;
   htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim6.Init.Period = 65535;
   htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
