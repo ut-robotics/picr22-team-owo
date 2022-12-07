@@ -121,6 +121,7 @@ class Mainboard():
             motor_speeds.append(int(self.calculate_wheel_speed(i+1, robot_speed, robot_angle, speed_r)))
 
         self.send_data(motor_speeds[0], motor_speeds[1], motor_speeds[2], self.calculate_throw_strength(thrower_distance))
+        actual_speed1, actual_speed2, actual_speed3, feedback_delimiter = self.receive_data()
         #print("Actual:", self.receive_data())
 
         # +++ NEW ROBOT STUFF, uncomment this +++
@@ -159,7 +160,8 @@ class Mainboard():
             front_motor_speeds.append(int(self.calculate_wheel_speed(i+1, speed_y, math.pi/2, 0)))
 
         self.send_data(front_motor_speeds[0], front_motor_speeds[1], speed_backwheel, 0)
-
+        
+        actual_speed1, actual_speed2, actual_speed3, feedback_delimiter = self.receive_data()
         # +++ NEW ROBOT STUFF, uncomment this +++
         # act_speed1, act_speed2, act_speed3, ball_in, delim = self.receive_data()
 
@@ -185,6 +187,7 @@ class Mainboard():
     # Discrete call not continuous, use within a loop
     def throw(self, thrower_distance):
         self.send_data(0, 0, 0, self.calculate_throw_strength(thrower_distance))
+        actual_speed1, actual_speed2, actual_speed3, feedback_delimiter = self.receive_data()
         #print(self.receive_data())
 
     # Throw ball with given strength (in "raw motor" units)
@@ -193,6 +196,7 @@ class Mainboard():
     def throw_raw(self, strength):
         if 48 <= strength and strength <= 2047:
             self.send_data(0, 0, 0, strength)
+            actual_speed1, actual_speed2, actual_speed3, feedback_delimiter = self.receive_data()
             #print(self.receive_data())
 
     def send_data(self, speed1, speed2, speed3, thrower_speed):
