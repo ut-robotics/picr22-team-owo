@@ -3,7 +3,7 @@
 ../Core/Src/main.c:130:6:enc_init	8	static
 ../Core/Src/main.c:137:6:pwm_init	8	static
 ../Core/Src/main.c:161:6:motor_status_update	16	static
-../Core/Src/main.c:176:10:motor_pwm	40	static
+../Core/Src/main.c:176:10:motor_pwm	32	static
 ../Core/Src/main.c:231:6:motor_direction	16	static
 ../Core/Src/main.c:246:6:wake_drivers_up	16	static,ignoring_inline_asm
 ../Core/Src/main.c:254:6:thrower_pwm	16	static

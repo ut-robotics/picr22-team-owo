@@ -210,14 +210,14 @@ uint16_t motor_pwm(uint8_t mot_id) {
 
 	motor_status[mot_id].integral += error;
 	motor_status[mot_id].integral = 0;
-	int16_t pid_speed = error * 5 + (int16_t)(motor_status[mot_id].integral * 0.1);
+	int16_t pid_speed = error * 1 + (int16_t)(motor_status[mot_id].integral * 0.1);
 
 	if (pid_speed < 0) {
 		pid_speed = 0;
 	}
 
 	if (speed > 0) {
-		pwm = 4500 + pid_speed * 700; // Effectively linear
+		pwm = 4500 + pid_speed * 350; // Effectively linear
 	}
 
 	if (pwm > 49151) { // emergency limiter, set to 75% currently (49151)
@@ -269,7 +269,7 @@ void thrower_pwm(uint16_t thrower_speed) {
 	//HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, (uint32_t *)thrower_data, 20); // Each pulse draws takes its length from array
 }
 
-// 100 Hz callback
+// 50 Hz callback
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	//HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin); // lights!!!
 
@@ -651,7 +651,7 @@ static void MX_TIM6_Init(void)
 
   /* USER CODE END TIM6_Init 1 */
   htim6.Instance = TIM6;
-  htim6.Init.Prescaler = 23;
+  htim6.Init.Prescaler = 47;
   htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim6.Init.Period = 65535;
   htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
