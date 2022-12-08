@@ -120,10 +120,10 @@ class Mainboard():
             self.send_data(0, 0, 0, strength)
             print(self.receive_data())
 
-    def send_data(self, speed1, speed2, speed3, thrower_speed):
-        disableFailsafe= 0
+    def send_data(self, speed1, speed2, speed3, thrower_speed, succ_servo, angle_servo):
+        disableFailsafe= 0 # in soviet russia robot is own failsafe
         delimiter = 0xAAAA
-        data = struct.pack('<hhhHH', speed1, speed2, speed3, thrower_speed, delimiter)
+        data = struct.pack('<hhhHHHH', speed1, speed2, speed3, thrower_speed, succ_servo, angle_servo, delimiter)
         self.ser.write(data)
 
     def receive_data(self):
@@ -162,21 +162,23 @@ if __name__ == "__main__":
     robot.start()
     try: 
         counter = 1
-        speed= 5
+        speed= 3250
         while(True):
             #robot.test_motors()
-            #robot.throw_raw(1046)
-            robot.move(0,0,0,0)
+            #robot.throw_raw(1024)
+            #robot.move(0,0,0,0)
             time.sleep(0.05)
-            # robot.send_data(0, speed, 0, 0)
-            # print(robot.receive_data())
-            # if counter % 100 == 0:
-            #     speed += 5
-            # if counter == 1000:
+            robot.send_data(0, 0, 0, 5000, 6000, 4700)
+            
+            print(robot.receive_data())
+            # if counter % 50 == 0:
+            #     speed += 100
+            # if counter == 2000:
             #     counter = 0
             #     speed = 0
+            
             #time.sleep(0.05)
-            #counter += 1
+            counter += 1
     except KeyboardInterrupt:
         print("\nExiting")
-        robot.send_data(0, 0, 0, 0)
+        robot.send_data(0, 0, 0, 0, 4875, 6200)
