@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
     # Control logic setup
     debug = False
-    new_robot = False
+    new_robot = True
     state = State.WAIT # <====================================================== Initial state here!
     thrower_speed = 0
     calib_first_time = True
@@ -92,6 +92,7 @@ if __name__ == "__main__":
     throw_ending_in_progress = False
     throw_ending_start_time = 0
     throw_ending_delay = 0.5
+    throwing = False
 
     # Referee commands
     ref_enabled = False
@@ -122,7 +123,7 @@ if __name__ == "__main__":
                 processed_data = processor.process_frame(aligned_depth=False)
 
             if prev_state != state:
-                state_start_timestamp = time.time()
+                state_start_timestamp = time.perf_counter()
                 prev_state = state
 
             # Manual Controller managing
@@ -218,6 +219,7 @@ if __name__ == "__main__":
                                 start_go_time_start = time.perf_counter()
                         elif msg["signal"] == "stop":
                             log.LOGI("Match paused!")
+                            robot.stop_all()
                             state = State.PAUSED
 
             # End of referee commands
@@ -225,9 +227,8 @@ if __name__ == "__main__":
             # ----- NEW ROBOT BALL-IN SENSOR HANDLING -----
             
             # If a ball is currently in the belly of the beast, find a basket
-            ball_in_robot = False # <--- THIS NEEDS REPLACEMENT AS A VALUE OBTAINED FROM THE MAINBOARD
-            
-            if ball_in_robot and (state == State.BALL_SEARCH or state == State.BALL_MOVE or state == State.BALL_EAT):
+            if robot.ball_in_robot and (state == State.BALL_SEARCH or state == State.BALL_MOVE or state == State.BALL_EAT):
+                robot.eating_servo(mainboard.Eating_servo_state.OFF)
                 state = State.BASKET_FIND
 
             # Main control logic uses a state machine
@@ -249,7 +250,7 @@ if __name__ == "__main__":
                 timeout_speed_y = 5
                 timeout_speed_rot = 0
                 timeout_duration = 0.5
-                if time.time() > state_start_timestamp + timeout_duration:
+                if time.perf_counter() > state_start_timestamp + timeout_duration:
                     state = State.BALL_SEARCH
                     continue
 
@@ -350,7 +351,7 @@ if __name__ == "__main__":
             elif state == State.BALL_ORBIT:
 
                 timeout_trig_orbit = 5
-                if time.time() > state_start_timestamp + timeout_trig_orbit:
+                if time.perf_counter() > state_start_timestamp + timeout_trig_orbit:
                     state = State.TIMEOUT
                     continue
 
@@ -397,11 +398,11 @@ if __name__ == "__main__":
             elif state == State.BALL_EAT:
                 log.LOGSTATE("ball_eat")
                 # Maximum time to stay in this state, in seconds.
-                max_time_in_ball_eat = 4
+                max_time_in_ball_eat = 2
                 # Speed for eating servo, units undetermined, current value temporary
                 eat_servo_speed = 10
-                
-                if state_start_timestamp + max_time_in_ball_eat < time.time():
+
+                if state_start_timestamp + max_time_in_ball_eat > time.perf_counter():
                     # Default movement values
                     speed_x = 0 
                     speed_y = 3 # <--- Change this to change the forward movement speed of this state
@@ -410,7 +411,7 @@ if __name__ == "__main__":
                     
                     # When back-wheel movement is ready, it should be implemented into this state.
                     
-                    if (processed_data.balls) > 0:
+                    if len(processed_data.balls) > 0:
                         interesting_ball = processed_data.balls[-1]
                         if interesting_ball.distance > 550:
                             interesting_ball = None # Could use some kind of previous value here?
@@ -419,18 +420,20 @@ if __name__ == "__main__":
                         robot.move_backwheel_adjust(speed_y, interesting_ball.x)
                     
                     # +++ ADD EATING SERVO CONTROL HERE +++
-                    # robot.eating_servo(mainboard.Eating_servo_state.EAT)
+                    robot.eating_servo(mainboard.Eating_servo_state.EAT)
                     continue
                 
                 else:
+                    log.LOGE("timeout from eat")
                     state = State.BALL_SEARCH
+                    robot.ball_in_robot = True
                     continue
             # end of ball eating
             
             # State of the new robot for finding the basket when ball is eaten
             elif state == State.BASKET_FIND:
                 timeout_trig_basket_find = 4
-                if time.time() > state_start_timestamp + timeout_trig_basket_find:
+                if time.perf_counter() > state_start_timestamp + timeout_trig_basket_find:
                     state = State.TIMEOUT
                     continue
                 log.LOGSTATE("basket_find")
@@ -461,7 +464,7 @@ if __name__ == "__main__":
                 log.LOGSTATE("ball_throw")
                 time_in_throw = 2.5
 
-                if new_robot and throw_ending_in_progress and throw_ending_start_time + throw_ending_delay < time.time():
+                if new_robot and throw_ending_in_progress and throw_ending_start_time + throw_ending_delay < time.perf_counter():
                     # End throw state for new robot, back to ball search
                     throw_angle_chosen = False
                     throw_ending_in_progress = False
@@ -503,9 +506,9 @@ if __name__ == "__main__":
                 
                 # Throwing logic for the new robot
                 elif new_robot:
-                    if not ball_in_robot and not throw_ending_in_progress:
-                        log.LOGW("Entered throw with no ball in robot, starting countdown to end throw...")
-                        throw_ending_start_time = time.time()
+                    if not robot.ball_in_robot and not throw_ending_in_progress:
+                        log.LOGW("Ball has left the sensor, starting countdown to end throw...")
+                        throw_ending_start_time = time.perf_counter()
                         throw_ending_in_progress = True
                     else:
                         # Default movement values
@@ -514,29 +517,30 @@ if __name__ == "__main__":
                         
                         # Speed calculations
                         log.LOGI(" Basket.x: " + str(basket.x))
-                        speed_r = -sigmoid_controller(basket.x, middle_x, x_scale=350, y_scale=max_speed)
+                        speed_r = -sigmoid_controller(basket.x, middle_x, x_scale=400, y_scale=max_speed*2)
                         
                         # If basket is in the middle of the screen.
-                        if abs(middle_x - basket.x) <= maximum_basket_error:
-
-                            # Choose correct thrower angle
-                            if not throw_angle_chosen:
-                                if not np.isnan(basket.distance):
-                                    mainboard.choose_thrower_angle(basket.distance)
-                                    throw_angle_chosen = True
+                        if abs(middle_x - basket.x) <= maximum_basket_error or throwing:
+                            throwing = True # Commited to making a throw, stuck here until ball has left the sensor
 
                             # Smoother correction still in place just in case.
                             speed_r = -sigmoid_controller(basket.x, middle_x, x_scale=800, y_scale=max_speed)
 
                             # Worth considering - saving last known basket distance. ++DONE++
                             if not np.isnan(basket.distance):
-                                robot.move(speed_x, speed_y, speed_rot, int(basket.distance))
+                                robot.move(speed_x, speed_y, speed_r, int(basket.distance))
                                 last_known_basket_distance = int(basket.distance)
                             else: 
-                                robot.move(speed_x, speed_y, speed_rot, last_known_basket_distance)
+                                robot.move(speed_x, speed_y, speed_r, last_known_basket_distance)
+                            
+                            robot.ball_in_robot = False # Pmst kui sensori saab siis peaks korras olema, hetkel see siin manuaalselt, eemalda kui sensor tekib
                                 
                         # This means basket needs centering
-                        else:   
+                        else:
+                            if not np.isnan(basket.distance):
+                                robot.choose_thrower_angle(basket.distance)
+                                throw_angle_chosen = True
+                            
                             robot.move(0, 0, speed_r, 0)
                         
                 continue
@@ -567,12 +571,17 @@ if __name__ == "__main__":
 
                 #print(str(xboxcont.joystick_left_y) + " / " + str(xboxcont.joystick_left_x))
 
-                speedy = joyY * 5
-                speedx = joyX * 5
+                speedy = joyY * 10
+                speedx = joyX * 10
                 speedr = joyRightX * 20
                 speedthrow = joyRTrig * 4500
 
                 print("Y: " + str(speedy) + " X: " + str(speedx) + " R: " + str(speedr))
+
+                if joyRTrig > 0.1:
+                    robot.eating_servo(mainboard.Eating_servo_state.EAT)
+                else:
+                    robot.eating_servo(mainboard.Eating_servo_state.OFF)
 
                 robot.move(speedx, speedy, speedr, speedthrow)
                 

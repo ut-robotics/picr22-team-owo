@@ -23,10 +23,10 @@ class Mainboard():
         self.wheel_angles = np.radians([240, 120, 0]) #radians
         self.encoder_edges_per_motor_revolution = 64
         self.gearbox_ratio = 18.75 # 19?
-        self.wheel_radius = 0.365 #meters
-        self.wheel_distance_from_center = 0.15 #meters
+        self.wheel_radius = 0.38 #meters
+        self.wheel_distance_from_center = 0.13 #meters
         self.encoder_counts_per_wheel_revolution = self.gearbox_ratio * self.encoder_edges_per_motor_revolution
-        self.pid_control_frequency = 60 #Hz
+        self.pid_control_frequency = 100 #Hz
         self.pid_control_period = 1 / self.pid_control_frequency #seconds
         self.wheel_speed_to_mainboard_units = self.gearbox_ratio * self.encoder_edges_per_motor_revolution / (2 * math.pi * self.wheel_radius * self.pid_control_frequency)
         self.max_speed = max_speed
@@ -49,14 +49,21 @@ class Mainboard():
         self.prev_rad = 400
 
         # New robot throwing logic
-        self.eating_servo_speed = 0
+        self.thrower_min = 3277
+        self.thrower_max = 6554
+        self.succ_servo_zero = 4875
+        self.succ_servo_in = 6554  
+        self.succ_servo_out = 3277
+        self.angle_servo_low = 6150 
+        self.angle_servo_high = 4700 
+
+        self.succ_servo_active_speed = self.succ_servo_zero
         self.ball_in_robot = False
-        self.throwing_angle_data = [{"angle": 59, "min_r": 1900, "max_r": 2500, "slope": 0.275, "constant": 420},
-                                    {"angle": 63, "min_r": 900, "max_r": 2000, "slope": 0.275, "constant": 420},
-                                    {"angle": 67, "min_r": 400, "max_r": 1000, "slope": 0.275, "constant": 420}]
-        self.active_slope = self.throwing_angle_data[0]["slope"] # Default to long range at the start (start for far corner)
+        self.throwing_angle_data = [{"angle": self.angle_servo_high, "min_r": 1600, "max_r": 3000, "slope": 0.275, "constant": 420},
+                                    {"angle": self.angle_servo_low, "min_r": 400, "max_r": 1700, "slope": 0.275, "constant": 420}]
+        self.active_slope = self.throwing_angle_data[0]["slope"] # Default to long range at the start (start from far corner)
         self.active_constant = self.throwing_angle_data[0]["constant"]
-        self.angle = self.throwing_angle_data[0]["angle"]
+        self.active_angle = self.throwing_angle_data[0]["angle"]
 
         # Logger
         self.logger = logger
@@ -82,8 +89,10 @@ class Mainboard():
             self.logger.LOGE("Cannot connect to mainboard")
             raise SerialPortNotFound 
         self.ser = serial.Serial(serial_port, self.baud_rate)
+        self.stop_all()
 
     def close(self):
+        self.stop_all()
         self.ser.close()
     # End of pyserial stuff
 
@@ -94,13 +103,20 @@ class Mainboard():
         else:
             # int(distance*0.277 + 413)
             # return int(distance*0.275 + 411)
-            return int(distance*self.active_slope + self.active_constant)
+            # 48 - 2047
+            #print(int((distance*self.active_slope + self.active_constant - 48)/(2047-48) * (6554 - 3277) + 3277))
+            return int((distance*self.active_slope + self.active_constant - 48)/(2047-48) * (6554 - 3277) + 3277) # oh my god, plz calibrate soon
 
     # Big math, returns speed of a wheel in mainboard units
     def calculate_wheel_speed(self, motor_num, robot_speed, robot_angle, speed_rot):
         wheel_linear_velocity = robot_speed * math.cos(robot_angle - self.wheel_angles[motor_num - 1]) + self.wheel_distance_from_center * speed_rot
+        #print("linear", wheel_linear_velocity, robot_speed * math.cos(robot_angle - self.wheel_angles[motor_num - 1]), self.wheel_distance_from_center * speed_rot)
         wheel_angular_speed_mainboard_units = wheel_linear_velocity * self.wheel_speed_to_mainboard_units
+        #print("mainboard units", wheel_angular_speed_mainboard_units)
         return wheel_angular_speed_mainboard_units
+
+    def stop_all(self):
+        self.send_data(0, 0, 0, self.thrower_min, self.succ_servo_zero, self.angle_servo_low)
 
     # x - sideways, positive to the right
     # y - forward, positive to the front
@@ -119,12 +135,8 @@ class Mainboard():
         motor_speeds = []
         for i in range(3):
             motor_speeds.append(int(self.calculate_wheel_speed(i+1, robot_speed, robot_angle, speed_r)))
-
-        self.send_data(motor_speeds[0], motor_speeds[1], motor_speeds[2], self.calculate_throw_strength(thrower_distance))
-        #print("Actual:", self.receive_data())
-
-        # +++ NEW ROBOT STUFF, uncomment this +++
-        # act_speed1, act_speed2, act_speed3, ball_in, delim = self.receive_data()
+        self.send_data(motor_speeds[0], motor_speeds[1], motor_speeds[2], self.calculate_throw_strength(thrower_distance), self.succ_servo_active_speed, self.active_angle)
+        print(self.receive_data())
 
     # Orbit around something with constant linear (sideways) speed, cur values allow for adjustments in speed, to make it more precise
     # speed - positive value starts orbiting anticlockwise (robot moves right)
@@ -152,24 +164,21 @@ class Mainboard():
 
     # Moves forward with constant speed with the first two wheel and makes direction adjustments with the back wheel
     def move_backwheel_adjust(self, speed_y, cur_object_x):
-        speed_backwheel = -sigmoid_controller(cur_object_x, self.middle_x, x_scale=50, y_scale=4) # x and y scale need testing
+        speed_backwheel = int(-sigmoid_controller(cur_object_x, self.middle_x, x_scale=50, y_scale=4)) # x and y scale need testing
         
         front_motor_speeds = []
         for i in range(2):
             front_motor_speeds.append(int(self.calculate_wheel_speed(i+1, speed_y, math.pi/2, 0)))
 
-        self.send_data(front_motor_speeds[0], front_motor_speeds[1], speed_backwheel, 0)
-
-        # +++ NEW ROBOT STUFF, uncomment this +++
-        # act_speed1, act_speed2, act_speed3, ball_in, delim = self.receive_data()
+        self.send_data(front_motor_speeds[0], front_motor_speeds[1], speed_backwheel, 0, self.succ_servo_active_speed, self.active_angle)
 
     def eating_servo(self, eating_servo_state): # three states: inactive, eating, sending ball to thrower
         if eating_servo_state == Eating_servo_state.OFF:
-            self.eating_servo_speed = 0
+            self.succ_servo_active_speed = self.succ_servo_zero
         elif eating_servo_state == Eating_servo_state.EAT: # EAT and THROW speeds need to be tested
-            self.eating_servo_speed = 1
+            self.succ_servo_active_speed = self.succ_servo_in
         elif eating_servo_state == Eating_servo_state.THROW:
-            self.eating_servo_speed = 2
+            self.succ_servo_active_speed = self.succ_servo_in
         else:
             logger.LOGE("Invalid eating_servo_state")
 
@@ -184,62 +193,77 @@ class Mainboard():
     # Throw ball to a basket at given distance
     # Discrete call not continuous, use within a loop
     def throw(self, thrower_distance):
-        self.send_data(0, 0, 0, self.calculate_throw_strength(thrower_distance))
+        self.send_data(0, 0, 0, self.calculate_throw_strength(thrower_distance), self.succ_servo_zero, self.angle_servo_low)
         #print(self.receive_data())
 
     # Throw ball with given strength (in "raw motor" units)
     # Discrete call not continuous, use within a loop
     # Value range 48 - 2047
-    def throw_raw(self, strength):
-        if 48 <= strength and strength <= 2047:
-            self.send_data(0, 0, 0, strength)
-            #print(self.receive_data())
+    def throw_raw(self, strength, succ_speed, angle):
+        if strength < 3277 or strength > 6554:
+            self.logger.LOGE("Invalid throw strength")
+        if succ_speed < 3277 or succ_speed > 6554:
+            self.logger.LOGE("Invalid succ thrower speed")
+        if angle < 4700 or angle > 6200:
+            self.logger.LOGE("Invalid throw angle")
+        self.send_data(0, 0, 0, strength, succ_speed, angle)
 
-    def send_data(self, speed1, speed2, speed3, thrower_speed):
-        disable_failsafe = 0
+    # speed 1,2,3: 2-80 kiirus (samuti ka negatiivsel poolel)
+    # thrower: 3277-6554
+    # succ servo: 3277 välja max, 4875 paigal, 6554 sisse max
+    # angle servo: 6200 all, 4700 ülal, Check this value before sending, no check for safety within firmware
+    def send_data(self, speed1, speed2, speed3, thrower_speed, succ_servo, angle_servo):
+        #disableFailsafe= 0 # in soviet russia robot is own failsafe
         delimiter = 0xAAAA
-        data = struct.pack('<hhhHBH', speed1, speed2, speed3, thrower_speed, disable_failsafe, delimiter) # TODO add active angle, eating servo speed for new robot
+        data = struct.pack('<hhhHHHH', speed1, speed2, speed3, thrower_speed, succ_servo, angle_servo, delimiter)
         self.ser.write(data)
 
     def receive_data(self):
-        received_data = self.ser.read(size=8)
-        actual_speed1, actual_speed2, actual_speed3, feedback_delimiter = struct.unpack('<hhhH', received_data) #TODO add ball-in 
-        return actual_speed1, actual_speed2, actual_speed3, feedback_delimiter # TODO add ball-in
-
+        received_data = self.ser.read(size=14)
+        actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, feedback_delimiter = struct.unpack('<hhhhhhH', received_data)
+        return actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, feedback_delimiter
 
     # Rotates all wheels with speed 10, useful for sanity checking
     def test_motors(self):
-        try:
-            while(True):
-                robot.send_data(10, 10, 10, 0)
-                print(robot.receive_data())
-        except KeyboardInterrupt:
-            print("\nExiting")
-            sys.exit()
+        while(True):
+            robot.send_data(5, 5, 5, self.thrower_min, self.succ_servo_zero, self.angle_servo_high)
+            print(robot.receive_data())
 
     # Simple driving test
     def test_driving(self):
-        try:
             start_time = time.perf_counter()
             while time.perf_counter() - start_time < 2.0:
-                robot.move(0, 2, 1)
+                print(1)
+                robot.move(0, 2, 0)
+                print(1.1)
                 print(robot.receive_data())
-
             start_time = time.perf_counter()
             while time.perf_counter() - start_time < 2.0:
-                robot.move(0, -2, -1)
+                print(2)
+                robot.move(2, 0, 0)
+                print(2.2)
                 print(robot.receive_data())
-        except KeyboardInterrupt:
-            print("\nExiting")
-            sys.exit()
+            start_time = time.perf_counter()
+            while time.perf_counter() - start_time < 2.0:
+                print(2)
+                robot.move(0, -2, 0)
+                print(2.2)
+                print(robot.receive_data())
+            start_time = time.perf_counter()
+            while time.perf_counter() - start_time < 2.0:
+                print(2)
+                robot.move(-2, 0, 0)
+                print(2.2)
+                print(robot.receive_data())
 
 if __name__ == "__main__":
-    logger = Logging()
+    logger = Logging(False, True)
     robot = Mainboard(10, logger)
     robot.start()
-    try: 
+    try:
         while(True):
-            robot.throw(200)
+            robot.test_motors()
     except KeyboardInterrupt:
+        robot.close()
         print("\nExiting")
     
