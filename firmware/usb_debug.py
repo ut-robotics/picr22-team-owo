@@ -121,15 +121,14 @@ class Mainboard():
             print(self.receive_data())
 
     def send_data(self, speed1, speed2, speed3, thrower_speed, succ_servo, angle_servo):
-        disableFailsafe= 0 # in soviet russia robot is own failsafe
         delimiter = 0xAAAA
         data = struct.pack('<hhhHHHH', speed1, speed2, speed3, thrower_speed, succ_servo, angle_servo, delimiter)
         self.ser.write(data)
 
     def receive_data(self):
-        received_data = self.ser.read(size=14)
-        actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, feedback_delimiter = struct.unpack('<hhhhhhH', received_data)
-        return actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, feedback_delimiter
+        received_data = self.ser.read(size=16)
+        actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, ball_detected, feedback_delimiter = struct.unpack('<hhhhhhHH', received_data)
+        return actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, ball_detected, feedback_delimiter
 
 
     # Rotates all wheels with speed 100, useful for sanity checking

@@ -90,6 +90,7 @@ typedef struct Command {
 typedef struct Feedback {
   int16_t speed[3];
   int16_t change[3];
+  uint16_t ball_detected;
   uint16_t delimiter;
 } Feedback;
 
@@ -334,6 +335,7 @@ int main(void)
 		.change[0] = 0,
 		.change[1] = 0,
 		.change[2] = 0,
+		.ball_detected = 0,
         .delimiter = 0xAAAA
   };
   HAL_TIM_Base_Start_IT(&htim6);
@@ -356,13 +358,16 @@ int main(void)
     	motor_status_update();
     	thrower_pwm(command.thrower_speed);
 
-		feedback.speed[0] = motor_status[0].target_speed; // In the current state it retuns the uint8 version without direction, whoops!
+		feedback.speed[0] = motor_status[0].target_speed;
 		feedback.speed[1] = motor_status[1].target_speed;
 		feedback.speed[2] = motor_status[2].target_speed;
 
 		feedback.change[0] = motor_status[0].enc_change;
 		feedback.change[1] = motor_status[1].enc_change;
 		feedback.change[2] = motor_status[2].enc_change;
+		HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin); // lights!!!
+
+		feedback.ball_detected = HAL_GPIO_ReadPin (INFR_GPIO_Port, INFR_Pin);
 
 		CDC_Transmit_FS(&feedback, sizeof(feedback));
 	}
