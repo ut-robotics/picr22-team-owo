@@ -193,15 +193,23 @@ uint16_t motor_pwm(uint8_t mot_id) {
 	int16_t pos_change = abs((int16_t)new_pos - motor_status[mot_id].enc_pos);
 
 	motor_status[mot_id].enc_pos = new_pos;
-	motor_status[mot_id].enc_change = pos_change;
+
+	// Ghetto fix for a very weird bug
+	/*if (mot_id != 2) {
+		motor_status[mot_id].enc_change = pos_change;
+	} else if (pos_change > speed*0.6) {
+		motor_status[mot_id].enc_change = pos_change;
+	}*/
 
 	// Clear PI-s integral value when the bot is ordered to stop, might cause issues down the line
 	if (motor_status[0].target_speed == 0 && motor_status[1].target_speed == 0 && motor_status[2].target_speed == 0) {
 		motor_status[mot_id].integral = 0;
 	}
 
-	int16_t error = motor_status[mot_id].target_speed - pos_change;
+	int16_t error = speed - motor_status[mot_id].enc_change;
+
 	motor_status[mot_id].integral += error;
+	motor_status[mot_id].integral = 0;
 	int16_t pid_speed = error * 5 + (int16_t)(motor_status[mot_id].integral * 0.1);
 
 	if (pid_speed < 0) {
@@ -257,13 +265,13 @@ void thrower_pwm(uint16_t thrower_speed) {
 			thrower_data[15-i] = 399;
 		}
 	}
-	HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
+	//HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
 	//HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, (uint32_t *)thrower_data, 20); // Each pulse draws takes its length from array
 }
 
 // 100 Hz callback
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-	HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin); // lights!!!
+	//HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin); // lights!!!
 
 	if (commandless_count >= 50) { // Helps prevent major consequences from minor fuckups
 		TIM8->CCR2 = 0;
@@ -365,9 +373,11 @@ int main(void)
 		feedback.change[0] = motor_status[0].enc_change;
 		feedback.change[1] = motor_status[1].enc_change;
 		feedback.change[2] = motor_status[2].enc_change;
-		HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin); // lights!!!
+		//HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin); // lights!!!
 
 		feedback.ball_detected = HAL_GPIO_ReadPin (INFR_GPIO_Port, INFR_Pin);
+		// This doesn't work lol
+		//HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, HAL_GPIO_ReadPin(INFR_GPIO_Port, INFR_Pin));
 
 		CDC_Transmit_FS(&feedback, sizeof(feedback));
 	}

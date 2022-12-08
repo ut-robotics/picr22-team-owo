@@ -167,7 +167,7 @@ if __name__ == "__main__":
             #robot.throw_raw(1024)
             #robot.move(0,0,0,0)
             time.sleep(0.05)
-            robot.send_data(0, 0, 0, 5000, 6000, 4700)
+            robot.send_data(10, 10, 10, 0, 6000, 4700)
             
             print(robot.receive_data())
             # if counter % 50 == 0:
