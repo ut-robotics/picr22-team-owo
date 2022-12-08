@@ -26,7 +26,7 @@ class Mainboard():
         self.wheel_radius = 0.38 #meters
         self.wheel_distance_from_center = 0.13 #meters
         self.encoder_counts_per_wheel_revolution = self.gearbox_ratio * self.encoder_edges_per_motor_revolution
-        self.pid_control_frequency = 100 #Hz
+        self.pid_control_frequency = 50 #Hz
         self.pid_control_period = 1 / self.pid_control_frequency #seconds
         self.wheel_speed_to_mainboard_units = self.gearbox_ratio * self.encoder_edges_per_motor_revolution / (2 * math.pi * self.wheel_radius * self.pid_control_frequency)
         self.max_speed = max_speed
@@ -55,12 +55,12 @@ class Mainboard():
         self.succ_servo_in = 6554  
         self.succ_servo_out = 3277
         self.angle_servo_low = 6150 
-        self.angle_servo_high = 4700 
+        self.angle_servo_high = 4725
 
         self.succ_servo_active_speed = self.succ_servo_zero
         self.ball_in_robot = False
-        self.throwing_angle_data = [{"angle": self.angle_servo_high, "min_r": 1600, "max_r": 3000, "slope": 0.275, "constant": 420},
-                                    {"angle": self.angle_servo_low, "min_r": 400, "max_r": 1700, "slope": 0.275, "constant": 420}]
+        self.throwing_angle_data = [{"angle": self.angle_servo_high, "min_r": 0, "max_r": 4000, "slope": 0.207, "constant": 3622},]
+        # 0.362 3307
         self.active_slope = self.throwing_angle_data[0]["slope"] # Default to long range at the start (start from far corner)
         self.active_constant = self.throwing_angle_data[0]["constant"]
         self.active_angle = self.throwing_angle_data[0]["angle"]
@@ -105,7 +105,8 @@ class Mainboard():
             # return int(distance*0.275 + 411)
             # 48 - 2047
             #print(int((distance*self.active_slope + self.active_constant - 48)/(2047-48) * (6554 - 3277) + 3277))
-            return int((distance*self.active_slope + self.active_constant - 48)/(2047-48) * (6554 - 3277) + 3277) # oh my god, plz calibrate soon
+            print (int((distance*self.active_slope + self.active_constant)))
+            return int((distance*self.active_slope + self.active_constant))
 
     # Big math, returns speed of a wheel in mainboard units
     def calculate_wheel_speed(self, motor_num, robot_speed, robot_angle, speed_rot):
@@ -113,6 +114,12 @@ class Mainboard():
         #print("linear", wheel_linear_velocity, robot_speed * math.cos(robot_angle - self.wheel_angles[motor_num - 1]), self.wheel_distance_from_center * speed_rot)
         wheel_angular_speed_mainboard_units = wheel_linear_velocity * self.wheel_speed_to_mainboard_units
         #print("mainboard units", wheel_angular_speed_mainboard_units)
+
+        # if wheel_angular_speed_mainboard_units > 0.2 and wheel_angular_speed_mainboard_units < 1:
+        #     wheel_angular_speed_mainboard_units = 1
+        # if wheel_angular_speed_mainboard_units < -0.2 and wheel_angular_speed_mainboard_units > -1:
+        #     wheel_angular_speed_mainboard_units = -1
+
         return wheel_angular_speed_mainboard_units
 
     def stop_all(self):
@@ -136,7 +143,12 @@ class Mainboard():
         for i in range(3):
             motor_speeds.append(int(self.calculate_wheel_speed(i+1, robot_speed, robot_angle, speed_r)))
         self.send_data(motor_speeds[0], motor_speeds[1], motor_speeds[2], self.calculate_throw_strength(thrower_distance), self.succ_servo_active_speed, self.active_angle)
-        print(self.receive_data())
+        #print(self.receive_data())
+
+        actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, ball_detected, feedback_delimiter = self.receive_data()
+        #print(f"speed1: {actual_speed1} speed2: {actual_speed2} speed3: {actual_speed3} enc1: {enc1} enc2: {enc2} enc3: {enc3}")
+        self.ball_in_robot = ball_detected
+
 
     # Orbit around something with constant linear (sideways) speed, cur values allow for adjustments in speed, to make it more precise
     # speed - positive value starts orbiting anticlockwise (robot moves right)
@@ -219,9 +231,9 @@ class Mainboard():
         self.ser.write(data)
 
     def receive_data(self):
-        received_data = self.ser.read(size=14)
-        actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, feedback_delimiter = struct.unpack('<hhhhhhH', received_data)
-        return actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, feedback_delimiter
+        received_data = self.ser.read(size=16)
+        actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, ball_detected, feedback_delimiter = struct.unpack('<hhhhhhHH', received_data)
+        return actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, ball_detected, feedback_delimiter
 
     # Rotates all wheels with speed 10, useful for sanity checking
     def test_motors(self):

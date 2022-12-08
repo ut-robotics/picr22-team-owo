@@ -6,8 +6,8 @@ import robot_utilities
 class Referee_cmd_client:
     def __init__(self, logger):
         # TODO - Get IP and Port through config and command line arguments
-        self.ip = "192.168.3.28" #"192.168.3.220"
-        self.port = "8222"
+        self.ip = "192.168.3.220" #"192.168.3.220"
+        self.port = "8111"
         self.logger = logger
         self.queue = mp.Queue()
         self.logger.LOGI("Referee cmd client initialized")
