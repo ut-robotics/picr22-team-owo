@@ -289,12 +289,15 @@ Link to the robot's assembly: https://a360.co/3FA4tEU
 
 === Mon, 05.12.22
 *Sander:* Assembling the robot 4 h +
+*Andres:* Throwing angle choice, backwheel adjust code 1.5 h +
 
 === Tue, 06.12.22
 *Sander:* Assembling the robot 2 h +
 
 === Wed, 07.12.22
 *Sander:* Helping others 5 h +
+*Andres:* Porting code to new robot, helping with firmware a bit, fixing computer 11 h +
 
 === Thu, 08.12.22
 *Sander:* Helping others and test competition 7.5 h +
+*Andres:* New robot code, thrower calibration, test competition 5 h +
