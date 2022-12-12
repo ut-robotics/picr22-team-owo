@@ -284,14 +284,15 @@ Link to the robot's assembly: https://a360.co/3FA4tEU
 === Mon, 28.11.22
 *Sander:* 3d printing and drilling holes 5.5 h +
 *Johannes:* Progress Presentation and Programming 2 h +
-*Artur:* Firmware 1.5 h
+*Artur:* Firmware 1.5 h +
+*Kert:* Drilling holes, cleaning the parts, preparing for the assembly 2 h +
 
 === Tue, 29.11.22
 *Sander:* Assembling the robot 2.5 h +
 
 === Thu, 01.12.22
 *Johannes:* Improving stability and showing tasks 3 h +
-*Artur:* Firmware 0.5 h
+*Artur:* Firmware 0.5 h +
 
 === Fri, 02.12.22
 *Artur:* Firmware 1 h +
@@ -308,20 +309,24 @@ Link to the robot's assembly: https://a360.co/3FA4tEU
 *Andres:* Throwing angle choice, backwheel adjust code 1.5 h +
 *Johannes:* New robot code preparation 2.5 h +
 *Artur:* Firmware and more PWM issues 6.5 h +
+*Kert:* Assembling the robot 2 h +
 
 === Tue, 06.12.22
 *Sander:* Assembling the robot 2 h +
 *Johannes:* New robot code preparation 2.5 h +
 *Artur:* Firmware and DSHOT implementation 7.5 h +
+*Kert:* Assembling the robot 1.5 h +
 
 === Wed, 07.12.22
 *Sander:* Helping others 5 h +
 *Andres:* Porting code to new robot, helping with firmware a bit, fixing computer 11 h +
 *Johannes:* Helping with new robot, code for new robot 5 h +
 *Artur:* Firmware, giving up on DSHOT and a lot of pain 11 h +
+*Kert:* Helping to ready up for the competitions 4 h +
 
 === Thu, 08.12.22
 *Sander:* Helping others and test competition 7.5 h +
 *Andres:* New robot code, thrower calibration, test competition 5 h +
 *Johannes:* Getting new robot to be functional, test competition 8 h +
 *Artur:* Desperately trying to get the driving to work, test competition 7.5 h +
+*Kert:* Helping to ready up for the competitions, competitions 5 h +
