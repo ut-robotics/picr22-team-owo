@@ -96,7 +96,7 @@ if __name__ == "__main__":
     throw_check_counter = 0
 
     # Referee commands
-    ref_enabled = True
+    ref_enabled = False
     if ref_enabled:
         robot_name = "owo"
         referee = ref_cmd.Referee_cmd_client(log)
@@ -335,7 +335,7 @@ if __name__ == "__main__":
                     interesting_ball = processed_data.balls[-1]
                     #print("Ball:", interesting_ball)
 
-                    if interesting_ball.distance <= 475:
+                    if interesting_ball.distance <= 550:
                         if not new_robot:
                             state = State.BALL_ORBIT
                         elif new_robot:
@@ -429,8 +429,9 @@ if __name__ == "__main__":
                         
                     if interesting_ball != None:
                         #robot.move_backwheel_adjust(speed_y, interesting_ball.x)
-                        speed_r = -sigmoid_controller(interesting_ball.x, middle_x, x_scale=500, y_scale=max_speed)
-                        robot.move(0, speed_y, speed_r)
+                        speed_x = sigmoid_controller(basket.x, middle_x, x_scale=900, y_scale=max_speed)
+                        speed_r = -sigmoid_controller(interesting_ball.x, middle_x, x_scale=450, y_scale=max_speed)
+                        robot.move(speed_x, speed_y, speed_r)
                     else:
                         robot.move(0, speed_y, 0)
                     
@@ -464,11 +465,19 @@ if __name__ == "__main__":
                 else:
                     log.LOGE("Basket color invalid")
                         
+                # distance in mm, closer than this means moving backwards, else move forward
+                basket_decision_dist = 1500
+                
                 # If basket is found, go to throwing, NB! Basket centering done entirely in throw
                 if basket.exists:
                     state = State.BALL_THROW
                     throwing = False
                     throw_check_counter = 0
+                    if basket.distance < basket_decision_dist:
+                        robot.driving_forward = False
+                    else:
+                        robot.driving_forward = True
+
                     continue
                 # Need to check basket distance here, so that wouldn't be too close or too far away
                         
@@ -531,6 +540,8 @@ if __name__ == "__main__":
                 # Throwing logic for the new robot                
                 elif new_robot:
 
+                    speed_x = 0
+
                     # IMPORTANT
                     throw_required_correct_frames = 3
 
@@ -543,7 +554,10 @@ if __name__ == "__main__":
                         speed_r = 0
                         maximum_basket_error = 8
 
-                        
+                        if robot.driving_forward:
+                            throw_move_speed = 3
+                        else:
+                            throw_move_speed = -3
                         
                         # Speed calculations
                         log.LOGI(" Basket.x: " + str(basket.x))
@@ -564,10 +578,10 @@ if __name__ == "__main__":
 
                                 # Worth considering - saving last known basket distance. ++DONE++
                                 if not np.isnan(basket.distance) and basket.exists:
-                                    robot.move(0, -3, speed_r, int(basket.distance))
+                                    robot.move(0, throw_move_speed, speed_r, int(basket.distance))
                                     last_known_basket_distance = int(basket.distance)
                                 else: 
-                                    robot.move(0, -3, speed_r, last_known_basket_distance)
+                                    robot.move(0, throw_move_speed, speed_r, last_known_basket_distance)
                             
                             #robot.ball_in_robot = False # Pmst kui sensori saab siis peaks korras olema, hetkel see siin manuaalselt, eemalda kui sensor tekib
                                 
@@ -579,10 +593,10 @@ if __name__ == "__main__":
                                 throw_angle_chosen = True
                             
                             if not np.isnan(basket.distance) and basket.exists:
-                                robot.move(0, -3, speed_r, int(basket.distance))
+                                robot.move(0, throw_move_speed, speed_r, int(basket.distance))
                                 last_known_basket_distance = int(basket.distance)
                             else: 
-                                robot.move(0, -3, speed_r, last_known_basket_distance)
+                                robot.move(0, throw_move_speed, speed_r, last_known_basket_distance)
                         
                 continue
             # End of ball_throw

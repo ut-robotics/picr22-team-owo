@@ -59,11 +59,12 @@ class Mainboard():
 
         self.succ_servo_active_speed = self.succ_servo_zero
         self.ball_in_robot = False
-        self.throwing_angle_data = [{"angle": self.angle_servo_high, "min_r": 0, "max_r": 4000, "slope": 0.207, "constant": 3622},]
+        self.throwing_angle_data = [{"angle": self.angle_servo_high, "min_r": 0, "max_r": 4000, "slope": 0.207, "constant": 3562},]
         # 0.362 3307
         self.active_slope = self.throwing_angle_data[0]["slope"] # Default to long range at the start (start from far corner)
         self.active_constant = self.throwing_angle_data[0]["constant"]
         self.active_angle = self.throwing_angle_data[0]["angle"]
+        self.driving_forward = True
 
         # Logger
         self.logger = logger
@@ -105,8 +106,12 @@ class Mainboard():
             # return int(distance*0.275 + 411)
             # 48 - 2047
             #print(int((distance*self.active_slope + self.active_constant - 48)/(2047-48) * (6554 - 3277) + 3277))
-            print (int((distance*self.active_slope + self.active_constant)))
-            return int((distance*self.active_slope + self.active_constant))
+            #print (int((distance*self.active_slope + self.active_constant)))
+            #return int((distance*self.active_slope + self.active_constant))
+            if self.driving_forward:
+                return int(distance * 0.207 + 3562)
+            else:
+                return int(distance * 0.207 + 3622)
 
     # Big math, returns speed of a wheel in mainboard units
     def calculate_wheel_speed(self, motor_num, robot_speed, robot_angle, speed_rot):
@@ -146,7 +151,7 @@ class Mainboard():
         #print(self.receive_data())
 
         actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, ball_detected, feedback_delimiter = self.receive_data()
-        #print(f"speed1: {actual_speed1} speed2: {actual_speed2} speed3: {actual_speed3} enc1: {enc1} enc2: {enc2} enc3: {enc3}")
+        print(f"speed1: {actual_speed1} speed2: {actual_speed2} speed3: {actual_speed3} enc1: {enc1} enc2: {enc2} enc3: {enc3}")
         self.ball_in_robot = ball_detected
 
 
