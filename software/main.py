@@ -412,6 +412,8 @@ if __name__ == "__main__":
                 # Speed for eating servo, units undetermined, current value temporary
                 eat_servo_speed = 10
 
+                
+
                 if state_start_timestamp + max_time_in_ball_eat > time.perf_counter():
                     # Default movement values
                     speed_x = 0 
@@ -429,7 +431,7 @@ if __name__ == "__main__":
                         
                     if interesting_ball != None:
                         #robot.move_backwheel_adjust(speed_y, interesting_ball.x)
-                        speed_x = sigmoid_controller(basket.x, middle_x, x_scale=900, y_scale=max_speed)
+                        speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=900, y_scale=max_speed)
                         speed_r = -sigmoid_controller(interesting_ball.x, middle_x, x_scale=450, y_scale=max_speed)
                         robot.move(speed_x, speed_y, speed_r)
                     else:
