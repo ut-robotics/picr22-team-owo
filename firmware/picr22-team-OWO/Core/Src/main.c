@@ -76,6 +76,7 @@ typedef struct Motor_Status {
 	int16_t integral; // PID stuff borrowed from kurgimopeed
 	float flat_const;
 	float int_const;
+	int16_t error;
 } Motor_Status;
 
 typedef struct Command {
@@ -91,8 +92,9 @@ typedef struct Command {
 typedef struct Feedback {
   int16_t speed[3];
   int16_t change[3];
+  int16_t error[3];
+  int16_t integral[3];
   uint16_t ball_detected;
-  uint16_t delimiter;
 } Feedback;
 
 // Motor structs for all 3 motors
@@ -195,9 +197,8 @@ uint16_t motor_pwm(uint8_t mot_id) {
 	}
 
 	int16_t error = speed - motor_status[mot_id].enc_change;
-
+	motor_status[mot_id].error = error;
 	motor_status[mot_id].integral += error;
-	motor_status[mot_id].integral = 0;
 	int16_t pid_speed = (int16_t)(error * motor_status[mot_id].flat_const) + (int16_t)(motor_status[mot_id].integral * motor_status[mot_id].int_const);
 
 	if (pid_speed < 0) {pid_speed = 0;}
@@ -205,8 +206,6 @@ uint16_t motor_pwm(uint8_t mot_id) {
 	if (speed > 0) {
 		pwm = 4500 + pid_speed * 375; // Effectively linear
 	}
-	// emergency limiter, set to 75% currently (49151)
-	if (pwm > 49151) {pwm = 49151;}
 
 	return pwm;
 }
@@ -309,7 +308,6 @@ int main(void)
 		.change[1] = 0,
 		.change[2] = 0,
 		.ball_detected = 0,
-        .delimiter = 0xAAAA
   };
   HAL_TIM_Base_Start_IT(&htim6);
   HAL_Delay(100);
@@ -336,6 +334,14 @@ int main(void)
 		feedback.change[0] = motor_status[0].enc_change;
 		feedback.change[1] = motor_status[1].enc_change;
 		feedback.change[2] = motor_status[2].enc_change;
+
+		feedback.error[0] = motor_status[0].error;
+		feedback.error[1] = motor_status[1].error;
+		feedback.error[2] = motor_status[2].error;
+
+		feedback.integral[0] = motor_status[0].integral;
+		feedback.integral[1] = motor_status[1].integral;
+		feedback.integral[2] = motor_status[2].integral;
 
 		feedback.ball_detected = HAL_GPIO_ReadPin (INFR_GPIO_Port, INFR_Pin);
 

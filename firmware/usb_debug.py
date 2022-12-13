@@ -127,9 +127,12 @@ class Mainboard():
         self.ser.write(data)
 
     def receive_data(self):
-        received_data = self.ser.read(size=16)
-        actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, ball_detected, feedback_delimiter = struct.unpack('<hhhhhhHH', received_data)
-        return actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, ball_detected, feedback_delimiter
+        received_data = self.ser.read(size=26)
+        error = [0,0,0]
+        integral = [0.0,0.0,0.0]
+
+        actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, error[0], error[1], error[2], integral[0], integral[1], integral[2], ball_detected = struct.unpack('<hhhhhhhhhhhhH', received_data)
+        return actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, error, integral, ball_detected
 
 
     # Rotates all wheels with speed 100, useful for sanity checking
@@ -169,8 +172,7 @@ if __name__ == "__main__":
             #robot.move(0,0,0,0)
             time.sleep(0.05)
             
-            
-            robot.send_data(30, 30, 30, 0, 6000, 4700, 3, 0.1)
+            robot.send_data(80, 80, 80, 0, 6000, 4700, 3, 0.1)
             
             print(robot.receive_data())
             # if counter % 50 == 0:
