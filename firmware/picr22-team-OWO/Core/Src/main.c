@@ -84,6 +84,8 @@ typedef struct Command {
   uint16_t thrower_speed; // thrower motor speed
   uint16_t servo1;
   uint16_t servo2;
+  float int_const;
+  int16_t flat_const;
   uint16_t delimiter;
 } Command;
 
@@ -97,12 +99,7 @@ typedef struct Feedback {
 // Motor structs for all 3 motors
 Motor_Status motor_status[3] = {0};
 // Prefilled command struct
-Command command = {.speed[0] = 0, .speed[1] = 0, .speed[2] = 0, .thrower_speed = 3277, .servo1 = 4875, .servo2 = 6150, .delimiter = 0};
-
-// Array for thrower pwm data to be transmitted using the Dshot protocol, PREFILLED with 0, bits 17-20 will ALWAYS be zeros.
-// DSHOT IS ABANDONED FOR NOW
-// 1000001011000110
-uint32_t thrower_data[30] = {0};//{798, 399, 399, 399, 399, 399, 798, 399, 798, 798, 399, 399, 399, 798, 798, 399, 0, 0, 0, 0};
+Command command = {.speed[0] = 0, .speed[1] = 0, .speed[2] = 0, .thrower_speed = 3277, .servo1 = 4875, .servo2 = 6150, .flat_const = 0, .int_const = 0, .delimiter = 0};
 
 volatile uint8_t isCommandReceived = 0;
 
@@ -169,6 +166,9 @@ void motor_status_update() {
 			if (command.speed[i] == -1) {command.speed[i] = -2;} // Everybody gangsta till the input speed is -1
 			motor_status[i].target_speed = -(command.speed[i]);
 		}
+
+		motor_status[i].flat_const = command.flat_const;
+		motor_status[i].int_const = command.int_const;
 	}
 }
 
@@ -193,13 +193,7 @@ uint16_t motor_pwm(uint8_t mot_id) {
 	int16_t pos_change = abs((int16_t)new_pos - motor_status[mot_id].enc_pos);
 
 	motor_status[mot_id].enc_pos = new_pos;
-
-	// Ghetto fix for a very weird bug
-	/*if (mot_id != 2) {
-		motor_status[mot_id].enc_change = pos_change;
-	} else if (pos_change > speed*0.6) {
-		motor_status[mot_id].enc_change = pos_change;
-	}*/
+	motor_status[mot_id].enc_change = pos_change;
 
 	// Clear PI-s integral value when the bot is ordered to stop, might cause issues down the line
 	if (motor_status[0].target_speed == 0 && motor_status[1].target_speed == 0 && motor_status[2].target_speed == 0) {
@@ -210,14 +204,14 @@ uint16_t motor_pwm(uint8_t mot_id) {
 
 	motor_status[mot_id].integral += error;
 	motor_status[mot_id].integral = 0;
-	int16_t pid_speed = error * 1 + (int16_t)(motor_status[mot_id].integral * 0.1);
+	int16_t pid_speed = (int16_t)(error * motor_status[mot_id].flat_const) + (int16_t)(motor_status[mot_id].integral * motor_status[mot_id].int_const);
 
 	if (pid_speed < 0) {
 		pid_speed = 0;
 	}
 
 	if (speed > 0) {
-		pwm = 4500 + pid_speed * 350; // Effectively linear
+		pwm = 4500 + pid_speed * 375; // Effectively linear
 	}
 
 	if (pwm > 49151) { // emergency limiter, set to 75% currently (49151)
@@ -251,23 +245,6 @@ void wake_drivers_up() {
 	HAL_GPIO_WritePin(GPIOB, MSLEEP_Pin, GPIO_PIN_SET);
 }
 // Currently abandoned.
-void thrower_pwm(uint16_t thrower_speed) {
-	//HAL_TIM_PWM_Stop_DMA(&htim2, TIM_CHANNEL_1);					// Stop transmitting previous thrower value
-	return;
-	uint16_t packet = thrower_speed << 1; 							// Shift left to make room for telemetry bit (left as 0)
-	uint16_t crc = (packet ^ (packet >> 4) ^ (packet >> 8)) & 0x0F; // CRC calculation shenanigans
-	packet = (packet << 4) | crc; 									// Add CRC value to the packet
-
-	for (int i=15; i>=0; i--){										// Loop through the entire packet, adds the most significant bit to the array first
-		if (packet & (1<<i)){										// i counts down, 15-i counts up
-			thrower_data[15-i] = 798;								// PWM values determined by timer speeds
-		} else {
-			thrower_data[15-i] = 399;
-		}
-	}
-	//HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
-	//HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, (uint32_t *)thrower_data, 20); // Each pulse draws takes its length from array
-}
 
 // 50 Hz callback
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
@@ -351,7 +328,6 @@ int main(void)
   enc_init();
   pwm_init();
   wake_drivers_up();
-  thrower_pwm(0);
 
   /* USER CODE END 2 */
 
@@ -364,7 +340,6 @@ int main(void)
 
     	wake_drivers_up();
     	motor_status_update();
-    	thrower_pwm(command.thrower_speed);
 
 		feedback.speed[0] = motor_status[0].target_speed;
 		feedback.speed[1] = motor_status[1].target_speed;
@@ -373,11 +348,8 @@ int main(void)
 		feedback.change[0] = motor_status[0].enc_change;
 		feedback.change[1] = motor_status[1].enc_change;
 		feedback.change[2] = motor_status[2].enc_change;
-		//HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin); // lights!!!
 
 		feedback.ball_detected = HAL_GPIO_ReadPin (INFR_GPIO_Port, INFR_Pin);
-		// This doesn't work lol
-		//HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, HAL_GPIO_ReadPin(INFR_GPIO_Port, INFR_Pin));
 
 		CDC_Transmit_FS(&feedback, sizeof(feedback));
 	}
@@ -460,7 +432,7 @@ static void MX_TIM1_Init(void)
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  sConfig.EncoderMode = TIM_ENCODERMODE_TI1;
+  sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
   sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
   sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
   sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
@@ -559,7 +531,7 @@ static void MX_TIM3_Init(void)
   htim3.Init.Period = 65535;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  sConfig.EncoderMode = TIM_ENCODERMODE_TI1;
+  sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
   sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
   sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
   sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
@@ -608,7 +580,7 @@ static void MX_TIM4_Init(void)
   htim4.Init.Period = 65535;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  sConfig.EncoderMode = TIM_ENCODERMODE_TI1;
+  sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
   sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
   sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
   sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
