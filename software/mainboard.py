@@ -109,9 +109,9 @@ class Mainboard():
             #print (int((distance*self.active_slope + self.active_constant)))
             #return int((distance*self.active_slope + self.active_constant))
             if self.driving_forward:
-                return int(distance * 0.207 + 3562)
+                return int(distance * 0.195 + 3589)
             else:
-                return int(distance * 0.207 + 3622)
+                return int(distance * 0.207 + 3625)
 
     # Big math, returns speed of a wheel in mainboard units
     def calculate_wheel_speed(self, motor_num, robot_speed, robot_angle, speed_rot):
@@ -150,8 +150,8 @@ class Mainboard():
         self.send_data(motor_speeds[0], motor_speeds[1], motor_speeds[2], self.calculate_throw_strength(thrower_distance), self.succ_servo_active_speed, self.active_angle)
         #print(self.receive_data())
 
-        actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, ball_detected, feedback_delimiter = self.receive_data()
-        print(f"speed1: {actual_speed1} speed2: {actual_speed2} speed3: {actual_speed3} enc1: {enc1} enc2: {enc2} enc3: {enc3}")
+        actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, error, integral, ball_detected = self.receive_data()
+        print("motors:", num_format(actual_speed1), num_format(actual_speed2), num_format(actual_speed3), num_format(enc1), num_format(enc2), num_format(enc3), num_format(error[0]), num_format(error[1]), num_format(error[2]), num_format(integral[0]), num_format(integral[1]), num_format(integral[2]))
         self.ball_in_robot = ball_detected
 
 
@@ -230,15 +230,20 @@ class Mainboard():
     # succ servo: 3277 välja max, 4875 paigal, 6554 sisse max
     # angle servo: 6200 all, 4700 ülal, Check this value before sending, no check for safety within firmware
     def send_data(self, speed1, speed2, speed3, thrower_speed, succ_servo, angle_servo):
-        #disableFailsafe= 0 # in soviet russia robot is own failsafe
+        int_const = 0.1
+        flat_const = 1
         delimiter = 0xAAAA
-        data = struct.pack('<hhhHHHH', speed1, speed2, speed3, thrower_speed, succ_servo, angle_servo, delimiter)
+        data = struct.pack('<hhhHHHfhH', speed1, speed2, speed3, thrower_speed, succ_servo, angle_servo, int_const, flat_const, delimiter)
+
         self.ser.write(data)
 
     def receive_data(self):
-        received_data = self.ser.read(size=16)
-        actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, ball_detected, feedback_delimiter = struct.unpack('<hhhhhhHH', received_data)
-        return actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, ball_detected, feedback_delimiter
+        received_data = self.ser.read(size=26)
+        error = [0,0,0]
+        integral = [0.0,0.0,0.0]
+
+        actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, error[0], error[1], error[2], integral[0], integral[1], integral[2], ball_detected = struct.unpack('<hhhhhhhhhhhhH', received_data)
+        return actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, error, integral, ball_detected
 
     # Rotates all wheels with speed 10, useful for sanity checking
     def test_motors(self):

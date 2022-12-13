@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     # Mainboard stuff setup
     max_speed = 15
-    max_speed_inner = 15
+    max_speed_inner = 25
     ball_good_range = 300
     robot = mainboard.Mainboard(max_speed_inner, log)
     robot.start()
@@ -315,11 +315,11 @@ if __name__ == "__main__":
                     state = State.BALL_MOVE
                     continue
                 else:
-                    robot.move(0, 0, 9)
-                    #if (int(time.perf_counter() * 6) % 3 == 0):
-                    #    robot.move(0, 0, 10)
-                    #else:
-                    #    robot.move(0, 0, 2)
+                    #robot.move(0, 0, 22)
+                    if (int(time.perf_counter() * 4) % 3 == 0):
+                        robot.move(0, 0, 25)
+                    else:
+                        robot.move(0, 0, 1)
             # End of ball_search
             
             # Moving towards ball
@@ -346,9 +346,9 @@ if __name__ == "__main__":
                     else:
                         if interesting_ball.x > middle_x + 2 or interesting_ball.x < middle_x - 2:
                             speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=1700, y_scale=max_speed/2)
-                            speed_r = -sigmoid_controller(interesting_ball.x, middle_x, x_scale=1000, y_scale=max_speed/2)
+                            speed_r = -sigmoid_controller(interesting_ball.x, middle_x, x_scale=1000, y_scale=max_speed)
                         if interesting_ball.distance > ball_good_range:
-                            speed_y = sigmoid_controller(interesting_ball.distance, ball_good_range, x_scale=1400, y_scale=max_speed)
+                            speed_y = sigmoid_controller(interesting_ball.distance, ball_good_range, x_scale=1300, y_scale=max_speed)
                         #print(f"x: {speed_x}, y: {speed_y}, r: {speed_r}, dist: {interesting_ball.distance}, b.x: {interesting_ball.x}, b.y: {interesting_ball.y}")
                         robot.move(speed_x, speed_y, speed_r)
                 else:
@@ -417,7 +417,7 @@ if __name__ == "__main__":
                 if state_start_timestamp + max_time_in_ball_eat > time.perf_counter():
                     # Default movement values
                     speed_x = 0 
-                    speed_y = 4 # <--- Change this to change the forward movement speed of this state
+                    speed_y = 6 # <--- Change this to change the forward movement speed of this state
                     speed_r = 0
                     interesting_ball = None
                     
@@ -457,7 +457,7 @@ if __name__ == "__main__":
                 # Default movement values
                 speed_x = 0 
                 speed_y = 0 
-                speed_r = 7 # <--- Change this to change the basket finding rotation speed
+                speed_r = -30 # <--- Change this to change the basket finding rotation speed
                     
                 # Determining the correct basket
                 if basket_color == Target_basket.MAGENTA:
@@ -545,7 +545,7 @@ if __name__ == "__main__":
                     speed_x = 0
 
                     # IMPORTANT
-                    throw_required_correct_frames = 3
+                    throw_required_correct_frames = 4
 
                     if not robot.ball_in_robot and not throw_ending_in_progress:
                         log.LOGI("Ball has left the sensor, starting countdown to end throw...")
@@ -554,16 +554,16 @@ if __name__ == "__main__":
                     else:
                         # Default movement values
                         speed_r = 0
-                        maximum_basket_error = 8
+                        maximum_basket_error = 6
 
                         if robot.driving_forward:
-                            throw_move_speed = 3
+                            throw_move_speed = 2
                         else:
-                            throw_move_speed = -3
+                            throw_move_speed = -2
                         
                         # Speed calculations
                         log.LOGI(" Basket.x: " + str(basket.x))
-                        speed_r = -sigmoid_controller(basket.x, middle_x, x_scale=450, y_scale=max_speed)
+                        speed_r = -sigmoid_controller(basket.x, middle_x, x_scale=700, y_scale=max_speed)
                         
                         # If basket is in the middle of the screen.
                         if abs(middle_x - basket.x) <= maximum_basket_error or throwing:
@@ -576,7 +576,7 @@ if __name__ == "__main__":
                                 robot.eating_servo(mainboard.Eating_servo_state.EAT)
 
                                 # Smoother correction still in place just in case.
-                                speed_r = -sigmoid_controller(basket.x, middle_x, x_scale=800, y_scale=max_speed)
+                                speed_r = -sigmoid_controller(basket.x, middle_x, x_scale=1000, y_scale=max_speed/2)
 
                                 # Worth considering - saving last known basket distance. ++DONE++
                                 if not np.isnan(basket.distance) and basket.exists:
@@ -628,9 +628,9 @@ if __name__ == "__main__":
 
                 #print(str(xboxcont.joystick_left_y) + " / " + str(xboxcont.joystick_left_x))
 
-                speedy = joyY * 10
-                speedx = joyX * 10
-                speedr = joyRightX * 20
+                speedy = joyY * 15
+                speedx = joyX * 15
+                speedr = joyRightX * 30
                 speedthrow = joyRTrig * 4500
 
                 #print("Y: " + str(speedy) + " X: " + str(speedx) + " R: " + str(speedr))
