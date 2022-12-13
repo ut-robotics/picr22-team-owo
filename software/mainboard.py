@@ -57,13 +57,16 @@ class Mainboard():
         self.angle_servo_low = 6150 
         self.angle_servo_high = 4725
 
-        self.succ_servo_active_speed = self.succ_servo_zero
+        self.throw_radius_min = 50
+        self.throw_radius_max = 4000
         self.ball_in_robot = False
-        self.throwing_angle_data = [{"angle": self.angle_servo_high, "min_r": 0, "max_r": 4000, "slope": 0.207, "constant": 3562},]
+        self.throwing_angle_data = [{"angle": self.angle_servo_high, "min_r": 0, "max_r": self.throw_radius_max, "slope": 0.207, "constant": 3562},
+                                    {"angle": self.angle_servo_low, "min_r": self.throw_radius_min, "max_r": 0, "slope": 0.207, "constant": 3562}]
         # 0.362 3307
         self.active_slope = self.throwing_angle_data[0]["slope"] # Default to long range at the start (start from far corner)
         self.active_constant = self.throwing_angle_data[0]["constant"]
         self.active_angle = self.throwing_angle_data[0]["angle"]
+        self.succ_servo_active_speed = self.succ_servo_zero
         self.driving_forward = True
 
         # Logger
@@ -151,7 +154,7 @@ class Mainboard():
         #print(self.receive_data())
 
         actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, error, integral, ball_detected = self.receive_data()
-        print("motors:", num_format(actual_speed1), num_format(actual_speed2), num_format(actual_speed3), num_format(enc1), num_format(enc2), num_format(enc3), num_format(error[0]), num_format(error[1]), num_format(error[2]), num_format(integral[0]), num_format(integral[1]), num_format(integral[2]))
+        #print("motors:", num_format(actual_speed1), num_format(actual_speed2), num_format(actual_speed3), num_format(enc1), num_format(enc2), num_format(enc3), num_format(error[0]), num_format(error[1]), num_format(error[2]), num_format(integral[0]), num_format(integral[1]), num_format(integral[2]))
         self.ball_in_robot = ball_detected
 
 

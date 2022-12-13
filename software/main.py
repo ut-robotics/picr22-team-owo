@@ -57,7 +57,6 @@ if __name__ == "__main__":
 
     # Control logic setup
     debug = False
-    new_robot = True
     state = State.START_WAIT # <====================================================== Initial state here!
     thrower_speed = 0
     calib_first_time = True
@@ -336,12 +335,9 @@ if __name__ == "__main__":
                     #print("Ball:", interesting_ball)
 
                     if interesting_ball.distance <= 550:
-                        if not new_robot:
-                            state = State.BALL_ORBIT
-                        elif new_robot:
-                            if (abs(middle_x - interesting_ball.x) < 80):
-                                state = State.BALL_EAT
-                                throw_check_counter = 0
+                        if (abs(middle_x - interesting_ball.x) < 80):
+                            state = State.BALL_EAT
+                            throw_check_counter = 0
                         continue
                     else:
                         speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=1700, y_scale=max_speed/2)
@@ -488,7 +484,7 @@ if __name__ == "__main__":
                 log.LOGSTATE("ball_throw")
                 time_in_throw = 2.5
 
-                if new_robot and throw_ending_in_progress and throw_ending_start_time + throw_ending_delay < time.perf_counter():
+                if throw_ending_in_progress and throw_ending_start_time + throw_ending_delay < time.perf_counter():
                     # End throw state for new robot, back to ball search
                     throw_angle_chosen = False
                     throw_ending_in_progress = False
@@ -509,94 +505,70 @@ if __name__ == "__main__":
                 if len(processed_data.balls) > 0:
                     interesting_ball = processed_data.balls[-1]
 
-                if new_robot and throw_ending_in_progress and throw_ending_start_time + throw_ending_delay < time.time():
+                if throw_ending_in_progress and throw_ending_start_time + throw_ending_delay < time.time():
                     # End throw state for new robot, back to ball search
                     throw_angle_chosen = False
                     throw_ending_in_progress = False
                     state = State.BALL_SEARCH
                     continue
                 
-                if not new_robot:
-                    if (thrower_time_start + time_in_throw < time.perf_counter()):
-                        log.LOGI("THROW, distance: " + str(basket.distance))
-                        state = State.BALL_SEARCH
-                
+                speed_x = 0
 
-                    log.LOGI(" Basket.x: " + str(basket.x) + " ball.x " + str(interesting_ball.x) + " ball.distance: " + str(interesting_ball.distance))
-                    speed_rot = -sigmoid_controller(basket.x, middle_x, x_scale=350, y_scale=max_speed)
-                    if (len(processed_data.balls) != 0) and interesting_ball.distance > 250 and interesting_ball.distance < 500:
-                        speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=600, y_scale=max_speed)
+                # IMPORTANT
+                throw_required_correct_frames = 4
+
+                if not robot.ball_in_robot and not throw_ending_in_progress:
+                    log.LOGI("Ball has left the sensor, starting countdown to end throw...")
+                    throw_ending_start_time = time.perf_counter()
+                    throw_ending_in_progress = True
+                else:
+                    # Default movement values
+                    speed_r = 0
+                    maximum_basket_error = 6
+
+                    if robot.driving_forward:
+                        throw_move_speed = 2
                     else:
-                        speed_x = 0
+                        throw_move_speed = -2
+                    
+                    # Speed calculations
+                    log.LOGI(" Basket.x: " + str(basket.x))
+                    speed_r = -sigmoid_controller(basket.x, middle_x, x_scale=700, y_scale=max_speed)
+                    
+                    # If basket is in the middle of the screen.
+                    if abs(middle_x - basket.x) <= maximum_basket_error or throwing:
+                        if not throwing:
+                            throw_check_counter += 1
 
-                    speed_y = 1.5
+                        if throw_check_counter >= throw_required_correct_frames or throwing:
 
-                    if not np.isnan(basket.distance):
-                        robot.move(speed_x, speed_y, speed_rot, int(basket.distance))
-                        last_known_basket_distance = int(basket.distance)
-                    else: 
-                        robot.move(speed_x, speed_y, speed_rot, last_known_basket_distance)
-                
-                # Throwing logic for the new robot                
-                elif new_robot:
+                            throwing = True # Commited to making a throw, stuck here until ball has left the sensor
+                            robot.eating_servo(mainboard.Eating_servo_state.EAT)
 
-                    speed_x = 0
+                            # Smoother correction still in place just in case.
+                            speed_r = -sigmoid_controller(basket.x, middle_x, x_scale=1000, y_scale=max_speed/2)
 
-                    # IMPORTANT
-                    throw_required_correct_frames = 4
-
-                    if not robot.ball_in_robot and not throw_ending_in_progress:
-                        log.LOGI("Ball has left the sensor, starting countdown to end throw...")
-                        throw_ending_start_time = time.perf_counter()
-                        throw_ending_in_progress = True
-                    else:
-                        # Default movement values
-                        speed_r = 0
-                        maximum_basket_error = 6
-
-                        if robot.driving_forward:
-                            throw_move_speed = 2
-                        else:
-                            throw_move_speed = -2
-                        
-                        # Speed calculations
-                        log.LOGI(" Basket.x: " + str(basket.x))
-                        speed_r = -sigmoid_controller(basket.x, middle_x, x_scale=700, y_scale=max_speed)
-                        
-                        # If basket is in the middle of the screen.
-                        if abs(middle_x - basket.x) <= maximum_basket_error or throwing:
-                            if not throwing:
-                                throw_check_counter += 1
-
-                            if throw_check_counter >= throw_required_correct_frames or throwing:
-
-                                throwing = True # Commited to making a throw, stuck here until ball has left the sensor
-                                robot.eating_servo(mainboard.Eating_servo_state.EAT)
-
-                                # Smoother correction still in place just in case.
-                                speed_r = -sigmoid_controller(basket.x, middle_x, x_scale=1000, y_scale=max_speed/2)
-
-                                # Worth considering - saving last known basket distance. ++DONE++
-                                if not np.isnan(basket.distance) and basket.exists:
-                                    robot.move(0, throw_move_speed, speed_r, int(basket.distance))
-                                    last_known_basket_distance = int(basket.distance)
-                                else: 
-                                    robot.move(0, throw_move_speed, speed_r, last_known_basket_distance)
-                            
-                            #robot.ball_in_robot = False # Pmst kui sensori saab siis peaks korras olema, hetkel see siin manuaalselt, eemalda kui sensor tekib
-                                
-                        # This means basket needs centering
-                        else:
-                            throw_check_counter = 0
-                            if not np.isnan(basket.distance):
-                                robot.choose_thrower_angle(basket.distance)
-                                throw_angle_chosen = True
-                            
+                            # Worth considering - saving last known basket distance. ++DONE++
                             if not np.isnan(basket.distance) and basket.exists:
                                 robot.move(0, throw_move_speed, speed_r, int(basket.distance))
                                 last_known_basket_distance = int(basket.distance)
                             else: 
                                 robot.move(0, throw_move_speed, speed_r, last_known_basket_distance)
+                        
+                        #robot.ball_in_robot = False # Pmst kui sensori saab siis peaks korras olema, hetkel see siin manuaalselt, eemalda kui sensor tekib
+                            
+                    # This means basket needs centering
+                    else:
+                        throw_check_counter = 0
+                        if not np.isnan(basket.distance):
+                            robot.choose_thrower_angle(basket.distance)
+                            throw_angle_chosen = True
+                        
+                        if not np.isnan(basket.distance) and basket.exists:
+                            robot.move(0, throw_move_speed, speed_r, int(basket.distance))
+                            last_known_basket_distance = int(basket.distance)
+                        else: 
+                            robot.move(0, throw_move_speed, speed_r, last_known_basket_distance)
                         
                 continue
             # End of ball_throw
