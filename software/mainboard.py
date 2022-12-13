@@ -142,8 +142,8 @@ class Mainboard():
         robot_speed = math.sqrt(math.pow(speed_x, 2) + math.pow(speed_y, 2))
         #print("Angle:", robot_angle)
         #print("Speed:", robot_speed)
-        if (abs(robot_speed) > self.max_speed) or (abs(speed_r) > self.max_speed * 2):
-            self.logger.LOGE("Speed to large, speeds: " +str(speed_x) + " / " + str(speed_y) + " / " + str(speed_r))
+        if (abs(robot_speed) > self.max_speed) or (abs(speed_r) > self.max_speed * 4):
+            self.logger.LOGE("Speed too large, speeds: " +str(speed_x) + " / " + str(speed_y) + " / " + str(speed_r))
             return
 
         # M1 front left, M2 front right, M3 back
@@ -154,7 +154,7 @@ class Mainboard():
         #print(self.receive_data())
 
         actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, error, integral, ball_detected = self.receive_data()
-        #print("motors:", num_format(actual_speed1), num_format(actual_speed2), num_format(actual_speed3), num_format(enc1), num_format(enc2), num_format(enc3), num_format(error[0]), num_format(error[1]), num_format(error[2]), num_format(integral[0]), num_format(integral[1]), num_format(integral[2]))
+        print("motors:", num_format(actual_speed1), num_format(actual_speed2), num_format(actual_speed3), num_format(enc1), num_format(enc2), num_format(enc3), num_format(error[0]), num_format(error[1]), num_format(error[2]), num_format(integral[0]), num_format(integral[1]), num_format(integral[2]))
         self.ball_in_robot = ball_detected
 
 

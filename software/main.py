@@ -39,6 +39,10 @@ class State(Enum):
     BALL_EAT = 13
     BASKET_FIND = 14
 
+class Search_state(Enum):
+    ROTATE_SLOW = 1
+    ROTATE_FAST = 2
+
 if __name__ == "__main__":
     # Housekeeping setup
     start = time.time()
@@ -65,6 +69,10 @@ if __name__ == "__main__":
     thrower_time_start = 0
     start_go_time_start = 0
     start_go_first_time = True
+
+    # Ball search
+    search_state = Search_state.ROTATE_SLOW
+    ball_search_first_time = True
 
     # Vision setup
     cam = camera.RealsenseCamera(exposure = 100)
@@ -311,14 +319,26 @@ if __name__ == "__main__":
             elif state == State.BALL_SEARCH:
                 log.LOGSTATE("ball_search")
                 if len(processed_data.balls) > 0:
+                    ball_search_first_time = True
                     state = State.BALL_MOVE
                     continue
+
+                if search_state == Search_state.ROTATE_SLOW:
+                    if ball_search_first_time:
+                        ball_search_first_time = False
+                        ball_search_start = time.perf_counter()
+                    if time.perf_counter() > ball_search_start + 0.3:
+                        search_state = Search_state.ROTATE_FAST
+                    robot.move(0, 0, 10)
+                elif search_state == Search_state.ROTATE_FAST:
+                    if time.perf_counter() > ball_search_start + 0.3 + 0.2:
+                        ball_search_first_time = True
+                        search_state = Search_state.ROTATE_SLOW
+                    robot.move(0, 0, 60)
                 else:
-                    #robot.move(0, 0, 22)
-                    if (int(time.perf_counter() * 4) % 3 == 0):
-                        robot.move(0, 0, 25)
-                    else:
-                        robot.move(0, 0, 1)
+                    log.LOGE("Invalid search_state, defaulting to ROTATE_SLOW")
+                    search_state = Search_state.ROTATE_SLOW
+                    continue
             # End of ball_search
             
             # Moving towards ball
