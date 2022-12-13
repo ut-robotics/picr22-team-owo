@@ -21,29 +21,29 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, ALLOC, LOAD, DATA
   8 .data         00000198  20000000  0800a628  00020000  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  9 .bss          00001438  20000198  0800a7c0  00020198  2**2
+  9 .bss          0000142c  20000198  0800a7c0  00020198  2**2
                   ALLOC
- 10 ._user_heap_stack 00000600  200015d0  0800a7c0  000215d0  2**0
+ 10 ._user_heap_stack 00000604  200015c4  0800a7c0  000215c4  2**0
                   ALLOC
  11 .ARM.attributes 00000030  00000000  00000000  00020198  2**0
                   CONTENTS, READONLY
- 12 .debug_info   00016695  00000000  00000000  000201c8  2**0
+ 12 .debug_info   00016688  00000000  00000000  000201c8  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 13 .debug_abbrev 000035be  00000000  00000000  0003685d  2**0
+ 13 .debug_abbrev 000035be  00000000  00000000  00036850  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 14 .debug_aranges 00001360  00000000  00000000  00039e20  2**3
+ 14 .debug_aranges 00001360  00000000  00000000  00039e10  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_ranges 000011e8  00000000  00000000  0003b180  2**3
+ 15 .debug_ranges 000011e8  00000000  00000000  0003b170  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_macro  00020c57  00000000  00000000  0003c368  2**0
+ 16 .debug_macro  00020c57  00000000  00000000  0003c358  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   00016691  00000000  00000000  0005cfbf  2**0
+ 17 .debug_line   00016699  00000000  00000000  0005cfaf  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    000c6558  00000000  00000000  00073650  2**0
+ 18 .debug_str    000c654c  00000000  00000000  00073648  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000050  00000000  00000000  00139ba8  2**0
+ 19 .comment      00000050  00000000  00000000  00139b94  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  0000505c  00000000  00000000  00139bf8  2**2
+ 20 .debug_frame  0000505c  00000000  00000000  00139be4  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -77,9 +77,9 @@ Disassembly of section .text:
  8000214:	0800a5b0 	.word	0x0800a5b0
 
 08000218 <clamp>:
+Command command = {.speed[0] = 0, .speed[1] = 0, .speed[2] = 0, .thrower_speed = 3277, .servo1 = 4875, .servo2 = 6150, .flat_const = 0, .int_const = 0, .delimiter = 0};
 
 volatile uint8_t isCommandReceived = 0;
-
 volatile uint16_t commandless_count = 0;
 
 uint16_t clamp(uint16_t value, uint16_t min, uint16_t max) {
@@ -157,8 +157,8 @@ void CDC_On_Receive(uint8_t* buffer, uint32_t* length) { // command recieve call
  8000288:	46bd      	mov	sp, r7
  800028a:	bd80      	pop	{r7, pc}
  800028c:	20000000 	.word	0x20000000
- 8000290:	20000410 	.word	0x20000410
- 8000294:	20000412 	.word	0x20000412
+ 8000290:	20000404 	.word	0x20000404
+ 8000294:	20000406 	.word	0x20000406
 
 08000298 <enc_init>:
 
@@ -218,7 +218,6 @@ void pwm_init() {
  80002ee:	f641 0206 	movw	r2, #6150	; 0x1806
  80002f2:	639a      	str	r2, [r3, #56]	; 0x38
 
-	//HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, (uint32_t *)thrower_data, 30);
     HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1);
  80002f4:	2100      	movs	r1, #0
  80002f6:	480e      	ldr	r0, [pc, #56]	; (8000330 <pwm_init+0x6c>)
@@ -245,8 +244,6 @@ void pwm_init() {
  800031c:	2104      	movs	r1, #4
  800031e:	4806      	ldr	r0, [pc, #24]	; (8000338 <pwm_init+0x74>)
  8000320:	f004 fa08 	bl	8004734 <HAL_TIM_PWM_Start>
-    //TIM15->CCR1 = 32000;
-    //HAL_TIM_PWM_Start(&htim15, TIM_CHANNEL_1);
 }
  8000324:	bf00      	nop
  8000326:	bd80      	pop	{r7, pc}
@@ -258,7 +255,7 @@ void pwm_init() {
 
 0800033c <motor_status_update>:
 
-// Updates the motor's speed and direction from the command struct
+// Updates the motor's speed, direction and PI constants from the command struct
 void motor_status_update() {
  800033c:	b480      	push	{r7}
  800033e:	b083      	sub	sp, #12
@@ -277,9 +274,9 @@ void motor_status_update() {
  8000354:	79fa      	ldrb	r2, [r7, #7]
  8000356:	493a      	ldr	r1, [pc, #232]	; (8000440 <motor_status_update+0x104>)
  8000358:	4613      	mov	r3, r2
- 800035a:	005b      	lsls	r3, r3, #1
+ 800035a:	009b      	lsls	r3, r3, #2
  800035c:	4413      	add	r3, r2
- 800035e:	00db      	lsls	r3, r3, #3
+ 800035e:	009b      	lsls	r3, r3, #2
  8000360:	440b      	add	r3, r1
  8000362:	3302      	adds	r3, #2
  8000364:	2201      	movs	r2, #1
@@ -302,9 +299,9 @@ void motor_status_update() {
  8000388:	b298      	uxth	r0, r3
  800038a:	492d      	ldr	r1, [pc, #180]	; (8000440 <motor_status_update+0x104>)
  800038c:	4613      	mov	r3, r2
- 800038e:	005b      	lsls	r3, r3, #1
+ 800038e:	009b      	lsls	r3, r3, #2
  8000390:	4413      	add	r3, r2
- 8000392:	00db      	lsls	r3, r3, #3
+ 8000392:	009b      	lsls	r3, r3, #2
  8000394:	440b      	add	r3, r1
  8000396:	4602      	mov	r2, r0
  8000398:	801a      	strh	r2, [r3, #0]
@@ -314,9 +311,9 @@ void motor_status_update() {
  800039c:	79fa      	ldrb	r2, [r7, #7]
  800039e:	4928      	ldr	r1, [pc, #160]	; (8000440 <motor_status_update+0x104>)
  80003a0:	4613      	mov	r3, r2
- 80003a2:	005b      	lsls	r3, r3, #1
+ 80003a2:	009b      	lsls	r3, r3, #2
  80003a4:	4413      	add	r3, r2
- 80003a6:	00db      	lsls	r3, r3, #3
+ 80003a6:	009b      	lsls	r3, r3, #2
  80003a8:	440b      	add	r3, r1
  80003aa:	3302      	adds	r3, #2
  80003ac:	2200      	movs	r2, #0
@@ -341,14 +338,13 @@ void motor_status_update() {
  80003d8:	b298      	uxth	r0, r3
  80003da:	4919      	ldr	r1, [pc, #100]	; (8000440 <motor_status_update+0x104>)
  80003dc:	4613      	mov	r3, r2
- 80003de:	005b      	lsls	r3, r3, #1
+ 80003de:	009b      	lsls	r3, r3, #2
  80003e0:	4413      	add	r3, r2
- 80003e2:	00db      	lsls	r3, r3, #3
+ 80003e2:	009b      	lsls	r3, r3, #2
  80003e4:	440b      	add	r3, r1
  80003e6:	4602      	mov	r2, r0
  80003e8:	801a      	strh	r2, [r3, #0]
 		}
-
 		motor_status[i].flat_const = command.flat_const;
  80003ea:	4b14      	ldr	r3, [pc, #80]	; (800043c <motor_status_update+0x100>)
  80003ec:	f9b3 3010 	ldrsh.w	r3, [r3, #16]
@@ -357,9 +353,9 @@ void motor_status_update() {
  80003f6:	eef8 7ae7 	vcvt.f32.s32	s15, s15
  80003fa:	4911      	ldr	r1, [pc, #68]	; (8000440 <motor_status_update+0x104>)
  80003fc:	4613      	mov	r3, r2
- 80003fe:	005b      	lsls	r3, r3, #1
+ 80003fe:	009b      	lsls	r3, r3, #2
  8000400:	4413      	add	r3, r2
- 8000402:	00db      	lsls	r3, r3, #3
+ 8000402:	009b      	lsls	r3, r3, #2
  8000404:	440b      	add	r3, r1
  8000406:	330c      	adds	r3, #12
  8000408:	edc3 7a00 	vstr	s15, [r3]
@@ -369,9 +365,9 @@ void motor_status_update() {
  8000410:	68d9      	ldr	r1, [r3, #12]
  8000412:	480b      	ldr	r0, [pc, #44]	; (8000440 <motor_status_update+0x104>)
  8000414:	4613      	mov	r3, r2
- 8000416:	005b      	lsls	r3, r3, #1
+ 8000416:	009b      	lsls	r3, r3, #2
  8000418:	4413      	add	r3, r2
- 800041a:	00db      	lsls	r3, r3, #3
+ 800041a:	009b      	lsls	r3, r3, #2
  800041c:	4403      	add	r3, r0
  800041e:	3310      	adds	r3, #16
  8000420:	6019      	str	r1, [r3, #0]
@@ -406,9 +402,9 @@ uint16_t motor_pwm(uint8_t mot_id) {
  800044e:	79fa      	ldrb	r2, [r7, #7]
  8000450:	497a      	ldr	r1, [pc, #488]	; (800063c <motor_pwm+0x1f8>)
  8000452:	4613      	mov	r3, r2
- 8000454:	005b      	lsls	r3, r3, #1
+ 8000454:	009b      	lsls	r3, r3, #2
  8000456:	4413      	add	r3, r2
- 8000458:	00db      	lsls	r3, r3, #3
+ 8000458:	009b      	lsls	r3, r3, #2
  800045a:	440b      	add	r3, r1
  800045c:	881b      	ldrh	r3, [r3, #0]
  800045e:	823b      	strh	r3, [r7, #16]
@@ -459,9 +455,9 @@ uint16_t motor_pwm(uint8_t mot_id) {
  800049a:	79fa      	ldrb	r2, [r7, #7]
  800049c:	4967      	ldr	r1, [pc, #412]	; (800063c <motor_pwm+0x1f8>)
  800049e:	4613      	mov	r3, r2
- 80004a0:	005b      	lsls	r3, r3, #1
+ 80004a0:	009b      	lsls	r3, r3, #2
  80004a2:	4413      	add	r3, r2
- 80004a4:	00db      	lsls	r3, r3, #3
+ 80004a4:	009b      	lsls	r3, r3, #2
  80004a6:	440b      	add	r3, r1
  80004a8:	3304      	adds	r3, #4
  80004aa:	f9b3 3000 	ldrsh.w	r3, [r3]
@@ -476,9 +472,9 @@ uint16_t motor_pwm(uint8_t mot_id) {
  80004ba:	f9b7 0014 	ldrsh.w	r0, [r7, #20]
  80004be:	495f      	ldr	r1, [pc, #380]	; (800063c <motor_pwm+0x1f8>)
  80004c0:	4613      	mov	r3, r2
- 80004c2:	005b      	lsls	r3, r3, #1
+ 80004c2:	009b      	lsls	r3, r3, #2
  80004c4:	4413      	add	r3, r2
- 80004c6:	00db      	lsls	r3, r3, #3
+ 80004c6:	009b      	lsls	r3, r3, #2
  80004c8:	440b      	add	r3, r1
  80004ca:	3304      	adds	r3, #4
  80004cc:	4602      	mov	r2, r0
@@ -487,9 +483,9 @@ uint16_t motor_pwm(uint8_t mot_id) {
  80004d0:	79fa      	ldrb	r2, [r7, #7]
  80004d2:	495a      	ldr	r1, [pc, #360]	; (800063c <motor_pwm+0x1f8>)
  80004d4:	4613      	mov	r3, r2
- 80004d6:	005b      	lsls	r3, r3, #1
+ 80004d6:	009b      	lsls	r3, r3, #2
  80004d8:	4413      	add	r3, r2
- 80004da:	00db      	lsls	r3, r3, #3
+ 80004da:	009b      	lsls	r3, r3, #2
  80004dc:	440b      	add	r3, r1
  80004de:	3306      	adds	r3, #6
  80004e0:	89fa      	ldrh	r2, [r7, #14]
@@ -502,20 +498,20 @@ uint16_t motor_pwm(uint8_t mot_id) {
  80004e8:	2b00      	cmp	r3, #0
  80004ea:	d111      	bne.n	8000510 <motor_pwm+0xcc>
  80004ec:	4b53      	ldr	r3, [pc, #332]	; (800063c <motor_pwm+0x1f8>)
- 80004ee:	8b1b      	ldrh	r3, [r3, #24]
+ 80004ee:	8a9b      	ldrh	r3, [r3, #20]
  80004f0:	2b00      	cmp	r3, #0
  80004f2:	d10d      	bne.n	8000510 <motor_pwm+0xcc>
  80004f4:	4b51      	ldr	r3, [pc, #324]	; (800063c <motor_pwm+0x1f8>)
- 80004f6:	8e1b      	ldrh	r3, [r3, #48]	; 0x30
+ 80004f6:	8d1b      	ldrh	r3, [r3, #40]	; 0x28
  80004f8:	2b00      	cmp	r3, #0
  80004fa:	d109      	bne.n	8000510 <motor_pwm+0xcc>
 		motor_status[mot_id].integral = 0;
  80004fc:	79fa      	ldrb	r2, [r7, #7]
  80004fe:	494f      	ldr	r1, [pc, #316]	; (800063c <motor_pwm+0x1f8>)
  8000500:	4613      	mov	r3, r2
- 8000502:	005b      	lsls	r3, r3, #1
+ 8000502:	009b      	lsls	r3, r3, #2
  8000504:	4413      	add	r3, r2
- 8000506:	00db      	lsls	r3, r3, #3
+ 8000506:	009b      	lsls	r3, r3, #2
  8000508:	440b      	add	r3, r1
  800050a:	3308      	adds	r3, #8
  800050c:	2200      	movs	r2, #0
@@ -526,9 +522,9 @@ uint16_t motor_pwm(uint8_t mot_id) {
  8000510:	79fa      	ldrb	r2, [r7, #7]
  8000512:	494a      	ldr	r1, [pc, #296]	; (800063c <motor_pwm+0x1f8>)
  8000514:	4613      	mov	r3, r2
- 8000516:	005b      	lsls	r3, r3, #1
+ 8000516:	009b      	lsls	r3, r3, #2
  8000518:	4413      	add	r3, r2
- 800051a:	00db      	lsls	r3, r3, #3
+ 800051a:	009b      	lsls	r3, r3, #2
  800051c:	440b      	add	r3, r1
  800051e:	3306      	adds	r3, #6
  8000520:	f9b3 3000 	ldrsh.w	r3, [r3]
@@ -542,9 +538,9 @@ uint16_t motor_pwm(uint8_t mot_id) {
  800052e:	79fa      	ldrb	r2, [r7, #7]
  8000530:	4942      	ldr	r1, [pc, #264]	; (800063c <motor_pwm+0x1f8>)
  8000532:	4613      	mov	r3, r2
- 8000534:	005b      	lsls	r3, r3, #1
+ 8000534:	009b      	lsls	r3, r3, #2
  8000536:	4413      	add	r3, r2
- 8000538:	00db      	lsls	r3, r3, #3
+ 8000538:	009b      	lsls	r3, r3, #2
  800053a:	440b      	add	r3, r1
  800053c:	3308      	adds	r3, #8
  800053e:	f9b3 3000 	ldrsh.w	r3, [r3]
@@ -556,9 +552,9 @@ uint16_t motor_pwm(uint8_t mot_id) {
  800054c:	b218      	sxth	r0, r3
  800054e:	493b      	ldr	r1, [pc, #236]	; (800063c <motor_pwm+0x1f8>)
  8000550:	4613      	mov	r3, r2
- 8000552:	005b      	lsls	r3, r3, #1
+ 8000552:	009b      	lsls	r3, r3, #2
  8000554:	4413      	add	r3, r2
- 8000556:	00db      	lsls	r3, r3, #3
+ 8000556:	009b      	lsls	r3, r3, #2
  8000558:	440b      	add	r3, r1
  800055a:	3308      	adds	r3, #8
  800055c:	4602      	mov	r2, r0
@@ -567,9 +563,9 @@ uint16_t motor_pwm(uint8_t mot_id) {
  8000560:	79fa      	ldrb	r2, [r7, #7]
  8000562:	4936      	ldr	r1, [pc, #216]	; (800063c <motor_pwm+0x1f8>)
  8000564:	4613      	mov	r3, r2
- 8000566:	005b      	lsls	r3, r3, #1
+ 8000566:	009b      	lsls	r3, r3, #2
  8000568:	4413      	add	r3, r2
- 800056a:	00db      	lsls	r3, r3, #3
+ 800056a:	009b      	lsls	r3, r3, #2
  800056c:	440b      	add	r3, r1
  800056e:	3308      	adds	r3, #8
  8000570:	2200      	movs	r2, #0
@@ -581,9 +577,9 @@ uint16_t motor_pwm(uint8_t mot_id) {
  8000580:	79fa      	ldrb	r2, [r7, #7]
  8000582:	492e      	ldr	r1, [pc, #184]	; (800063c <motor_pwm+0x1f8>)
  8000584:	4613      	mov	r3, r2
- 8000586:	005b      	lsls	r3, r3, #1
+ 8000586:	009b      	lsls	r3, r3, #2
  8000588:	4413      	add	r3, r2
- 800058a:	00db      	lsls	r3, r3, #3
+ 800058a:	009b      	lsls	r3, r3, #2
  800058c:	440b      	add	r3, r1
  800058e:	330c      	adds	r3, #12
  8000590:	edd3 7a00 	vldr	s15, [r3]
@@ -595,9 +591,9 @@ uint16_t motor_pwm(uint8_t mot_id) {
  80005a4:	79fa      	ldrb	r2, [r7, #7]
  80005a6:	4825      	ldr	r0, [pc, #148]	; (800063c <motor_pwm+0x1f8>)
  80005a8:	4613      	mov	r3, r2
- 80005aa:	005b      	lsls	r3, r3, #1
+ 80005aa:	009b      	lsls	r3, r3, #2
  80005ac:	4413      	add	r3, r2
- 80005ae:	00db      	lsls	r3, r3, #3
+ 80005ae:	009b      	lsls	r3, r3, #2
  80005b0:	4403      	add	r3, r0
  80005b2:	3308      	adds	r3, #8
  80005b4:	f9b3 3000 	ldrsh.w	r3, [r3]
@@ -606,9 +602,9 @@ uint16_t motor_pwm(uint8_t mot_id) {
  80005c0:	79fa      	ldrb	r2, [r7, #7]
  80005c2:	481e      	ldr	r0, [pc, #120]	; (800063c <motor_pwm+0x1f8>)
  80005c4:	4613      	mov	r3, r2
- 80005c6:	005b      	lsls	r3, r3, #1
+ 80005c6:	009b      	lsls	r3, r3, #2
  80005c8:	4413      	add	r3, r2
- 80005ca:	00db      	lsls	r3, r3, #3
+ 80005ca:	009b      	lsls	r3, r3, #2
  80005cc:	4403      	add	r3, r0
  80005ce:	3310      	adds	r3, #16
  80005d0:	edd3 7a00 	vldr	s15, [r3]
@@ -621,14 +617,12 @@ uint16_t motor_pwm(uint8_t mot_id) {
  80005e6:	b29b      	uxth	r3, r3
  80005e8:	827b      	strh	r3, [r7, #18]
 
-	if (pid_speed < 0) {
+	if (pid_speed < 0) {pid_speed = 0;}
  80005ea:	f9b7 3012 	ldrsh.w	r3, [r7, #18]
  80005ee:	2b00      	cmp	r3, #0
  80005f0:	da01      	bge.n	80005f6 <motor_pwm+0x1b2>
-		pid_speed = 0;
  80005f2:	2300      	movs	r3, #0
  80005f4:	827b      	strh	r3, [r7, #18]
-	}
 
 	if (speed > 0) {
  80005f6:	8a3b      	ldrh	r3, [r7, #16]
@@ -652,15 +646,13 @@ uint16_t motor_pwm(uint8_t mot_id) {
  800061a:	3314      	adds	r3, #20
  800061c:	82fb      	strh	r3, [r7, #22]
 	}
-
-	if (pwm > 49151) { // emergency limiter, set to 75% currently (49151)
+	// emergency limiter, set to 75% currently (49151)
+	if (pwm > 49151) {pwm = 49151;}
  800061e:	8afb      	ldrh	r3, [r7, #22]
  8000620:	f5b3 4f40 	cmp.w	r3, #49152	; 0xc000
  8000624:	d302      	bcc.n	800062c <motor_pwm+0x1e8>
-		pwm = 49151;
  8000626:	f64b 73ff 	movw	r3, #49151	; 0xbfff
  800062a:	82fb      	strh	r3, [r7, #22]
-	}
 
 	return pwm;
  800062c:	8afb      	ldrh	r3, [r7, #22]
@@ -713,7 +705,7 @@ void motor_direction(uint8_t mot_id) {
  800067a:	e011      	b.n	80006a0 <motor_direction+0x54>
 			HAL_GPIO_WritePin(GPIOA, M2D_Pin, motor_status[1].direction);
  800067c:	4b0a      	ldr	r3, [pc, #40]	; (80006a8 <motor_direction+0x5c>)
- 800067e:	7e9b      	ldrb	r3, [r3, #26]
+ 800067e:	7d9b      	ldrb	r3, [r3, #22]
  8000680:	461a      	mov	r2, r3
  8000682:	2120      	movs	r1, #32
  8000684:	f04f 4090 	mov.w	r0, #1207959552	; 0x48000000
@@ -722,7 +714,7 @@ void motor_direction(uint8_t mot_id) {
  800068c:	e008      	b.n	80006a0 <motor_direction+0x54>
 			HAL_GPIO_WritePin(GPIOB, M3D_Pin, motor_status[2].direction);
  800068e:	4b06      	ldr	r3, [pc, #24]	; (80006a8 <motor_direction+0x5c>)
- 8000690:	f893 3032 	ldrb.w	r3, [r3, #50]	; 0x32
+ 8000690:	f893 302a 	ldrb.w	r3, [r3, #42]	; 0x2a
  8000694:	461a      	mov	r2, r3
  8000696:	2110      	movs	r1, #16
  8000698:	4804      	ldr	r0, [pc, #16]	; (80006ac <motor_direction+0x60>)
@@ -797,8 +789,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
  800070e:	b082      	sub	sp, #8
  8000710:	af00      	add	r7, sp, #0
  8000712:	6078      	str	r0, [r7, #4]
-	//HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin); // lights!!!
-
 	if (commandless_count >= 50) { // Helps prevent major consequences from minor fuckups
  8000714:	4b33      	ldr	r3, [pc, #204]	; (80007e4 <HAL_TIM_PeriodElapsedCallback+0xd8>)
  8000716:	881b      	ldrh	r3, [r3, #0]
@@ -908,7 +898,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
  80007de:	3708      	adds	r7, #8
  80007e0:	46bd      	mov	sp, r7
  80007e2:	bd80      	pop	{r7, pc}
- 80007e4:	20000412 	.word	0x20000412
+ 80007e4:	20000406 	.word	0x20000406
  80007e8:	40013400 	.word	0x40013400
  80007ec:	40014000 	.word	0x40014000
  80007f0:	20000000 	.word	0x20000000
@@ -1015,12 +1005,12 @@ int main(void)
  800086e:	803b      	strh	r3, [r7, #0]
 		feedback.speed[1] = motor_status[1].target_speed;
  8000870:	4b12      	ldr	r3, [pc, #72]	; (80008bc <main+0xc8>)
- 8000872:	8b1b      	ldrh	r3, [r3, #24]
+ 8000872:	8a9b      	ldrh	r3, [r3, #20]
  8000874:	b21b      	sxth	r3, r3
  8000876:	807b      	strh	r3, [r7, #2]
 		feedback.speed[2] = motor_status[2].target_speed;
  8000878:	4b10      	ldr	r3, [pc, #64]	; (80008bc <main+0xc8>)
- 800087a:	8e1b      	ldrh	r3, [r3, #48]	; 0x30
+ 800087a:	8d1b      	ldrh	r3, [r3, #40]	; 0x28
  800087c:	b21b      	sxth	r3, r3
  800087e:	80bb      	strh	r3, [r7, #4]
 
@@ -1030,11 +1020,11 @@ int main(void)
  8000886:	80fb      	strh	r3, [r7, #6]
 		feedback.change[1] = motor_status[1].enc_change;
  8000888:	4b0c      	ldr	r3, [pc, #48]	; (80008bc <main+0xc8>)
- 800088a:	f9b3 301e 	ldrsh.w	r3, [r3, #30]
+ 800088a:	f9b3 301a 	ldrsh.w	r3, [r3, #26]
  800088e:	813b      	strh	r3, [r7, #8]
 		feedback.change[2] = motor_status[2].enc_change;
  8000890:	4b0a      	ldr	r3, [pc, #40]	; (80008bc <main+0xc8>)
- 8000892:	f9b3 3036 	ldrsh.w	r3, [r3, #54]	; 0x36
+ 8000892:	f9b3 302e 	ldrsh.w	r3, [r3, #46]	; 0x2e
  8000896:	817b      	strh	r3, [r7, #10]
 
 		feedback.ball_detected = HAL_GPIO_ReadPin (INFR_GPIO_Port, INFR_Pin);
@@ -1054,7 +1044,7 @@ int main(void)
  80008b0:	e7ce      	b.n	8000850 <main+0x5c>
  80008b2:	bf00      	nop
  80008b4:	200002e4 	.word	0x200002e4
- 80008b8:	20000410 	.word	0x20000410
+ 80008b8:	20000404 	.word	0x20000404
  80008bc:	200003c8 	.word	0x200003c8
  80008c0:	48001400 	.word	0x48001400
 
@@ -3140,7 +3130,7 @@ void USB_LP_IRQHandler(void)
  800143a:	bf00      	nop
  800143c:	bd80      	pop	{r7, pc}
  800143e:	bf00      	nop
- 8001440:	200010bc 	.word	0x200010bc
+ 8001440:	200010b0 	.word	0x200010b0
 
 08001444 <TIM6_DAC_IRQHandler>:
 
@@ -3237,7 +3227,7 @@ void SystemInit(void)
  80014bc:	20000198 	.word	0x20000198
  80014c0:	0800a628 	.word	0x0800a628
  80014c4:	20000198 	.word	0x20000198
- 80014c8:	200015d0 	.word	0x200015d0
+ 80014c8:	200015c4 	.word	0x200015c4
 
 080014cc <ADC1_2_IRQHandler>:
  80014cc:	e7fe      	b.n	80014cc <ADC1_2_IRQHandler>
@@ -3405,7 +3395,7 @@ __weak void HAL_IncTick(void)
  8001588:	46bd      	mov	sp, r7
  800158a:	f85d 7b04 	ldr.w	r7, [sp], #4
  800158e:	4770      	bx	lr
- 8001590:	20000414 	.word	0x20000414
+ 8001590:	20000408 	.word	0x20000408
  8001594:	2000001c 	.word	0x2000001c
 
 08001598 <HAL_GetTick>:
@@ -3426,7 +3416,7 @@ __weak uint32_t HAL_GetTick(void)
  80015a4:	f85d 7b04 	ldr.w	r7, [sp], #4
  80015a8:	4770      	bx	lr
  80015aa:	bf00      	nop
- 80015ac:	20000414 	.word	0x20000414
+ 80015ac:	20000408 	.word	0x20000408
 
 080015b0 <HAL_Delay>:
   *       implementations in user file.
@@ -23158,7 +23148,7 @@ static USBD_StatusTypeDef USBD_SetConfig(USBD_HandleTypeDef *pdev, USBD_SetupReq
  800977a:	46bd      	mov	sp, r7
  800977c:	bd80      	pop	{r7, pc}
  800977e:	bf00      	nop
- 8009780:	20000418 	.word	0x20000418
+ 8009780:	2000040c 	.word	0x2000040c
 
 08009784 <USBD_GetConfig>:
   * @param  pdev: device instance
@@ -23947,7 +23937,7 @@ void MX_USB_Device_Init(void)
  8009b68:	bf00      	nop
  8009b6a:	bd80      	pop	{r7, pc}
  8009b6c:	20000144 	.word	0x20000144
- 8009b70:	2000041c 	.word	0x2000041c
+ 8009b70:	20000410 	.word	0x20000410
  8009b74:	2000002c 	.word	0x2000002c
  8009b78:	20000130 	.word	0x20000130
 
@@ -23977,9 +23967,9 @@ static int8_t CDC_Init_FS(void)
 }
  8009b94:	4618      	mov	r0, r3
  8009b96:	bd80      	pop	{r7, pc}
- 8009b98:	20000ad4 	.word	0x20000ad4
- 8009b9c:	2000041c 	.word	0x2000041c
- 8009ba0:	200006ec 	.word	0x200006ec
+ 8009b98:	20000ac8 	.word	0x20000ac8
+ 8009b9c:	20000410 	.word	0x20000410
+ 8009ba0:	200006e0 	.word	0x200006e0
 
 08009ba4 <CDC_DeInit_FS>:
 /**
@@ -24110,7 +24100,7 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
  8009c96:	46bd      	mov	sp, r7
  8009c98:	bd80      	pop	{r7, pc}
  8009c9a:	bf00      	nop
- 8009c9c:	2000041c 	.word	0x2000041c
+ 8009c9c:	20000410 	.word	0x20000410
 
 08009ca0 <CDC_Transmit_FS>:
   * @param  Buf: Buffer of data to be sent
@@ -24162,7 +24152,7 @@ uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len)
  8009ce2:	46bd      	mov	sp, r7
  8009ce4:	bd80      	pop	{r7, pc}
  8009ce6:	bf00      	nop
- 8009ce8:	2000041c 	.word	0x2000041c
+ 8009ce8:	20000410 	.word	0x20000410
 
 08009cec <CDC_TransmitCplt_FS>:
   * @param  Buf: Buffer of data to be received
@@ -24293,7 +24283,7 @@ uint8_t * USBD_CDC_ProductStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *lengt
  8009d86:	46bd      	mov	sp, r7
  8009d88:	bd80      	pop	{r7, pc}
  8009d8a:	bf00      	nop
- 8009d8c:	20000ebc 	.word	0x20000ebc
+ 8009d8c:	20000eb0 	.word	0x20000eb0
  8009d90:	0800a5c8 	.word	0x0800a5c8
 
 08009d94 <USBD_CDC_ManufacturerStrDescriptor>:
@@ -24322,7 +24312,7 @@ uint8_t * USBD_CDC_ManufacturerStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *
  8009dae:	3708      	adds	r7, #8
  8009db0:	46bd      	mov	sp, r7
  8009db2:	bd80      	pop	{r7, pc}
- 8009db4:	20000ebc 	.word	0x20000ebc
+ 8009db4:	20000eb0 	.word	0x20000eb0
  8009db8:	0800a5e0 	.word	0x0800a5e0
 
 08009dbc <USBD_CDC_SerialStrDescriptor>:
@@ -24403,7 +24393,7 @@ uint8_t * USBD_CDC_ConfigStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length
  8009e0e:	46bd      	mov	sp, r7
  8009e10:	bd80      	pop	{r7, pc}
  8009e12:	bf00      	nop
- 8009e14:	20000ebc 	.word	0x20000ebc
+ 8009e14:	20000eb0 	.word	0x20000eb0
  8009e18:	0800a5f4 	.word	0x0800a5f4
 
 08009e1c <USBD_CDC_InterfaceStrDescriptor>:
@@ -24447,7 +24437,7 @@ uint8_t * USBD_CDC_InterfaceStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *len
  8009e4a:	46bd      	mov	sp, r7
  8009e4c:	bd80      	pop	{r7, pc}
  8009e4e:	bf00      	nop
- 8009e50:	20000ebc 	.word	0x20000ebc
+ 8009e50:	20000eb0 	.word	0x20000eb0
  8009e54:	0800a600 	.word	0x0800a600
 
 08009e58 <Get_SerialNum>:
@@ -25086,7 +25076,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
  800a1ae:	46bd      	mov	sp, r7
  800a1b0:	bd80      	pop	{r7, pc}
  800a1b2:	bf00      	nop
- 800a1b4:	200010bc 	.word	0x200010bc
+ 800a1b4:	200010b0 	.word	0x200010b0
  800a1b8:	40005c00 	.word	0x40005c00
 
 0800a1bc <USBD_LL_Start>:
@@ -25635,7 +25625,7 @@ void *USBD_static_malloc(uint32_t size)
  800a4b8:	f85d 7b04 	ldr.w	r7, [sp], #4
  800a4bc:	4770      	bx	lr
  800a4be:	bf00      	nop
- 800a4c0:	200013b0 	.word	0x200013b0
+ 800a4c0:	200013a4 	.word	0x200013a4
 
 0800a4c4 <USBD_static_free>:
   * @brief  Dummy memory free

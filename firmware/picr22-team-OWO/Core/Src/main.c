@@ -76,7 +76,6 @@ typedef struct Motor_Status {
 	int16_t integral; // PID stuff borrowed from kurgimopeed
 	float flat_const;
 	float int_const;
-	float deriv_const;
 } Motor_Status;
 
 typedef struct Command {
@@ -102,7 +101,6 @@ Motor_Status motor_status[3] = {0};
 Command command = {.speed[0] = 0, .speed[1] = 0, .speed[2] = 0, .thrower_speed = 3277, .servo1 = 4875, .servo2 = 6150, .flat_const = 0, .int_const = 0, .delimiter = 0};
 
 volatile uint8_t isCommandReceived = 0;
-
 volatile uint16_t commandless_count = 0;
 
 uint16_t clamp(uint16_t value, uint16_t min, uint16_t max) {
@@ -141,7 +139,6 @@ void pwm_init() {
 	TIM15->CCR1 = 4875;
 	TIM15->CCR2 = 6150;
 
-	//HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, (uint32_t *)thrower_data, 30);
     HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1);
     HAL_TIMEx_PWMN_Start(&htim8, TIM_CHANNEL_2);
     HAL_TIMEx_PWMN_Start(&htim8, TIM_CHANNEL_3);
@@ -150,11 +147,9 @@ void pwm_init() {
 
     HAL_TIM_PWM_Start(&htim15, TIM_CHANNEL_1);
     HAL_TIM_PWM_Start(&htim15, TIM_CHANNEL_2);
-    //TIM15->CCR1 = 32000;
-    //HAL_TIM_PWM_Start(&htim15, TIM_CHANNEL_1);
 }
 
-// Updates the motor's speed and direction from the command struct
+// Updates the motor's speed, direction and PI constants from the command struct
 void motor_status_update() {
 	for (uint8_t i = 0; i<3; i++) {
 		if (command.speed[i] >= 0) {
@@ -166,7 +161,6 @@ void motor_status_update() {
 			if (command.speed[i] == -1) {command.speed[i] = -2;} // Everybody gangsta till the input speed is -1
 			motor_status[i].target_speed = -(command.speed[i]);
 		}
-
 		motor_status[i].flat_const = command.flat_const;
 		motor_status[i].int_const = command.int_const;
 	}
@@ -206,17 +200,13 @@ uint16_t motor_pwm(uint8_t mot_id) {
 	motor_status[mot_id].integral = 0;
 	int16_t pid_speed = (int16_t)(error * motor_status[mot_id].flat_const) + (int16_t)(motor_status[mot_id].integral * motor_status[mot_id].int_const);
 
-	if (pid_speed < 0) {
-		pid_speed = 0;
-	}
+	if (pid_speed < 0) {pid_speed = 0;}
 
 	if (speed > 0) {
 		pwm = 4500 + pid_speed * 375; // Effectively linear
 	}
-
-	if (pwm > 49151) { // emergency limiter, set to 75% currently (49151)
-		pwm = 49151;
-	}
+	// emergency limiter, set to 75% currently (49151)
+	if (pwm > 49151) {pwm = 49151;}
 
 	return pwm;
 }
@@ -248,8 +238,6 @@ void wake_drivers_up() {
 
 // 50 Hz callback
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-	//HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin); // lights!!!
-
 	if (commandless_count >= 50) { // Helps prevent major consequences from minor fuckups
 		TIM8->CCR2 = 0;
 		TIM8->CCR2 = 0;
