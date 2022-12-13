@@ -344,11 +344,9 @@ if __name__ == "__main__":
                                 throw_check_counter = 0
                         continue
                     else:
-                        if interesting_ball.x > middle_x + 2 or interesting_ball.x < middle_x - 2:
-                            speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=1700, y_scale=max_speed/2)
-                            speed_r = -sigmoid_controller(interesting_ball.x, middle_x, x_scale=1000, y_scale=max_speed)
-                        if interesting_ball.distance > ball_good_range:
-                            speed_y = sigmoid_controller(interesting_ball.distance, ball_good_range, x_scale=1300, y_scale=max_speed)
+                        speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=1700, y_scale=max_speed/2)
+                        speed_r = -sigmoid_controller(interesting_ball.x, middle_x, x_scale=1000, y_scale=max_speed)
+                        speed_y = sigmoid_controller(interesting_ball.distance, ball_good_range, x_scale=1300, y_scale=max_speed)
                         #print(f"x: {speed_x}, y: {speed_y}, r: {speed_r}, dist: {interesting_ball.distance}, b.x: {interesting_ball.x}, b.y: {interesting_ball.y}")
                         robot.move(speed_x, speed_y, speed_r)
                 else:
