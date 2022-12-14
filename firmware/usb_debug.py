@@ -120,9 +120,9 @@ class Mainboard():
             self.send_data(0, 0, 0, strength)
             print(self.receive_data())
 
-    def send_data(self, speed1, speed2, speed3, thrower_speed, succ_servo, angle_servo, flat_const, int_const):
+    def send_data(self, speed1, speed2, speed3, thrower_speed, succ_servo, angle_servo, flat_const, int_const, der_const):
         delimiter = 0xAAAA
-        data = struct.pack('<hhhHHHfhH', speed1, speed2, speed3, thrower_speed, succ_servo, angle_servo, int_const, flat_const, delimiter)
+        data = struct.pack('<hhhHHHhhhH', speed1, speed2, speed3, thrower_speed, succ_servo, angle_servo, int_const, flat_const, der_const, delimiter)
 
         self.ser.write(data)
 
@@ -172,7 +172,7 @@ if __name__ == "__main__":
             #robot.move(0,0,0,0)
             time.sleep(0.05)
             
-            robot.send_data(20, 20, 20, 0, 6000, 4700, 3, 0.1)
+            robot.send_data(20, 20, 20, 0, 6000, 4700, 3, 10, 0)
             
             print(robot.receive_data())
             # if counter % 50 == 0:
@@ -185,4 +185,4 @@ if __name__ == "__main__":
             counter += 1
     except KeyboardInterrupt:
         print("\nExiting")
-        robot.send_data(0, 0, 0, 0, 4875, 6200, 3, 0)
+        robot.send_data(0, 0, 0, 0, 4875, 6200, 3, 0, 0)

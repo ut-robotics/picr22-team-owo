@@ -76,6 +76,7 @@ typedef struct Motor_Status {
 	int16_t integral; // PID stuff borrowed from kurgimopeed
 	float flat_const;
 	float int_const;
+	float der_const;
 	int16_t error;
 } Motor_Status;
 
@@ -84,8 +85,9 @@ typedef struct Command {
   uint16_t thrower_speed; // thrower motor speed
   uint16_t servo1;
   uint16_t servo2;
-  float int_const;
+  int16_t int_const;
   int16_t flat_const;
+  int16_t der_const;
   uint16_t delimiter;
 } Command;
 
@@ -99,8 +101,17 @@ typedef struct Feedback {
 
 // Motor structs for all 3 motors
 Motor_Status motor_status[3] = {0};
+
 // Prefilled command struct
-Command command = {.speed[0] = 0, .speed[1] = 0, .speed[2] = 0, .thrower_speed = 3277, .servo1 = 4875, .servo2 = 6150, .flat_const = 0, .int_const = 0, .delimiter = 0};
+Command command = {.speed[0] = 0,
+				   .speed[1] = 0,
+				   .speed[2] = 0,
+				   .thrower_speed = 3277,
+				   .servo1 = 4875,
+				   .servo2 = 6150,
+				   .flat_const = 1,
+				   .int_const = 0.1,
+				   .delimiter = 0};
 
 volatile uint8_t isCommandReceived = 0;
 volatile uint16_t commandless_count = 0;
@@ -164,18 +175,19 @@ void motor_status_update() {
 			motor_status[i].target_speed = -(command.speed[i]);
 		}
 		motor_status[i].flat_const = command.flat_const;
-		motor_status[i].int_const = command.int_const;
+		motor_status[i].int_const = ((float)command.int_const)/10;
+		motor_status[i].der_const = ((float)command.der_const)/10;
 	}
 }
 
 // Converts internal encoder speed to a PWM value
-uint16_t motor_pwm(uint8_t mot_id) {
-	uint16_t speed = motor_status[mot_id].target_speed;
-	uint16_t pwm = 0;
-	uint16_t new_pos = 0;
+uint16_t motor_pwm(uint8_t m_id) {
+    // For ease of use
+    Motor_Status m =  motor_status[m_id];
 
-	// for some reason case 0 and 2 are inverted, most likely from using complementary timer channels
-	switch (mot_id) {
+    // Get new position of the encoder
+	uint16_t new_pos = 0;
+    switch (m_id) {
 		case 0:
 			new_pos = TIM3->CNT;
 			break;
@@ -186,28 +198,29 @@ uint16_t motor_pwm(uint8_t mot_id) {
 			new_pos = TIM4->CNT;
 			break;
 	}
-	int16_t pos_change = abs((int16_t)new_pos - motor_status[mot_id].enc_pos);
-
-	motor_status[mot_id].enc_pos = new_pos;
-	motor_status[mot_id].enc_change = pos_change;
+    int16_t pos_change = abs((int16_t)new_pos - m.enc_pos);
 
 	// Clear PI-s integral value when the bot is ordered to stop, might cause issues down the line
 	if (motor_status[0].target_speed == 0 && motor_status[1].target_speed == 0 && motor_status[2].target_speed == 0) {
-		motor_status[mot_id].integral = 0;
+		m.integral = 0;
 	}
 
-	int16_t error = speed - motor_status[mot_id].enc_change;
-	motor_status[mot_id].error = error;
-	motor_status[mot_id].integral += error;
-	int16_t pid_speed = (int16_t)(error * motor_status[mot_id].flat_const) + (int16_t)(motor_status[mot_id].integral * motor_status[mot_id].int_const);
+	m.error = m.target_speed - pos_change;
+	m.integral += m.error;
 
+	int16_t pid_speed = (int16_t)(m.error * m.flat_const) +
+                        (int16_t)(m.integral * m.int_const) +
+                        (int16_t)((pos_change - m.enc_change) * m.der_const);
+
+    m.enc_pos = new_pos;
+	m.enc_change = pos_change;
+	motor_status[m_id] = m;
 	if (pid_speed < 0) {pid_speed = 0;}
 
-	if (speed > 0) {
-		pwm = 4500 + pid_speed * 375; // Effectively linear
-	}
+    uint16_t pwm = 0;
+	if (m.target_speed > 0) {pwm = 4500 + pid_speed * 375;}
 
-	return pwm;
+	return clamp(pwm, 0, 65535);
 }
 
 // Toggles the direction pin
@@ -327,22 +340,12 @@ int main(void)
     	wake_drivers_up();
     	motor_status_update();
 
-		feedback.speed[0] = motor_status[0].target_speed;
-		feedback.speed[1] = motor_status[1].target_speed;
-		feedback.speed[2] = motor_status[2].target_speed;
-
-		feedback.change[0] = motor_status[0].enc_change;
-		feedback.change[1] = motor_status[1].enc_change;
-		feedback.change[2] = motor_status[2].enc_change;
-
-		feedback.error[0] = motor_status[0].error;
-		feedback.error[1] = motor_status[1].error;
-		feedback.error[2] = motor_status[2].error;
-
-		feedback.integral[0] = motor_status[0].integral;
-		feedback.integral[1] = motor_status[1].integral;
-		feedback.integral[2] = motor_status[2].integral;
-
+    	for (int i = 0; i < 3; i++) {
+			feedback.speed[i] = motor_status[i].target_speed;
+			feedback.change[i] = motor_status[i].enc_change;
+			feedback.error[i] = motor_status[i].error;
+			feedback.integral[i] = motor_status[i].integral;
+    	}
 		feedback.ball_detected = HAL_GPIO_ReadPin (INFR_GPIO_Port, INFR_Pin);
 
 		CDC_Transmit_FS(&feedback, sizeof(feedback));
