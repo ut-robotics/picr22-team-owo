@@ -329,12 +329,12 @@ if __name__ == "__main__":
                         ball_search_start = time.perf_counter()
                     if time.perf_counter() > ball_search_start + 0.3:
                         search_state = Search_state.ROTATE_FAST
-                    robot.move(0, 0, 10)
+                    robot.move(0, 0, -10)
                 elif search_state == Search_state.ROTATE_FAST:
                     if time.perf_counter() > ball_search_start + 0.3 + 0.2:
                         ball_search_first_time = True
                         search_state = Search_state.ROTATE_SLOW
-                    robot.move(0, 0, 50)
+                    robot.move(0, 0, -50)
                 else:
                     log.LOGE("Invalid search_state, defaulting to ROTATE_SLOW")
                     search_state = Search_state.ROTATE_SLOW
