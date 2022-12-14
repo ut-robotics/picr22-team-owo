@@ -57,14 +57,13 @@ class Mainboard():
         self.angle_servo_low = 6150 
         self.angle_servo_high = 4725
 
-        self.throw_radius_min = 50
+        self.throw_radius_min = 600
         self.throw_radius_max = 4000
         self.ball_in_robot = False
-        self.throwing_angle_data = [{"angle": self.angle_servo_high, "min_r": 0, "max_r": self.throw_radius_max, "slope": 0.207, "constant": 3562},
-                                    {"angle": self.angle_servo_low, "min_r": self.throw_radius_min, "max_r": 0, "slope": 0.207, "constant": 3562}]
+        self.throwing_angle_data = [{"angle": self.angle_servo_high, "min_r": 0, "max_r": 5000, "forward_slope": 0.195, "forward_constant": 3589, "backward_slope": 0.207, "backward_constant": 3625},]
         # 0.362 3307
-        self.active_slope = self.throwing_angle_data[0]["slope"] # Default to long range at the start (start from far corner)
-        self.active_constant = self.throwing_angle_data[0]["constant"]
+        self.active_slope = self.throwing_angle_data[0]["forward_slope"] # Default to long range and moving forward at the start (start from far corner)
+        self.active_constant = self.throwing_angle_data[0]["forward_constant"]
         self.active_angle = self.throwing_angle_data[0]["angle"]
         self.succ_servo_active_speed = self.succ_servo_zero
         self.driving_forward = True
@@ -105,29 +104,17 @@ class Mainboard():
         if distance == 0:
             return 0
         else:
-            # int(distance*0.277 + 413)
-            # return int(distance*0.275 + 411)
-            # 48 - 2047
-            #print(int((distance*self.active_slope + self.active_constant - 48)/(2047-48) * (6554 - 3277) + 3277))
             #print (int((distance*self.active_slope + self.active_constant)))
-            #return int((distance*self.active_slope + self.active_constant))
-            if self.driving_forward:
-                return int(distance * 0.195 + 3589)
-            else:
-                return int(distance * 0.207 + 3625)
+            return int((distance*self.active_slope + self.active_constant))
+            #if self.driving_forward:
+            #    return int(distance * 0.195 + 3589)
+            #else:
+            #    return int(distance * 0.207 + 3625)
 
     # Big math, returns speed of a wheel in mainboard units
     def calculate_wheel_speed(self, motor_num, robot_speed, robot_angle, speed_rot):
         wheel_linear_velocity = robot_speed * math.cos(robot_angle - self.wheel_angles[motor_num - 1]) + self.wheel_distance_from_center * speed_rot
-        #print("linear", wheel_linear_velocity, robot_speed * math.cos(robot_angle - self.wheel_angles[motor_num - 1]), self.wheel_distance_from_center * speed_rot)
         wheel_angular_speed_mainboard_units = wheel_linear_velocity * self.wheel_speed_to_mainboard_units
-        #print("mainboard units", wheel_angular_speed_mainboard_units)
-
-        # if wheel_angular_speed_mainboard_units > 0.2 and wheel_angular_speed_mainboard_units < 1:
-        #     wheel_angular_speed_mainboard_units = 1
-        # if wheel_angular_speed_mainboard_units < -0.2 and wheel_angular_speed_mainboard_units > -1:
-        #     wheel_angular_speed_mainboard_units = -1
-
         return wheel_angular_speed_mainboard_units
 
     def stop_all(self):
@@ -205,9 +192,17 @@ class Mainboard():
     def choose_thrower_angle(self, basket_distance):
         for i in range(len(self.throwing_angle_data)):
             if basket_distance >= self.throwing_angle_data[i]["min_r"] and basket_distance <= self.throwing_angle_data[i]["max_r"]:
-                self.active_constant = self.throwing_angle_data[i]["constant"]
-                self.active_slope = self.throwing_angle_data[i]["slope"]
-                self.active_angle = self.throwing_angle_data[i]["angle"]
+                if self.driving_forward:
+                    self.active_constant = self.throwing_angle_data[i]["forward_constant"]
+                    self.active_slope = self.throwing_angle_data[i]["forward_slope"]
+                    self.active_angle = self.throwing_angle_data[i]["angle"]
+                else:
+                    self.active_constant = self.throwing_angle_data[i]["backward_constant"]
+                    self.active_slope = self.throwing_angle_data[i]["backward_slope"]
+                    self.active_angle = self.throwing_angle_data[i]["angle"]
+                return
+            else:
+                self.logger.LOGE("No valid throwing data")
                 return
 
     # Throw ball to a basket at given distance
@@ -251,35 +246,35 @@ class Mainboard():
     # Rotates all wheels with speed 10, useful for sanity checking
     def test_motors(self):
         while(True):
-            robot.send_data(5, 5, 5, self.thrower_min, self.succ_servo_zero, self.angle_servo_high)
-            print(robot.receive_data())
+            self.send_data(5, 5, 5, self.thrower_min, self.succ_servo_zero, self.angle_servo_high)
+            print(self.receive_data())
 
     # Simple driving test
     def test_driving(self):
             start_time = time.perf_counter()
             while time.perf_counter() - start_time < 2.0:
                 print(1)
-                robot.move(0, 2, 0)
+                self.move(0, 2, 0)
                 print(1.1)
-                print(robot.receive_data())
+                print(self.receive_data())
             start_time = time.perf_counter()
             while time.perf_counter() - start_time < 2.0:
                 print(2)
-                robot.move(2, 0, 0)
+                self.move(2, 0, 0)
                 print(2.2)
-                print(robot.receive_data())
+                print(self.receive_data())
             start_time = time.perf_counter()
             while time.perf_counter() - start_time < 2.0:
                 print(2)
-                robot.move(0, -2, 0)
+                self.move(0, -2, 0)
                 print(2.2)
-                print(robot.receive_data())
+                print(self.receive_data())
             start_time = time.perf_counter()
             while time.perf_counter() - start_time < 2.0:
                 print(2)
-                robot.move(-2, 0, 0)
+                self.move(-2, 0, 0)
                 print(2.2)
-                print(robot.receive_data())
+                print(self.receive_data())
 
 if __name__ == "__main__":
     logger = Logging(False, True)
