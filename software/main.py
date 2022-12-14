@@ -572,8 +572,8 @@ if __name__ == "__main__":
 
                 #print(str(xboxcont.joystick_left_y) + " / " + str(xboxcont.joystick_left_x))
 
-                speedy = joyY * 13
-                speedx = joyX * 13
+                speedy = joyY * 14
+                speedx = joyX * 14
                 speedr = joyRightX * 30
                 speedthrow = joyRTrig * 4500
 
