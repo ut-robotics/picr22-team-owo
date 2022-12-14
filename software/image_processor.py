@@ -268,6 +268,10 @@ class ImageProcessor():
             x, y, w, h = cv2.boundingRect(contour)
 
             obj_x, obj_y, not_used = calculatePosition(h, w, depth, x, y)
+
+            # experimental way for gaining accuracy
+            #obj_x = np.mean(np.nonzero(t_basket))
+            #print(obj_x)
             if depth is None:
                 obj_dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((obj_y/4.829652), 0.6903042))
             else:

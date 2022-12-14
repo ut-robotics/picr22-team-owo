@@ -53,9 +53,9 @@ if __name__ == "__main__":
     log.LOGI("Starting...")
 
     # Mainboard stuff setup
-    max_speed = 15
-    max_speed_inner = 25
-    ball_good_range = 300
+    max_speed = 20
+    max_speed_inner = 30
+    ball_good_range = 450
     robot = mainboard.Mainboard(max_speed_inner, log)
     robot.start()
 
@@ -329,7 +329,7 @@ if __name__ == "__main__":
                         ball_search_start = time.perf_counter()
                     if time.perf_counter() > ball_search_start + 0.3:
                         search_state = Search_state.ROTATE_FAST
-                    robot.move(0, 0, -10)
+                    robot.move(0, 0, -5)
                 elif search_state == Search_state.ROTATE_FAST:
                     if time.perf_counter() > ball_search_start + 0.3 + 0.2:
                         ball_search_first_time = True
@@ -397,8 +397,8 @@ if __name__ == "__main__":
                         
                     if interesting_ball != None:
                         #robot.move_backwheel_adjust(speed_y, interesting_ball.x)
-                        speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=900, y_scale=max_speed)
-                        speed_r = -sigmoid_controller(interesting_ball.x, middle_x, x_scale=450, y_scale=max_speed)
+                        speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=900, y_scale=max_speed/2)
+                        speed_r = -sigmoid_controller(interesting_ball.x, middle_x, x_scale=500, y_scale=max_speed*1.5)
                         robot.move(speed_x, speed_y, speed_r)
                     else:
                         robot.move(0, speed_y, 0)
@@ -434,7 +434,7 @@ if __name__ == "__main__":
                     log.LOGE("Basket color invalid")
                         
                 # distance in mm, closer than this means moving backwards, else move forward
-                basket_decision_dist = 1200
+                basket_decision_dist = 1300
                 
                 # If basket is found, go to throwing, NB! Basket centering done entirely in throw
                 if basket.exists:
@@ -470,7 +470,7 @@ if __name__ == "__main__":
                         state = State.BALL_SEARCH
                     continue
 
-                if basket.distance < 500 and robot.driving_forward:
+                if basket.distance < 600 and robot.driving_forward:
                     robot.driving_forward = False
 
                 if throw_ending_in_progress and throw_ending_start_time + throw_ending_delay < time.time():
@@ -484,7 +484,7 @@ if __name__ == "__main__":
                 speed_x = 0
 
                 # IMPORTANT
-                throw_required_correct_frames = 4
+                throw_required_correct_frames = 3
 
                 if not robot.ball_in_robot and not throw_ending_in_progress:
                     log.LOGI("Ball has left the sensor, starting countdown to end throw...")
@@ -493,7 +493,7 @@ if __name__ == "__main__":
                 else:
                     # Default movement values
                     speed_r = 0
-                    maximum_basket_error = 6
+                    maximum_basket_error = 5
 
                     if robot.driving_forward:
                         if basket.distance > robot.throw_radius_max:
