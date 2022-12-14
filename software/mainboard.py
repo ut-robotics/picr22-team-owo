@@ -60,7 +60,7 @@ class Mainboard():
         self.throw_radius_min = 550
         self.throw_radius_max = 3000
         self.ball_in_robot = False
-        self.throwing_angle_data = [{"angle": self.angle_servo_high, "min_r": 0, "max_r": 5000, "forward_slope": 0.196, "forward_constant": 3588, "backward_slope": 0.207, "backward_constant": 3626},]
+        self.throwing_angle_data = [{"angle": self.angle_servo_high, "min_r": 0, "max_r": 5000, "forward_slope": 0.196, "forward_constant": 3593, "backward_slope": 0.207, "backward_constant": 3631},]
         # 0.362 3307
         self.active_slope = self.throwing_angle_data[0]["forward_slope"] # Default to long range and moving forward at the start (start from far corner)
         self.active_constant = self.throwing_angle_data[0]["forward_constant"]
@@ -228,10 +228,11 @@ class Mainboard():
     # succ servo: 3277 välja max, 4875 paigal, 6554 sisse max
     # angle servo: 6200 all, 4700 ülal, Check this value before sending, no check for safety within firmware
     def send_data(self, speed1, speed2, speed3, thrower_speed, succ_servo, angle_servo):
-        int_const = 0.1
+        int_const = 1 # Divided by 10 in firmware
         flat_const = 1
+        der_const = 1 # Divided by 10 in firmware
         delimiter = 0xAAAA
-        data = struct.pack('<hhhHHHfhH', speed1, speed2, speed3, thrower_speed, succ_servo, angle_servo, int_const, flat_const, delimiter)
+        data = struct.pack('<hhhHHHhhhH', speed1, speed2, speed3, thrower_speed, succ_servo, angle_servo, int_const, flat_const, der_const, delimiter)
 
         self.ser.write(data)
 

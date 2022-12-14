@@ -354,10 +354,9 @@ if __name__ == "__main__":
                     interesting_ball = processed_data.balls[-1]
                     #print("Ball:", interesting_ball)
 
-                    if interesting_ball.distance <= 550:
-                        if (abs(middle_x - interesting_ball.x) < 80):
-                            state = State.BALL_EAT
-                            throw_check_counter = 0
+                    if interesting_ball.distance <= 550 and (abs(middle_x - interesting_ball.x) < 80):
+                        state = State.BALL_EAT
+                        throw_check_counter = 0
                         continue
                     else:
                         speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=1700, y_scale=max_speed/2)
@@ -473,6 +472,9 @@ if __name__ == "__main__":
                 if basket.distance < 600 and robot.driving_forward:
                     robot.driving_forward = False
 
+                if basket.distance > 2000 and not robot.driving_forward:
+                    robot.driving_forward = True
+
                 if throw_ending_in_progress and throw_ending_start_time + throw_ending_delay < time.time():
                     # End throw state for new robot, back to ball search
                     robot.eating_servo(mainboard.Eating_servo_state.OFF)
@@ -572,8 +574,8 @@ if __name__ == "__main__":
 
                 #print(str(xboxcont.joystick_left_y) + " / " + str(xboxcont.joystick_left_x))
 
-                speedy = joyY * 14
-                speedx = joyX * 14
+                speedy = joyY * 13
+                speedx = joyX * 13
                 speedr = joyRightX * 30
                 speedthrow = joyRTrig * 4500
 
