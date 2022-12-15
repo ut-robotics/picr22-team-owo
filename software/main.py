@@ -156,7 +156,7 @@ if __name__ == "__main__":
                     continue
 
                 elif xbox_cont.button_x and state == State.MANUAL and manual_triggers == 0:
-                    state = State.BALL_SEARCH
+                    state = State.START_GO
                     manual_triggers += 1
                     continue
                 
@@ -308,12 +308,17 @@ if __name__ == "__main__":
                 continue
 
             elif state == State.START_GO:
-                robot.move(0, 10, 0)
+                robot.move(0, 20, 0)
                 log.LOGSTATE("Juggernaut start")
 
-                if (start_go_time_start + 0.6 < time.perf_counter()):
+                if start_go_first_time:
+                    start_go_first_time = False
+                    start_go_time_start = time.perf_counter()
+
+                if (start_go_time_start + 0.7 < time.perf_counter()):
                     log.LOGI("Juggernaut end")
                     state = State.BALL_SEARCH
+                    start_go_first_time = True
                 continue
 
             elif state == State.BALL_SEARCH:
@@ -424,7 +429,7 @@ if __name__ == "__main__":
                 # Default movement values
                 speed_x = 0 
                 speed_y = 0 
-                speed_r = -40  # <--- Change this to change the basket finding rotation speed
+                speed_r = -30  # <--- Change this to change the basket finding rotation speed
                     
                 # Determining the correct basket
                 if basket_color == Target_basket.MAGENTA:
@@ -488,7 +493,7 @@ if __name__ == "__main__":
                 speed_x = 0
 
                 # IMPORTANT
-                throw_required_correct_frames = 5
+                throw_required_correct_frames = 7
 
                 if not robot.ball_in_robot and not throw_ending_in_progress:
                     log.LOGI("Ball has left the sensor, starting countdown to end throw...")
@@ -527,7 +532,7 @@ if __name__ == "__main__":
                             robot.eating_servo(mainboard.Eating_servo_state.EAT)
 
                             # Smoother correction still in place just in case.
-                            speed_r = -sigmoid_controller(basket.x, middle_x, x_scale=800, y_scale=max_speed)
+                            speed_r = -sigmoid_controller(basket.x, middle_x, x_scale=500, y_scale=max_speed)
 
                             # Worth considering - saving last known basket distance. ++DONE++
                             if not np.isnan(basket.distance) and basket.exists:
@@ -541,7 +546,7 @@ if __name__ == "__main__":
                     # This means basket needs centering
                     else:
                         throw_check_counter = 0
-                        speed_r = -sigmoid_controller(basket.x, middle_x, x_scale=500, y_scale=max_speed)
+                        speed_r = -sigmoid_controller(basket.x, middle_x, x_scale=300, y_scale=max_speed)
                         if not np.isnan(basket.distance):
                             robot.choose_thrower_angle(basket.distance)
                             throw_angle_chosen = True

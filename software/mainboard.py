@@ -58,9 +58,9 @@ class Mainboard():
         self.angle_servo_high = 4725
 
         self.throw_radius_min = 550
-        self.throw_radius_max = 2500
+        self.throw_radius_max = 1800
         self.ball_in_robot = False
-        self.throwing_angle_data = [{"angle": self.angle_servo_high, "min_r": 0, "max_r": 5000, "forward_slope": 0.196, "forward_constant": 3586, "backward_slope": 0.203, "backward_constant": 3630},]
+        self.throwing_angle_data = [{"angle": self.angle_servo_high, "min_r": 0, "max_r": 5000, "forward_slope": 0.198, "forward_constant": 3592, "backward_slope": 0.203, "backward_constant": 3630},]
         # 0.362 3307
         self.active_slope = self.throwing_angle_data[0]["forward_slope"] # Default to long range and moving forward at the start (start from far corner)
         self.active_constant = self.throwing_angle_data[0]["forward_constant"]
