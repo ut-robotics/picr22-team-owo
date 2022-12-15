@@ -178,16 +178,6 @@ void pwm_init() {
 void motor_status_update() {
 	for (uint8_t i = 0; i<3; i++) {
 		motor_status[i].target_speed = command.speed[i];
-
-		/*if (command.speed[i] >= 0) {
-			motor_status[i].direction = 1;
-			if (command.speed[i] == 1) {command.speed[i] = 2;} // Everybody gangsta till the input speed is 1
-			motor_status[i].target_speed = command.speed[i];
-		} else {
-			motor_status[i].direction = 0;
-			if (command.speed[i] == -1) {command.speed[i] = -2;} // Everybody gangsta till the input speed is -1
-			motor_status[i].target_speed = -(command.speed[i]);
-		}*/
 		motor_status[i].flat_const = command.flat_const;
 		motor_status[i].int_const = command.int_const;
 		motor_status[i].der_const = command.der_const;
