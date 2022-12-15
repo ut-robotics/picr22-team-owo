@@ -98,7 +98,7 @@ if __name__ == "__main__":
     last_known_basket_distance = 0
     throw_ending_in_progress = False
     throw_ending_start_time = 0
-    throw_ending_delay = 0.5
+    throw_ending_delay = 0.8
     throwing = False
     throw_check_counter = 0
 
@@ -362,6 +362,8 @@ if __name__ == "__main__":
                         speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=1700, y_scale=max_speed/2)
                         speed_r = -sigmoid_controller(interesting_ball.x, middle_x, x_scale=1000, y_scale=max_speed)
                         speed_y = sigmoid_controller(interesting_ball.distance, ball_good_range, x_scale=1000, y_scale=max_speed)
+                        if speed_y == 0:
+                            speed_y = 5
                         #print(f"x: {speed_x}, y: {speed_y}, r: {speed_r}, dist: {interesting_ball.distance}, b.x: {interesting_ball.x}, b.y: {interesting_ball.y}")
                         robot.move(speed_x, speed_y, speed_r)
                 else:
@@ -433,7 +435,7 @@ if __name__ == "__main__":
                     log.LOGE("Basket color invalid")
                         
                 # distance in mm, closer than this means moving backwards, else move forward
-                basket_decision_dist = 1300
+                basket_decision_dist = 1200
                 
                 # If basket is found, go to throwing, NB! Basket centering done entirely in throw
                 if basket.exists:
@@ -486,7 +488,7 @@ if __name__ == "__main__":
                 speed_x = 0
 
                 # IMPORTANT
-                throw_required_correct_frames = 3
+                throw_required_correct_frames = 5
 
                 if not robot.ball_in_robot and not throw_ending_in_progress:
                     log.LOGI("Ball has left the sensor, starting countdown to end throw...")
@@ -496,6 +498,9 @@ if __name__ == "__main__":
                     # Default movement values
                     speed_r = 0
                     maximum_basket_error = 5
+
+                    if basket.distance > 2000:
+                        maximum_basket_error = 3
 
                     if robot.driving_forward:
                         if basket.distance > robot.throw_radius_max:
@@ -536,7 +541,7 @@ if __name__ == "__main__":
                     # This means basket needs centering
                     else:
                         throw_check_counter = 0
-                        speed_r = -sigmoid_controller(basket.x, middle_x, x_scale=700, y_scale=max_speed)
+                        speed_r = -sigmoid_controller(basket.x, middle_x, x_scale=500, y_scale=max_speed)
                         if not np.isnan(basket.distance):
                             robot.choose_thrower_angle(basket.distance)
                             throw_angle_chosen = True
