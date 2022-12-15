@@ -74,9 +74,9 @@ typedef struct Motor_Status {
 	int16_t enc_pos; // current encoder position
 	int16_t enc_change; // Change of the encoder, currently used for debugging purposes
 	int16_t integral; // PID stuff borrowed from kurgimopeed
-	float flat_const;
-	float int_const;
-	float der_const;
+	int16_t flat_const;
+	int16_t int_const;
+	int16_t der_const;
 	int16_t error;
 } Motor_Status;
 
@@ -116,7 +116,19 @@ Command command = {.speed[0] = 0,
 volatile uint8_t isCommandReceived = 0;
 volatile uint16_t commandless_count = 0;
 
-uint16_t clamp(uint16_t value, uint16_t min, uint16_t max) {
+uint16_t clamp_u16(uint16_t value, uint16_t min, uint16_t max) {
+	if (value > max) {return max;}
+	else if (value < min) {return min;}
+	return value;
+}
+
+int16_t clamp_16(int16_t value, int16_t min, int16_t max) {
+	if (value > max) {return max;}
+	else if (value < min) {return min;}
+	return value;
+}
+
+int32_t clamp_32(int32_t value, int32_t min, int32_t max) {
 	if (value > max) {return max;}
 	else if (value < min) {return min;}
 	return value;
@@ -165,7 +177,9 @@ void pwm_init() {
 // Updates the motor's speed, direction and PI constants from the command struct
 void motor_status_update() {
 	for (uint8_t i = 0; i<3; i++) {
-		if (command.speed[i] >= 0) {
+		motor_status[i].target_speed = command.speed[i];
+
+		/*if (command.speed[i] >= 0) {
 			motor_status[i].direction = 1;
 			if (command.speed[i] == 1) {command.speed[i] = 2;} // Everybody gangsta till the input speed is 1
 			motor_status[i].target_speed = command.speed[i];
@@ -173,10 +187,10 @@ void motor_status_update() {
 			motor_status[i].direction = 0;
 			if (command.speed[i] == -1) {command.speed[i] = -2;} // Everybody gangsta till the input speed is -1
 			motor_status[i].target_speed = -(command.speed[i]);
-		}
+		}*/
 		motor_status[i].flat_const = command.flat_const;
-		motor_status[i].int_const = ((float)command.int_const)/10;
-		motor_status[i].der_const = ((float)command.der_const)/10;
+		motor_status[i].int_const = command.int_const;
+		motor_status[i].der_const = command.der_const;
 	}
 }
 
@@ -185,20 +199,23 @@ uint16_t motor_pwm(uint8_t m_id) {
     // For ease of use
     Motor_Status m =  motor_status[m_id];
 
-    // Get new position of the encoder
+    // Get new position of the encoder, currently a bit hacky due to motors 1 and 3 flipping the enc movement for some reason
 	uint16_t new_pos = 0;
+	int16_t pos_change = 0;
     switch (m_id) {
 		case 0:
 			new_pos = TIM3->CNT;
+			pos_change = -((int16_t)new_pos - m.enc_pos);
 			break;
 		case 1:
 			new_pos = TIM1->CNT;
+			pos_change = (int16_t)new_pos - m.enc_pos;
 			break;
 		case 2:
 			new_pos = TIM4->CNT;
+			pos_change = -(((int16_t)new_pos) - m.enc_pos);
 			break;
 	}
-    int16_t pos_change = abs((int16_t)new_pos - m.enc_pos);
 
 	// Clear PI-s integral value when the bot is ordered to stop, might cause issues down the line
 	if (motor_status[0].target_speed == 0 && motor_status[1].target_speed == 0 && motor_status[2].target_speed == 0) {
@@ -206,21 +223,22 @@ uint16_t motor_pwm(uint8_t m_id) {
 	}
 
 	m.error = m.target_speed - pos_change;
-	m.integral += m.error;
+	m.integral = clamp_16(m.integral + m.error, -4096, 4096);
 
-	int16_t pid_speed = (int16_t)(m.error * m.flat_const) +
-                        (int16_t)(m.integral * m.int_const) +
-                        (int16_t)((pos_change - m.enc_change) * m.der_const);
+	int32_t pwm = ((int32_t) m.error * (int32_t) m.flat_const) +
+                  ((int32_t) m.integral * (int32_t) m.int_const) +
+                  ((int32_t) (pos_change - m.enc_change) * (int32_t) m.der_const);
+
+	if (pwm < 0) {m.direction = 0;}
+	else {m.direction = 1;}
 
     m.enc_pos = new_pos;
 	m.enc_change = pos_change;
 	motor_status[m_id] = m;
-	if (pid_speed < 0) {pid_speed = 0;}
 
-    uint16_t pwm = 0;
-	if (m.target_speed > 0) {pwm = 4500 + pid_speed * 375;}
+	pwm = clamp_32(abs(pwm), 0, 65534);
 
-	return clamp(pwm, 0, 65535);
+	return (uint16_t) pwm;
 }
 
 // Toggles the direction pin
@@ -267,10 +285,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	motor_direction(1); // Motor 2
 	motor_direction(2); // Motor 3
 
-	TIM2->CCR1 = clamp(command.thrower_speed, 3277, 6554);
+	TIM2->CCR1 = clamp_u16(command.thrower_speed, 3277, 6554);
 
-	TIM15->CCR1 = clamp(command.servo1, 3277, 6554);
-	TIM15->CCR2 = clamp(command.servo2, 4700, 6150);
+	TIM15->CCR1 = clamp_u16(command.servo1, 3277, 6554);
+	TIM15->CCR2 = clamp_u16(command.servo2, 4700, 6150);
 
 	commandless_count++;
 }
