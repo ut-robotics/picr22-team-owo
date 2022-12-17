@@ -103,7 +103,7 @@ if __name__ == "__main__":
     throw_check_counter = 0
 
     # Referee commands
-    ref_enabled = False
+    ref_enabled = True
     if ref_enabled:
         robot_name = "owo"
         referee = ref_cmd.Referee_cmd_client(log)
@@ -156,7 +156,7 @@ if __name__ == "__main__":
                     continue
 
                 elif xbox_cont.button_x and state == State.MANUAL and manual_triggers == 0:
-                    state = State.START_GO
+                    state = State.BALL_SEARCH
                     manual_triggers += 1
                     continue
                 
@@ -493,7 +493,7 @@ if __name__ == "__main__":
                 speed_x = 0
 
                 # IMPORTANT
-                throw_required_correct_frames = 7
+                throw_required_correct_frames = 5
 
                 if not robot.ball_in_robot and not throw_ending_in_progress:
                     log.LOGI("Ball has left the sensor, starting countdown to end throw...")
@@ -502,7 +502,7 @@ if __name__ == "__main__":
                 else:
                     # Default movement values
                     speed_r = 0
-                    maximum_basket_error = 5
+                    maximum_basket_error = 6
 
                     if basket.distance > 2000:
                         maximum_basket_error = 3
