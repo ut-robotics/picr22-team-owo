@@ -125,7 +125,7 @@ if __name__ == "__main__":
         # Do not add anything outside of if/elif state clauses to the end of the loop, otherwise use of "continue" will not let it run
         while(True):
             # Getting camera data
-            if state == State.BALL_THROW or state == State.BASKET_FIND or state == State.BALL_EAT or state == State.CALIB_THROW:
+            if state == State.BALL_THROW or state == State.BASKET_FIND or state == State.BALL_EAT or state == State.CALIB_THROW or state == State.BALL_MOVE:
                 processed_data = processor.process_frame(aligned_depth=True)
             else:
                 processed_data = processor.process_frame(aligned_depth=False)
@@ -364,7 +364,7 @@ if __name__ == "__main__":
                         throw_check_counter = 0
                         continue
                     else:
-                        speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=1700, y_scale=max_speed/2)
+                        speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=1400, y_scale=max_speed/2)
                         speed_r = -sigmoid_controller(interesting_ball.x, middle_x, x_scale=1000, y_scale=max_speed)
                         speed_y = sigmoid_controller(interesting_ball.distance, ball_good_range, x_scale=1000, y_scale=max_speed)
                         if speed_y == 0:
@@ -380,7 +380,7 @@ if __name__ == "__main__":
             elif state == State.BALL_EAT:
                 log.LOGSTATE("ball_eat")
                 # Maximum time to stay in this state, in seconds.
-                max_time_in_ball_eat = 1
+                max_time_in_ball_eat = 0.65
                 # Speed for eating servo, units undetermined, current value temporary
                 eat_servo_speed = 10
 
