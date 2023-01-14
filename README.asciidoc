@@ -12,9 +12,17 @@ Link to the robot's assembly: https://a360.co/3FA4tEU +
 
 
 ==== Programming:
-The robot will automatically connect to the pwir wifi. Then it can be accessed via ssh using the hostname OWO.
+The robot will automatically connect to the pwir wifi. Then it can be accessed via ssh using the hostname OWO. Refer to software/readme.asciidoc for more details and how to run the code.
 
-What libraries did you use (and for what purposes)?
+External libraries used:
+
+* evdev - Handling communication with XBox One S remote controller (over bluetooth)
+* numba - Speeding up Python code
+* numpy - Calculations, image processing
+* pyrealsense2 - Configuring and using the RealSense 2 camera on the robot
+* pyserial - Serial communication with the Mainboard
+* websocket-client - For creating and handling websocket connection to the referee server
+
 A brief description of your game logic and overall code structure.
 A block diagram of your game logic.
 A short analysis of what was good and bad in your code and how to improve.
