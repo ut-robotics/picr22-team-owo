@@ -8,19 +8,51 @@
 * Johannes Voldemar Langsepp
 
 ==== Sources:
+Link to the robot's assembly: https://a360.co/3FA4tEU +
 
 
 ==== Programming:
 The robot will automatically connect to the pwir wifi. Then it can be accessed via ssh using the hostname OWO.
 
+What libraries did you use (and for what purposes)?
+A brief description of your game logic and overall code structure.
+A block diagram of your game logic.
+A short analysis of what was good and bad in your code and how to improve.
+
+
+
 ==== Electronics:
+If you used something different from what was given at the start of the course or did something different, describe it.
+Photos illustrating electronics on your robot. (electronics board, cable management, etc.)
+A short analysis of what was good and bad in your electronics and how to improve.
+
 
 
 ==== Mechanics:
-Link to the robot's assembly: https://a360.co/3FA4tEU
-
+Link to the robot's assembly: https://a360.co/3FA4tEU +
+If you used something different from what was given at the start of the course or did something different, describe it.
+Description of the main points of interest in your ball thrower design and construction process.
+Photos of your robot.
+A short analysis of what was good and bad in your mechanics and how to improve.
 
 ==== Personal comments:
+On which parts of the robot did you work on?
+What did you learn?
+What would you do differently next time?
+What did you like/did not like about the course/building a robot?
+Suggestions for next year students.
+Suggestions for instructors.
+
+*Artur:*
+
+*Johannes:*
+
+*Kert:*
+
+*Sander:*
+
+*Andres:*
+
 
 
 == BLOG
@@ -330,3 +362,24 @@ Link to the robot's assembly: https://a360.co/3FA4tEU
 *Johannes:* Getting new robot to be functional, test competition 8 h +
 *Artur:* Desperately trying to get the driving to work, test competition 7.5 h +
 *Kert:* Helping to ready up for the competitions, competitions 5 h +
+
+=== Mon, 12.12.22
+*Andres:* Progress report, new robot debug 3.5 h +
+
+=== Tue, 13.12.22
+*Andres:* New robot debug 6.5 h +
+
+=== Wed, 14.12.22
+*Andres:* Cleaning robot, wiring, small software improvements, painting 12 h +
+
+=== Thu, 15.12.22
+*Andres:* Improving new robot software 5 h +
+
+=== Fri, 16.12.22
+*Andres:* DeltaX 3.5 h +
+
+=== Sat, 17.12.22
+*Andres:* Course competition 6.5 h +
+
+=== Sat, 14.01.23
+*Andres:* Final documentation, presentation
