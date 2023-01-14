@@ -385,9 +385,11 @@ Suggestions for instructors.
 
 === Fri, 16.12.22
 *Andres:* DeltaX 3.5 h +
+*Sander:* DeltaX 3.5 h +
 
 === Sat, 17.12.22
 *Andres:* Course competition 6.5 h +
 
 === Sat, 14.01.23
-*Andres:* Final documentation, presentation
+*Andres:* Final documentation, presentation +
+*Sander:* Final documentation, presentation 1 h +
