@@ -125,7 +125,7 @@ if __name__ == "__main__":
         # Do not add anything outside of if/elif state clauses to the end of the loop, otherwise use of "continue" will not let it run
         while(True):
             # Getting camera data
-            if state == State.BALL_THROW or state == State.BASKET_FIND or state == State.BALL_EAT or state == State.CALIB_THROW or state == State.BALL_MOVE:
+            if state in (State.BALL_THROW, State.BASKET_FIND, State.BALL_EAT, State.CALIB_THROW, State.BALL_MOVE):
                 processed_data = processor.process_frame(aligned_depth=True)
             else:
                 processed_data = processor.process_frame(aligned_depth=False)
@@ -200,8 +200,6 @@ if __name__ == "__main__":
                     break
             # End of housekeeping
 
-            #print(throw_check_counter)
-
             # Referee command handling
             if ref_enabled:
                 msg = referee.get_cmd()
@@ -237,12 +235,10 @@ if __name__ == "__main__":
             # ----- NEW ROBOT BALL-IN SENSOR HANDLING -----
             
             # If a ball is currently in the belly of the beast, find a basket
-            if robot.ball_in_robot and (state == State.BALL_SEARCH or state == State.BALL_MOVE or state == State.BALL_EAT):
+            if robot.ball_in_robot and state in (State.BALL_SEARCH, State.BALL_MOVE, State.BALL_EAT):
                 robot.eating_servo(mainboard.Eating_servo_state.OFF)
                 state = State.BASKET_FIND
                 robot.eating_servo(mainboard.Eating_servo_state.OFF)
-
-            #print(robot.ball_in_robot)
 
             # Main control logic uses a state machine
             # Inactive states
@@ -357,7 +353,6 @@ if __name__ == "__main__":
 
                     # Choosing the closest ball
                     interesting_ball = processed_data.balls[-1]
-                    #print("Ball:", interesting_ball)
 
                     if interesting_ball.distance <= 550 and (abs(middle_x - interesting_ball.x) < 80):
                         state = State.BALL_EAT
@@ -369,7 +364,6 @@ if __name__ == "__main__":
                         speed_y = sigmoid_controller(interesting_ball.distance, ball_good_range, x_scale=1000, y_scale=max_speed)
                         if speed_y == 0:
                             speed_y = 5
-                        #print(f"x: {speed_x}, y: {speed_y}, r: {speed_r}, dist: {interesting_ball.distance}, b.x: {interesting_ball.x}, b.y: {interesting_ball.y}")
                         robot.move(speed_x, speed_y, speed_r)
                 else:
                     state = State.BALL_SEARCH
@@ -393,7 +387,6 @@ if __name__ == "__main__":
                     speed_r = 0
                     interesting_ball = None
                     
-                    # +++ ADD EATING SERVO CONTROL HERE +++
                     robot.eating_servo(mainboard.Eating_servo_state.EAT)
                     
                     if len(processed_data.balls) > 0:
@@ -402,7 +395,6 @@ if __name__ == "__main__":
                             interesting_ball = None # Could use some kind of previous value here?
                         
                     if interesting_ball != None:
-                        #robot.move_backwheel_adjust(speed_y, interesting_ball.x)
                         speed_x = sigmoid_controller(interesting_ball.x, middle_x, x_scale=900, y_scale=max_speed/2)
                         speed_r = -sigmoid_controller(interesting_ball.x, middle_x, x_scale=500, y_scale=max_speed*1.5)
                         robot.move(speed_x, speed_y, speed_r)
@@ -414,7 +406,6 @@ if __name__ == "__main__":
                 else:
                     log.LOGE("timeout from eat")
                     state = State.BALL_SEARCH
-                    #robot.ball_in_robot = True # who knows what this is # This was Andres testing when there was no sensor XD
                     continue
             # end of ball eating
             
@@ -540,8 +531,6 @@ if __name__ == "__main__":
                                 last_known_basket_distance = int(basket.distance)
                             else: 
                                 robot.move(0, throw_move_speed, speed_r, last_known_basket_distance)
-                        
-                        #robot.ball_in_robot = False # Pmst kui sensori saab siis peaks korras olema, hetkel see siin manuaalselt, eemalda kui sensor tekib
                             
                     # This means basket needs centering
                     else:
@@ -565,10 +554,10 @@ if __name__ == "__main__":
                     log.LOGE("gamepad is None, you entered this state incorrectly")
                     continue
                 xbox_cont.read_gamepad_input()
-                joyY = 0
-                joyX = 0
-                joyRightX = 0
-                joyRTrig = 0
+                joy_y = 0
+                joy_x = 0
+                joy_right_x = 0
+                joy_r_trig = 0
                 deadzone = 0.15
 
                 if xbox_cont.joystick_left_y > deadzone or xbox_cont.joystick_left_y < -deadzone:
@@ -582,21 +571,17 @@ if __name__ == "__main__":
                 
                 joyRTrig = xbox_cont.trigger_right
 
-                #print(str(xboxcont.joystick_left_y) + " / " + str(xboxcont.joystick_left_x))
-
-                speedy = joyY * 13
-                speedx = joyX * 13
-                speedr = joyRightX * 30
-                speedthrow = joyRTrig * 4500
-
-                #print("Y: " + str(speedy) + " X: " + str(speedx) + " R: " + str(speedr))
+                speed_y = joy_y * 13
+                speed_x = joy_x * 13
+                speed_r = joy_right_x * 30
+                speed_throw = joy_r_trig * 4500
 
                 if joyRTrig > 0  :
                     robot.eating_servo(mainboard.Eating_servo_state.EAT)
                 else:
                     robot.eating_servo(mainboard.Eating_servo_state.OFF)
 
-                robot.move(speedx, speedy, speedr, speedthrow)
+                robot.move(speed_x, speed_y, speed_r, speed_throw)
                 
 
             else: # Unknown state

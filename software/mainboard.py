@@ -72,10 +72,7 @@ class Mainboard():
         self.logger = logger
 
     # Pyserial stuff
-    def start(self):
-        #self.ser = serial.Serial("/dev/ttyACM0")
-        #print(self.ser.name)
-      
+    def start(self):      
         port_list = serial.tools.list_ports.comports()
         devices = {}
         serial_port = None
@@ -104,12 +101,7 @@ class Mainboard():
         if distance == 0:
             return 0
         else:
-            #print (int((distance*self.active_slope + self.active_constant)))
             return int((distance*self.active_slope + self.active_constant))
-            #if self.driving_forward:
-            #    return int(distance * 0.195 + 3589)
-            #else:
-            #    return int(distance * 0.207 + 3625)
 
     # Big math, returns speed of a wheel in mainboard units
     def calculate_wheel_speed(self, motor_num, robot_speed, robot_angle, speed_rot):
@@ -127,8 +119,6 @@ class Mainboard():
     def move(self, speed_x, speed_y, speed_r, thrower_distance=0):
         robot_angle = math.atan2(speed_y, speed_x)
         robot_speed = math.sqrt(math.pow(speed_x, 2) + math.pow(speed_y, 2))
-        #print("Angle:", robot_angle)
-        #print("Speed:", robot_speed)
         if (abs(robot_speed) > self.max_speed) or (abs(speed_r) > self.max_speed * 4):
             self.logger.LOGE("Speed too large, speeds: " +str(speed_x) + " / " + str(speed_y) + " / " + str(speed_r))
             return
@@ -138,11 +128,9 @@ class Mainboard():
         for i in range(3):
             motor_speeds.append(int(self.calculate_wheel_speed(i+1, robot_speed, robot_angle, speed_r)))
         self.send_data(motor_speeds[0], motor_speeds[1], motor_speeds[2], self.calculate_throw_strength(thrower_distance), self.succ_servo_active_speed, self.active_angle)
-        #print(self.receive_data())
 
         actual_speed1, actual_speed2, actual_speed3, enc1, enc2, enc3, error, integral, ball_detected = self.receive_data()
         print("motors:", num_format(actual_speed1), num_format(actual_speed2), num_format(actual_speed3), num_format(enc1), num_format(enc2), num_format(enc3), num_format(error[0]), num_format(error[1]), num_format(error[2]), num_format(integral[0]), num_format(integral[1]), num_format(integral[2]))
-        # print(ball_detected)
         self.ball_in_robot = ball_detected
 
 
@@ -157,16 +145,12 @@ class Mainboard():
         # Correct radius check
         if cur_radius > 600:
             self.logger.LOGE("Invalid radius, radius: " + str(cur_radius))
-        #    return
         # Radius adjustment
         if cur_radius > (radius + self.buffer_x) or cur_radius < (radius - self.buffer_x):
             speed_y -= (radius - cur_radius) / 100 * self.y_const
         # Centering object, rotational speed adjustment
         if cur_object_x > (self.middle_x + self.buffer_x) or cur_object_x < (self.middle_x - self.buffer_x):
             speed_r += (self.middle_x - cur_object_x) / 100 * self.r_const
-        #self.logger.LOGI("orbit speeds x: " + str(speed_x) + " y: " + str(speed_y) + " r: " + str(speed_r) + " cur_object_x: " + str(cur_object_x))
-
-        #print("x:", speed_x, "y:", speed_y, "r:", speed_r, "cur_rad:", cur_radius, "cur_x:", cur_object_x)
         self.move(speed_x, speed_y, speed_r)
         self.prev_rad = cur_radius
 
@@ -210,7 +194,6 @@ class Mainboard():
     # Discrete call not continuous, use within a loop
     def throw(self, thrower_distance):
         self.send_data(0, 0, 0, self.calculate_throw_strength(thrower_distance), self.succ_servo_zero, self.angle_servo_low)
-        #print(self.receive_data())
 
     # Throw ball with given strength (in "raw motor" units)
     # Discrete call not continuous, use within a loop

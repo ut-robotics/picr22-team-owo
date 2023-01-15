@@ -91,19 +91,13 @@ class ImageProcessor():
         # 30:400 proved to work
         gr_img = img[0:320]
         krn = 1 # kernel size for gauss
-        #blur_img = cv2.GaussianBlur(gr_img, (krn, krn), 0)
 
         frag_sx, frag_sy = np.shape(fragmented)
         fragmented_white = np.zeros((frag_sx, frag_sy))
         fragmented_black = np.zeros((frag_sx, frag_sy))
-        #print(f"tere hommikust: {frag_sx} {frag_sy}")
 
-        #fragmentedblack[fragmentedblack == 6] = 0
         fragmented_black[fragmented == 6] = 1
-
-        #fragmentedwhite[fragmentedwhite == 5] = 0
         fragmented_white[fragmented == 5] = 1
-        
         
         open_kernel = np.ones((3,3), np.uint8)
         lowdilate_kernel = np.ones((3,3), np.uint8)
@@ -117,16 +111,7 @@ class ImageProcessor():
         fragmented_black = fragmented_black.astype(np.uint8) * 255
         detection_black = detection_black.astype(np.uint8) * 255
 
-        # fragmented_white, fragmented_black, detection_black = process_line_images(fragmented)
-
-        #low = 60
-        #high = 100
-
-        #ret, thresh = cv2.threshold(gr_img, low, high, cv2.THRESH_BINARY_INV)
-
-
         # different line detection parameters
-        #scv2.imshow('hallo', thresh)
         low_thr = 50
         high_thr = 160
         edges = cv2.Canny(detection_black, low_thr, high_thr)
@@ -145,7 +130,6 @@ class ImageProcessor():
         
         lines_by_slope = []
         
-        #print("lines: ", len(lines))
         if lines is None:
             return
         
@@ -159,8 +143,6 @@ class ImageProcessor():
             if x1 == x2:
                 continue
             slope = (y2 - y1) / (x2 - x1) # slope
-
-            #antislope = 1/slope
 
             # LINE COLOUR SAMPLING
             sample_length = 10
@@ -230,7 +212,6 @@ class ImageProcessor():
             if lines is not None:
                 for slope, interc in lines:
                     if obj_y < (slope * obj_x + interc + 0): # NB! 30/0 is the offset from line processing!
-                        #print ("Ball " + str(obj_x) + "/" + str(obj_y) + "/" + str(obj_dst) + " is outside of the court")
                         # If the robot is not outside of this line (is on the court) and the ball is, this ball is discarded
                         above_line = True
                         break
@@ -241,7 +222,6 @@ class ImageProcessor():
             if self.debug:
                 self.debug_frame[ys, xs] = [0, 0, 0]
                 cv2.circle(self.debug_frame,(obj_x, obj_y), 10, (0,255,0), 2)
-                #cv2.imshow("lines", copy_img)
 
             balls.append(Object(x = obj_x, y = obj_y, size = size, distance = obj_dst, exists = True))
 
@@ -270,8 +250,6 @@ class ImageProcessor():
             obj_x, obj_y, not_used = calculatePosition(h, w, depth, x, y)
 
             # experimental way for gaining accuracy
-            #obj_x = np.mean(np.nonzero(t_basket))
-            #print(obj_x)
             if depth is None:
                 obj_dst = -242.0983 + (12373.93 - -242.0983)/(1 + math.pow((obj_y/4.829652), 0.6903042))
             else:
@@ -286,9 +264,6 @@ class ImageProcessor():
         if self.debug:
             if basket.exists:
                 cv2.circle(self.debug_frame,(basket.x, basket.y), 20, debug_color, -1)
-
-        # Basket distance print for debug reasons
-        #print("BASKET DISTANCE..... ", basket.distance)
 
         return basket
 
