@@ -1,17 +1,17 @@
 = Team OWO
 
-==== Members: 
+== Members: 
 * Artur Eksi
 * Sander Miller
 * Andres Aleksander Tammer
 * Kert Karsna
 * Johannes Voldemar Langsepp
 
-==== Sources:
+== Links:
 Link to the robot's assembly: https://a360.co/3FA4tEU +
 
 
-==== Programming:
+== Programming:
 The robot will automatically connect to the pwir wifi. Then it can be accessed via ssh using the hostname OWO. Refer to software/readme.asciidoc for more details and how to run the code.
 
 External libraries used:
@@ -23,27 +23,31 @@ External libraries used:
 * pyserial - Serial communication with the Mainboard
 * websocket-client - For creating and handling websocket connection to the referee server
 
+*Robot's logic diagram*
+
+image::images/robot_logic.png[]
+
+
 A brief description of your game logic and overall code structure.
-A block diagram of your game logic.
 A short analysis of what was good and bad in your code and how to improve.
 
 
 
-==== Electronics:
+== Electronics:
 If you used something different from what was given at the start of the course or did something different, describe it.
 Photos illustrating electronics on your robot. (electronics board, cable management, etc.)
 A short analysis of what was good and bad in your electronics and how to improve.
 
 
 
-==== Mechanics:
+== Mechanics:
 Link to the robot's assembly: https://a360.co/3FA4tEU +
 If you used something different from what was given at the start of the course or did something different, describe it.
 Description of the main points of interest in your ball thrower design and construction process.
 Photos of your robot.
 A short analysis of what was good and bad in your mechanics and how to improve.
 
-==== Personal comments:
+== Personal comments:
 On which parts of the robot did you work on?
 What did you learn?
 What would you do differently next time?
