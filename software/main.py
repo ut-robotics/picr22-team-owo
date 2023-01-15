@@ -103,7 +103,7 @@ if __name__ == "__main__":
     throw_check_counter = 0
 
     # Referee commands
-    ref_enabled = True
+    ref_enabled = False
     if ref_enabled:
         robot_name = "owo"
         referee = ref_cmd.Referee_cmd_client(log)
@@ -561,22 +561,22 @@ if __name__ == "__main__":
                 deadzone = 0.15
 
                 if xbox_cont.joystick_left_y > deadzone or xbox_cont.joystick_left_y < -deadzone:
-                    joyY = xbox_cont.joystick_left_y
+                    joy_y = xbox_cont.joystick_left_y
 
                 if xbox_cont.joystick_left_x > deadzone or xbox_cont.joystick_left_x < -deadzone:
-                    joyX = xbox_cont.joystick_left_x
+                    joy_x = xbox_cont.joystick_left_x
 
                 if xbox_cont.joystick_right_x > deadzone or xbox_cont.joystick_right_x < -deadzone:
-                    joyRightX = -xbox_cont.joystick_right_x
+                    joy_right_x = -xbox_cont.joystick_right_x
                 
-                joyRTrig = xbox_cont.trigger_right
+                joy_r_rig = xbox_cont.trigger_right
 
                 speed_y = joy_y * 13
                 speed_x = joy_x * 13
                 speed_r = joy_right_x * 30
                 speed_throw = joy_r_trig * 4500
 
-                if joyRTrig > 0  :
+                if joy_r_trig > 0  :
                     robot.eating_servo(mainboard.Eating_servo_state.EAT)
                 else:
                     robot.eating_servo(mainboard.Eating_servo_state.OFF)
