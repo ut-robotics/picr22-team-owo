@@ -108,7 +108,7 @@ Make the sketch so that important dimensions can be changed easily and find enou
 Suggestions for instructors? +
 Instructors usually answered quite quickly, but sometimes you had to wait several weeks for an answer.  +
 
-*Andres:*
+*Andres:* +
 On which parts of the robot did you work on? +
 I worked on the robot's software. In addition I did some team management stuff.+
 
