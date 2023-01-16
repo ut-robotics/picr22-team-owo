@@ -73,23 +73,23 @@ Suggestions for instructors.
 
 *Artur:*
 
-*Johannes:*
-On which parts of the robot did you work on?
+*Johannes:* +
+On which parts of the robot did you work on? +
 Programming
 
-What did you learn?
+What did you learn? +
 Many ideas and approaches related to constructing and optimising code.
 
-What would you do differently next time?
+What would you do differently next time? +
 Possibly improve the performance and stability of the code, the accuracy of throwing also could be better.
 
-What did you like/did not like about the course/building a robot?
+What did you like/did not like about the course/building a robot? +
 I liked the base material and code, which was very helpful in building a working solution without inventing the wheel.
 
-Suggestions for next year students.
+Suggestions for next year students. +
 Don't sit idly, work for the whole semester.
 
-Suggestions for instructors.
+Suggestions for instructors. +
 Maybe the points system could be improved, as a robot that makes it into the final competition should be enough to make all team members pass with high grades.
 
 *Kert:*
