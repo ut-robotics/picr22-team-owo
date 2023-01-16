@@ -28,9 +28,12 @@ External libraries used:
 image::images/robot_logic.png[]
 
 
-A brief description of your game logic and overall code structure.
-A short analysis of what was good and bad in your code and how to improve.
+*A brief description of logic:*
 
+The logic of our robot is based on a state machine where states are entered in succession and when the ball is lost or something unexcpected occurs, the state machine will return to "Ball Search", this approach makes the state machine more foolproof compared to approaches where there would be more connections and jumps between different states. When the game is started, the robot will try to find a ball by turning in place, when a ball is found the robot will move towards it and when the ball is close enough it will attempt to eat the ball. If the ball is detected to be inside the robot by an optical sensor, the robot will proceed with finding a basket, when a basket is found, the robot will align itself with the basket while performing corrective movements. When the basket is satisfiably aligned, the robot will proceed with throwing the ball with thrower speeds based on the depth-camera distance of the basket. We use only one angle, we do not change the angle of our thrower during operations, even though we have the functionality.
+
+
+Overall the code was stable and fast enough to do well in the competitions, but the both the stability and speed could be improved. The speed of the code could be a bottleneck and some more processing power would definitely be of use, although there are definitely optimisations that could be done on the software side as well. We experimented with compiling some code to make it faster, and although we did not have enough time for our experiments to yield any results, with further testing there could definitely be speed benefits. Another idea to help speed things up would be to run some operations on different threads, but this is an approach that we never tried.
 
 
 == Electronics:
@@ -71,6 +74,23 @@ Suggestions for instructors.
 *Artur:*
 
 *Johannes:*
+On which parts of the robot did you work on?
+Programming
+
+What did you learn?
+Many ideas and approaches related to constructing and optimising code.
+
+What would you do differently next time?
+Possibly improve the performance and stability of the code, the accuracy of throwing also could be better.
+
+What did you like/did not like about the course/building a robot?
+I liked the base material and code, which was very helpful in building a working solution without inventing the wheel.
+
+Suggestions for next year students.
+Don't sit idly, work for the whole semester.
+
+Suggestions for instructors.
+Maybe the points system could be improved, as a robot that makes it into the final competition should be enough to make all team members pass with high grades.
 
 *Kert:*
 
@@ -402,25 +422,32 @@ Instructors usually answered quite quickly, but sometimes you had to wait severa
 
 === Mon, 12.12.22
 *Andres:* Progress report, new robot debug 3.5 h +
+*Johannes:* Progress report, debugging new robot 4 h +
 
 === Tue, 13.12.22
 *Andres:* New robot debug 6.5 h +
+*Johannes:* Working on new robot 5.5 h +
 
 === Wed, 14.12.22
 *Andres:* Cleaning robot, wiring, small software improvements, painting 12 h +
+*Johannes:* Working on new robot 4 h +
 
 === Thu, 15.12.22
 *Andres:* Improving new robot software 5 h +
+*Johannes:* New robot software corrections 7 h +
 
 === Fri, 16.12.22
 *Andres:* DeltaX 3.5 h +
 *Sander:* DeltaX 3.5 h +
+*Johannes:* DeltaX 5.5 h +
 
 === Sat, 17.12.22
 *Andres:* Course competition 6.5 h +
+*Johannes:* DeltaX Vol.2 7 h +
 
 === Sat, 14.01.23
 *Andres:* Final documentation, presentation 3 h +
 
 === Mon, 16.01.23
 *Sander:* Final documentation 2 h +
+*Johannes:* Final documentation 2 h +
