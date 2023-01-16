@@ -472,3 +472,4 @@ The basketball court can get quite crowded at times. Would be nice to have some 
 === Mon, 16.01.23
 *Sander:* Final documentation 2 h +
 *Johannes:* Final documentation 2 h +
+*Andres:* Final documentation 0.5 h +
