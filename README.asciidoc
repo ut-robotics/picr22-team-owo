@@ -109,6 +109,27 @@ Suggestions for instructors? +
 Instructors usually answered quite quickly, but sometimes you had to wait several weeks for an answer.  +
 
 *Andres:*
+On which parts of the robot did you work on? +
+I worked on the robot's software. In addition I did some team management stuff.+
+
+What did you learn?+
+General project management stuff, both from the software side and the team management side. It was a valuable (and fun) experience for the future.
+Also gained some more experience with Python in general.+
+
+What would you do differently next time? +
+Think more about code architeture and structure. Towards the end of the course code quality started downgrading and that led to stability issues and bugs. +
+
+What did you like/did not like about the course/building a robot? +
+Extremely cool and fun course. Gives you quite a bit of freedom on tackling the challenge of building a basketball robot. +
+
+Suggestions for next year students. +
+Start right of the bat at the beginning of the semester. It will be easier in December before the DeltaX, then you don't have to crunch that much.
+Establish a good structure for working together as a team. Be it weekly meetings or that one person is responsible for checking how everyone is doing. Find somehting that works for your team and make it happen. It is very helpful in the long run.
+Think hard about what features to add. The best robot usually doesn't have the fanciest algorithms and features, but very robust and stable core components. Main thing is not to get carried away by unnecessary stuff. +
+
+Suggestions for instructors. +
+Organizational stuff could be better. There was quite a bit of confusion and uncertainty about the dates of the competition.
+The basketball court can get quite crowded at times. Would be nice to have some more space. +
 
 
 
