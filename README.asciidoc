@@ -47,6 +47,16 @@ Description of the main points of interest in your ball thrower design and const
 Photos of your robot.
 A short analysis of what was good and bad in your mechanics and how to improve.
 
+Our robot design is mostly influence by BTS (our test robot): similar battery holders and electronics placement, fully enclosed sides almost same camera position and wheels.
+Our robot is much smaller and have rigid and heavily supported camera stand. Also it has more advanced thrower (added grabbing and angle adjustment).
+
+Good in our mechanics:
+Rigid and heavily supported camera stand.
+
+Bad in our mechanics and how to improve:
+Robot can not turn very well, because motors can not turn as little as we needed to. To improve, make robot bigger in radius or make wheels smaller.
+
+
 image::images/robot_design.png[]
 image::images/robot_real.png[]
 
@@ -410,5 +420,7 @@ Instructors usually answered quite quickly, but sometimes you had to wait severa
 *Andres:* Course competition 6.5 h +
 
 === Sat, 14.01.23
-*Andres:* Final documentation, presentation +
-*Sander:* Final documentation, presentation 1 h +
+*Andres:* Final documentation, presentation 3 h +
+
+=== Mon, 16.01.23
+*Sander:* Final documentation 2 h +
