@@ -47,6 +47,9 @@ Description of the main points of interest in your ball thrower design and const
 Photos of your robot.
 A short analysis of what was good and bad in your mechanics and how to improve.
 
+image::images/robot_design.png[]
+image::images/robot_real.png[]
+
 == Personal comments:
 On which parts of the robot did you work on?
 What did you learn?
@@ -61,7 +64,19 @@ Suggestions for instructors.
 
 *Kert:*
 
-*Sander:*
+*Sander:* +
+On which parts of the robot did you work on? +
+I worked on mechanics: designing, manufacturing and assembling. +
+What I learned? +
+I learned to use Fusion 360 and how to export necessary files to actually manufacture components. Also learned how to use CNC-mill, lathe and 3D-printer. +
+What I liked about the course? +
+I liked that we needed to make actual robot from scratch and learned how to use CNC-mill, lathe and 3D-printer. +
+What would you do differently next time? +
+I would make the robot a bit bigger and wheels smaller to make it easier to turn. Also would improve the thrower design to make it smaller and more efficent. +
+Suggestions for next year students? +
+Make the sketch so that important dimensions can be changed easily and find enough time for this project from the beginning of the course. +
+Suggestions for instructors? +
+Instructors usually answered quite quickly, but sometimes you had to wait several weeks for an answer.  +
 
 *Andres:*
 
