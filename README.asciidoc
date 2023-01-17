@@ -71,7 +71,24 @@ What did you like/did not like about the course/building a robot?
 Suggestions for next year students.
 Suggestions for instructors.
 
-*Artur:*
+*Artur:* +
+On which parts of the robot did you work on? +
+The electronics and firmware for the mainboard +
+
+What did you learn? +
+I learnt quite a few things about good PCB design and how to use and program stm32 microprocessors. +
+
+What would you do differently next time? +
+I would start with the PCB right from the first week and also try to invest more time into the firmware. +
+
+What did you like/did not like about the course/building a robot? +
+If you don't manage your time well it is very likely that the last 2 weeks before the competition will be a time crunch. Regardless I enjoyed the freedom that this course offered when designing the mainboard, it really felt like I was actually making something useful and learning from it. +
+
+Suggestions for next year students. +
+If you're doing the electronics, **START WORKING ON THE MAINBOARD FROM WEEK 1** and keep up the pace. Otherwise you are doomed to an appalling time crunch and you WILL be spending the better part of a week (figuratively) locked in the electronics lab. Heed my warning or perish! +
+
+Suggestions for instructors. +
+I think there should be a central figure who properly oversees all of the instructors to organise a few things better and reduce communication issues. +
 
 *Johannes:* +
 On which parts of the robot did you work on? +
