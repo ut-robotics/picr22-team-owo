@@ -1,17 +1,18 @@
 # Mainboard communication
+
 The mainboard recives command structs in the form:
 
 [,c]
 ----
 typedef struct Command {
-  int16_t speed[3];
-  uint16_t thrower_speed;
-  uint16_t servo1;
-  uint16_t servo2;
-  int16_t int_const;
-  int16_t flat_const;
-  int16_t der_const;
-  uint16_t delimiter;
+  int16_t speed[3]; // Target speed for each motor
+  uint16_t thrower_speed; // Set PWM for thrower motor
+  uint16_t servo1; // Set PWM for servo motor 1
+  uint16_t servo2; // Set PWM for servo motor 2
+  int16_t int_const; // PID integral constant
+  int16_t flat_const; // PID integral constant
+  int16_t der_const; // PID deriviative constant
+  uint16_t delimiter; // Assumed delimiter is 0xAAAA
 } Command;
 ----
 
@@ -19,10 +20,11 @@ The mainboard returns feedback structs in the form:
 [,c]
 ----
 typedef struct Feedback {
-  int16_t speed[3];
-  int16_t change[3];
-  int16_t error[3];
-  int16_t integral[3];
-  uint16_t ball_detected;
+  int16_t speed[3]; // Set speed for each motor
+  int16_t change[3]; // Actual speed of each motor
+  int16_t error[3]; //  Diference between the set and actual speed of each motor
+  int16_t integral[3]; // PID integral sum for each motor
+  uint16_t ball_detected; // Boolean value of 0 or 1 whether the ball is present or not in the holder
 } Feedback;
 ----
+
