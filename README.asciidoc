@@ -37,11 +37,19 @@ Overall the code was stable and fast enough to do well in the competitions, but 
 
 
 == Electronics:
-If you used something different from what was given at the start of the course or did something different, describe it.
-Photos illustrating electronics on your robot. (electronics board, cable management, etc.)
-A short analysis of what was good and bad in your electronics and how to improve.
+The robot uses the electronics components recommended and given to us by the instructors. The mainboard can control 3 driving motors, 2 servos, 1 throwing motor and has IR sensor support for ball detection. It is powered by 5V by an USB connection from the NUC and one 4S LIPO battery. 
 
+* The good and the bad *
+- One of the encoder channels was acting oddly and had a one way leakage of another encoder channel, problem was most likely tied to microcontroller weirdness. We couldn't find a fix for it but it was alleviated with a hacked pull-up
+- I burnt through all 3 isolators due to the 5V buck converter having it's IC the wrong way around
+- In the end everything worked well and all of the desired features were implimented
 
+*Cable routing of the robot*
+image::images/robot_routing.png[]
+*Front of the mainboard*
+image::images/pcbfront.png[]
+*Back of the mainboard*
+image::images/pcbback.png[]
 
 == Mechanics:
 Link to the robot's assembly: https://a360.co/3FA4tEU +
