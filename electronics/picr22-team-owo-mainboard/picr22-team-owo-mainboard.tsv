@@ -1,0 +1,18 @@
+Comment	Description	Designator	Footprint	LibRef	Quantity
+
+"Capacitor"	""	"C1, C2, C3, C4, C5, C8, C9, C10, C11, C12, C14, C19, C21, C23, C27, C28, C29, C30, C31, C38, C39, C40, C41, C42, C44, C45, C46, C47, C48"	"Capacitor 1206"	"Capacitor"	"29"
+"Capacitor"	""	"C6, C7, C13, C15, C16, C17, C18, C20, C22, C24, C25, C26, C32, C33, C34, C35, C36, C37, C43, C49"	"Capacitor 0603"	"Capacitor"	"20"
+"LED"	""	"D1, D2, D5, D6"	"DIODE 0603"	"LED"	"4"
+"10118193-0001LF"	"USB - micro B USB 2.0 Receptacle Connector 5 Position Surface Mount, Right Angle; Through Hole"	"J1"	"USB port"	"10118193-0001LF"	"1"
+"FTSH-105-XX-X-DV"	"Connector Header Surface Mount 10 position 0.050" (1.27mm)"	"J6"	"SAMTEC_FTSH-105-XX-X-DV"	"FTSH-105-XX-X-DV"	"1"
+"215079-4"	"No Description Available"	"J7, J10, J11, J13, J16"	"CONN_215079-4_TYC"	"215079-4"	"5"
+"215079-6"	""	"J12"	"CONN_215079-6_TYC"	"215079-6"	"1"
+"Inductor"	""	"L1"	"Inductor ?"	"Inductor"	"1"
+"BUK6Y10-30P"	""	"Q1"	"DPAK127P600X120-5N"	"BUK6Y10-30P"	"1"
+"Generic SMD resistor"	""	"R1, R2, R3, R4, R5, R7, R8, R9, R10, R12, R13, R14, R16"	"Resistor 0603"	"Resistor"	"13"
+"CM1223-02SO"	""	"U1"	"SOT95P280X145-5N"	"CM1223-02SO"	"1"
+"XTPS62933DRLR"	""	"U2"	"SOT-5X3 8N"	"XTPS62933DRLR"	"1"
+"NCP164CSN330T1G"	""	"U3"	"TSOP95P280X110-5N"	"NCP164CSN330T1G"	"1"
+"MAX14930DASE"	""	"U4, U7, U8"	"SOIC127P630X175-16N"	"MAX14930DASE+"	"3"
+"PDRV8243HRXYQ1"	"No Description Available"	"U5, U9, U10"	"RXY0014A-MFG"	"PDRV8243HRXYQ1"	"3"
+"STM32G441KxT"	""	"U6"	"TQFP80P900X900X160-32N"	"STM32G441KxT"	"1"
