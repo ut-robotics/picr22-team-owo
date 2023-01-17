@@ -1,0 +1,28 @@
+# Mainboard communication
+The mainboard recives command structs in the form:
+
+[,c]
+----
+typedef struct Command {
+  int16_t speed[3];
+  uint16_t thrower_speed;
+  uint16_t servo1;
+  uint16_t servo2;
+  int16_t int_const;
+  int16_t flat_const;
+  int16_t der_const;
+  uint16_t delimiter;
+} Command;
+----
+
+The mainboard returns feedback structs in the form:
+[,c]
+----
+typedef struct Feedback {
+  int16_t speed[3];
+  int16_t change[3];
+  int16_t error[3];
+  int16_t integral[3];
+  uint16_t ball_detected;
+} Feedback;
+----
