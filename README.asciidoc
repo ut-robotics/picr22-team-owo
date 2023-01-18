@@ -56,13 +56,14 @@ Photos of your robot.
 A short analysis of what was good and bad in your mechanics and how to improve.
 
 Our robot design is mostly influenced by BTS (our test robot): similar battery holders and electronics placement, fully enclosed sides almost same camera position and wheels.
-Our robot is much smaller and have rigid and heavily supported camera stand. Also it has more advanced thrower (added grabbing and angle adjustment).
+Our robot is much smaller and have a rigid and heavily supported camera stand. Also it has more advanced thrower (added grabbing and angle adjustment).
 
 Good in our mechanics:
 Rigid and heavily supported camera stand.
 
 Bad in our mechanics and how to improve:
 Robot can not turn very well, because motors can not turn as little as we needed to. To improve, make robot bigger in radius or make wheels smaller.
+At the end the reassembly while working on fixing different minor fixes and corrections could've been made easier.
 
 
 image::images/robot_design.png[]
@@ -114,7 +115,29 @@ Don't sit idly, work for the whole semester.
 Suggestions for instructors. +
 Maybe the points system could be improved, as a robot that makes it into the final competition should be enough to make all team members pass with high grades.
 
-*Kert:*
+*Kert:* +
+
+On which parts of the robot did you work on? +
+I worked on mechanics: designing, manufacturing and assembling. +
+
+What did you learn? +
+I improved my usage of Fusion 360 and making a complete project in this space, fitting all of the components inside the robot, 3d-modelling and making them fit with one another. Also improved my knowledge on how to manufacture parts for the robot - all the preparation steps from the model to an actual robot using a CNC-mill and the software. +
+
+What would you do differently next time? +
+I would probably make at least one more prototype of the robot between the given one and our final robot to make the last one even better and learn from mistakes made. +
+
+What did you like/did not like about the course/building a robot? +
+I liked that at first all groups get the last year's robots with what all of the members of the group can start working on right away. Additionally we could see how their solution was made (physically and in the software), what would they improve and what was good and learn from others mistakes before even starting the modelling of our own robot. +
+
+What would you do differently next time? +
+I would start working on the robot right away to get more feedback and to get the robots chassis ready for developers/programmers to perfect their solution more - to give them more time. +
+
+Suggestions for next year students? +
+For mechanics i would suggest starting as easly as you can and try to make the first iteration as soon as possible. Try to get a lot of feedback from the instructors and if stuck, don't hesitate to ask for help. About modelling: make the sketch as flexible (in terms of main dimensions) as possible, this saves a lot of time and effort to change these based on the feedback. Also keep in mind that the course actually takes roughly the time and investment for the 6EAP requirements and 95% of the time it's independent work so you have to initiate it yourself. +
+
+Suggestions for instructors? +
+Instructors usually answered quite quickly, but sometimes you had to wait several weeks for an answer. And to keep an eye on the groups that are behind with some parts and give them more attention. +
+
 
 *Sander:* +
 On which parts of the robot did you work on? +
@@ -477,6 +500,7 @@ The basketball court can get quite crowded at times. Would be nice to have some 
 *Andres:* Cleaning robot, wiring, small software improvements, painting 12 h +
 *Johannes:* Working on new robot 4 h +
 *Artur:* Total PID rework, painting the robot while almost (?) delirious 11.5 h +
+*Kert:* Helping with cleaning the robot 1.5 h +
 
 === Thu, 15.12.22
 *Andres:* Improving new robot software 5 h +
@@ -487,10 +511,12 @@ The basketball court can get quite crowded at times. Would be nice to have some 
 *Sander:* DeltaX 3.5 h +
 *Johannes:* DeltaX 5.5 h +
 *Artur:* DeltaX 3.5 h +
+*Kert:* DeltaX 4 h +
 
 === Sat, 17.12.22
 *Andres:* Course competition 6.5 h +
 *Johannes:* DeltaX Vol.2 7 h +
+*Kert:* Managing multiple robots in the course/DeltaX competition and helping with other stuff 8 h +
 
 === Sat, 14.01.23
 *Andres:* Final documentation, presentation 3 h +
@@ -499,6 +525,7 @@ The basketball court can get quite crowded at times. Would be nice to have some 
 *Sander:* Final documentation 2 h +
 *Johannes:* Final documentation 2 h +
 *Andres:* Final documentation 0.5 h +
+*Kert:* Final documentation 2 h +
 
 === Tue, 17.01.23
 *Artur:* FInal documentation 1 h +
