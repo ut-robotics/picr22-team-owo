@@ -54,9 +54,11 @@ Link to the robot's assembly: https://a360.co/3FA4tEU +
 Our robot design is mostly influenced by BTS (our test robot): similar battery holders and electronics placement, fully enclosed sides almost same camera position and wheels.
 Our robot is much smaller and have a rigid and heavily supported camera stand. Also it has more advanced thrower (added grabbing and angle adjustment).
 
-About thrower: Our design includes motor for throwing the ball, non-continuous servo to adjust the angle of the exit and a continuous servo for grabbing the ball in before the throw. The grabbing works with infra-red sensor, which detects when the ball is inside the robot and sends this data back to the computer to indicate that the ball is in the correct position to start preparing for the throw and stop the grabbing servo. Then the angle is calculated with the main code for throwing and the thrower motor spins to the correct RPM to throw it into the basket.
+About thrower: Our design includes motor for throwing the ball, non-continuous servo to adjust the angle of the exit and a continuous servo for grabbing the ball in before the throw. The grabbing works with infra-red sensor, which detects when the ball is inside the robot and sends this data back to the computer to indicate that the ball is in the correct position to start preparing for the throw and stop the grabbing servo. Then the thrower motor spins to the correct RPM (calculated in the main code) to throw it into the basket.
 
-image::images/thrower.png[]
+
+image::images/thrower_front.PNG[]
+image::images/thrower_back.PNG[]
 
 Good in our mechanics:
 Rigid and heavily supported camera stand. Great thrower with a wide range because of adjustable angle and a ball holder. 
