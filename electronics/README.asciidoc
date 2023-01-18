@@ -1,0 +1,71 @@
+# OWO mainboard documentation
+
+## General information
+
+### Power
+The mainboard is split into 2 isolated sides with seperate ground planes.
+The microcontroller side is powered with 5V by an USB connector that is stepped down to 3.3V by a 5V to 3.3V voltage regulator (NCP164CSN330T1G). 
+The motor driver side is powered by a 4S LIPO battery (up to 16.8V) and is stepped down to 5V to power the isolators and servos 
+using a buck converter (TPS62933DRLR). Both the buck converter and voltage regulator have power LEDs.
+The board can power 3 brushed DC motors with up to 3A each, its encoders, 2 servos and one external IR sensor and IR LED.
+
+### Communications and signal
+The microcontroller can be programmed using the programmer connector and can communicate through the USB connector. 
+The motor drivers recieve a nsleep signal from the microcontroller to wake up and are controlled using a PWM and direction signal.
+The 2 isolated sides are connected via 3 isolators (MAX14930DASE+).
+
+## Labeled PCB
+image:picr22-team-owo-mainboard/pcbfront_labled.png[]
+image:picr22-team-owo-mainboard/pcbback_labled.png[]
+
+## Pinouts
+
+### J6 - Programmer connector
+1. 3.3V
+2. SWDIO
+3. GND
+4. SWCLK
+5. GND
+6. NC
+7. NC
+8. NC
+9. GND
+10. NRST
+
+### J7 - Motor 1 Encoder connector
+1. GND
+2. 3.3V
+3. M1ENC1
+4. M1ENC2
+
+### J10 - Motor 2 Encoder connector
+1. GND
+2. 3.3V
+3. M2ENC1
+4. M2ENC2
+
+### J11 - Motor 3 Encoder connector
+1. GND
+2. 3.3V
+3. M3ENC1
+4. M3ENC2
+
+### J16 - Thrower connector
+1. GND
+2. THRW_PWM_OUT
+3. NC
+4. NC
+
+### J12 - Servo motor connector
+1. SIN2
+2. GND
+3. 5V
+4. 5V
+5. GND
+6. SIN1
+
+### J13 - IR Sensor Connector
+1. 5V
+2. NC
+3. INFR
+4. GND
