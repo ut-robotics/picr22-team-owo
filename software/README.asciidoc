@@ -29,3 +29,29 @@ If you wish to use the remote (XBox One S controller), just turn it on, if you f
 * Y switches the basket being targeted
 * B closes the program
 * Right Trigger can be used to activate the eating servo and the thrower motor
+
+== Overview of Files
+
+*camera.py* +
+Contains and handles the realsense camera object.
+
+*config_colors.py* +
+File for interactive colour calibration. This file should be run to configure colours.
+
+*gamepad.py* +
+Handles communication with the Xbox Controller.
+
+*image_processor.py* +
+Handles all aspects of image processing, for example ball detection, basket detection and line calculations.
+
+*main.py* +
+The main game logic file, this should be run to activate the robot.
+
+*mainboard.py* +
+Handles communication between the robot mainboard and the main code.
+
+*ref_cmd.py* +
+Referee command handling and connecting to to the specified referee server.
+
+*robot_utilities.py* +
+Miscellaneous utility classes and functions, houses the logging functionality and sigmoid controller.
