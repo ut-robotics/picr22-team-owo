@@ -1,0 +1,31 @@
+= Software guide
+
+== Setup
+
+Software uses Python 3.9.
+
+Segmentation module installation:
+```
+cd segment_module
+pip install .
+```
+
+To install all other dependencies:
+```
+pip install -r requirements.txt
+```
+
+To run the code:
+```
+cd software
+python3.9 main.py
+```
+
+To turn referee commands on/of change the value of ref_enabled variable in main.py. +
+If you wish to use the remote (XBox One S controller), just turn it on, if you feel a little vibration from the controller, it is connected to the NUC. Then you can run main.py and use the controller. +
+
+* Use the controller sticks to move the robot.
+* X changes between autonomous and remote controller mode
+* Y switches the basket being targeted
+* B closes the program
+* Right Trigger can be used to activate the eating servo and the thrower motor
