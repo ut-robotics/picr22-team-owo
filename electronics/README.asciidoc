@@ -7,7 +7,7 @@ The mainboard is split into 2 isolated sides with seperate ground planes.
 The microcontroller side is powered with 5V by an USB connector that is stepped down to 3.3V by a 5V to 3.3V voltage regulator (NCP164CSN330T1G). 
 The motor driver side is powered by a 4S LIPO battery (up to 16.8V) and is stepped down to 5V to power the isolators and servos 
 using a buck converter (TPS62933DRLR). Both the buck converter and voltage regulator have power LEDs.
-The board can power 3 brushed DC motors with up to 2.95A each, its encoders, 2 servos and one external IR sensor and IR LED.
+The board can power 3 brushed DC motors with up to 3A each, its encoders, 2 servos and one external IR sensor and IR LED.
 
 ### Communications and signal
 The microcontroller can be programmed using the programmer connector and can communicate through the USB connector. 
