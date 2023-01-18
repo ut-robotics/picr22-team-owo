@@ -57,8 +57,8 @@ Our robot is much smaller and have a rigid and heavily supported camera stand. A
 About thrower: Our design includes motor for throwing the ball, non-continuous servo to adjust the angle of the exit and a continuous servo for grabbing the ball in before the throw. The grabbing works with infra-red sensor, which detects when the ball is inside the robot and sends this data back to the computer to indicate that the ball is in the correct position to start preparing for the throw and stop the grabbing servo. Then the thrower motor spins to the correct RPM (calculated in the main code) to throw it into the basket.
 
 
-image::images/thrower_front.PNG[]
-image::images/thrower_back.PNG[]
+image::images/thrower_front.png[]
+image::images/thrower_back.png[]
 
 Good in our mechanics:
 Rigid and heavily supported camera stand. Great thrower with a wide range because of adjustable angle and a ball holder. 
