@@ -1,7 +1,1 @@
-= Instructions on robot set-up 
 
-- Turn on the robot and connect with SSH, hostname: owo (on pwir) and password: robot
-- Set access rights to USB port
-- Nagivate to the repository and in the /software folder run main.py
-- Extra configuration options are detailed within main.py
-- To enable VNC access, run command 'vncserver'
