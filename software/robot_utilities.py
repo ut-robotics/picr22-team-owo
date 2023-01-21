@@ -79,6 +79,18 @@ class Logging():
 def sigmoid_controller(current, target, x_scale = 1, y_scale = 1):
     return (2 / (1 + np.exp(3*(target-current)/x_scale)) - 1) * y_scale
 
+def num_format(number):
+    if number < 10:
+        return "   " + str(number)
+    elif number < 100:
+        return "  " + str(number)
+    elif number < 1000:
+        return " " + str(number)
+    elif number < 10000:
+        return str(number)
+    else:
+        return "wtf from num_format" 
+
 
 if __name__ == "__main__":
     log = Logging(True, True)
