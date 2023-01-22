@@ -1,1 +1,533 @@
+= Team OWO
 
+== Members: 
+* Artur Eksi
+* Sander Miller
+* Andres Aleksander Tammer
+* Kert Karsna
+* Johannes Voldemar Langsepp
+
+== Links:
+Link to the robot's assembly: https://a360.co/3FA4tEU +
+
+
+== Programming:
+The robot will automatically connect to the pwir wifi. Then it can be accessed via ssh using the hostname OWO. Refer to software/readme.asciidoc for more details and how to run the code.
+
+External libraries used:
+
+* evdev - Handling communication with XBox One S remote controller (over bluetooth)
+* numba - Speeding up Python code
+* numpy - Calculations, image processing
+* pyrealsense2 - Configuring and using the RealSense 2 camera on the robot
+* pyserial - Serial communication with the Mainboard
+* websocket-client - For creating and handling websocket connection to the referee server
+
+*Robot's logic diagram*
+
+image::images/robot_logic.png[]
+
+
+*A brief description of logic:*
+
+The logic of our robot is based on a state machine where states are entered in succession and when the ball is lost or something unexcpected occurs, the state machine will return to "Ball Search", this approach makes the state machine more foolproof compared to approaches where there would be more connections and jumps between different states. When the game is started, the robot will try to find a ball by turning in place, when a ball is found the robot will move towards it and when the ball is close enough it will attempt to eat the ball. If the ball is detected to be inside the robot by an optical sensor, the robot will proceed with finding a basket, when a basket is found, the robot will align itself with the basket while performing corrective movements. When the basket is satisfiably aligned, the robot will proceed with throwing the ball with thrower speeds based on the depth-camera distance of the basket. We use only one angle, we do not change the angle of our thrower during operations, even though we have the functionality.
+
+
+Overall the code was stable and fast enough to do well in the competitions, but the both the stability and speed could be improved. The speed of the code could be a bottleneck and some more processing power would definitely be of use, although there are definitely optimisations that could be done on the software side as well. We experimented with compiling some code to make it faster, and although we did not have enough time for our experiments to yield any results, with further testing there could definitely be speed benefits. Another idea to help speed things up would be to run some operations on different threads, but this is an approach that we never tried.
+
+
+== Electronics:
+The robot uses the electronics components recommended and given to us by the instructors. The mainboard can control 3 driving motors, 2 servos, 1 throwing motor and has IR sensor support for ball detection. It is powered by 5V by an USB connection from the NUC and one 4S LIPO battery. 
+
+=== The good and the bad:
+* One of the encoder channels was acting oddly and had a one way leakage of another encoder channel, problem was most likely tied to microcontroller weirdness. We couldn't find a fix for it but it was alleviated with a hacked pull-up +
+* I burnt through all 3 isolators due to the 5V buck converter having it's IC the wrong way around +
+* In the end everything worked well and all of the desired features were implimented +
+
+image::images/robot_routing.png[]
+image::images/pcbfront.png[]
+image::images/pcbback.png[]
+
+== Mechanics:
+Link to the robot's assembly: https://a360.co/3FA4tEU +
+
+Our robot design is mostly influenced by BTS (our test robot): similar battery holders and electronics placement, fully enclosed sides almost same camera position and wheels.
+Our robot is much smaller and have a rigid and heavily supported camera stand. Also it has more advanced thrower (added grabbing and angle adjustment).
+
+About thrower: Our design includes motor for throwing the ball, non-continuous servo to adjust the angle of the exit and a continuous servo for grabbing the ball in before the throw. The grabbing works with infra-red sensor, which detects when the ball is inside the robot and sends this data back to the computer to indicate that the ball is in the correct position to start preparing for the throw and stop the grabbing servo. Then the thrower motor spins to the correct RPM (calculated in the main code) to throw it into the basket.
+
+
+image::images/thrower_front.png[]
+image::images/thrower_back.png[]
+
+Good in our mechanics:
+Rigid and heavily supported camera stand. Great thrower with a wide range because of adjustable angle and a ball holder. 
+
+Bad in our mechanics and how to improve:
+Robot can not turn very well, because motors can not turn as little as we needed to. To improve, make robot bigger in radius or make wheels smaller.
+At the end the reassembly while working on fixing different minor fixes and corrections could've been made easier.
+
+
+image::images/robot_design.png[]
+image::images/robot_real.jpg[]
+
+== Personal comments:
+On which parts of the robot did you work on?
+What did you learn?
+What would you do differently next time?
+What did you like/did not like about the course/building a robot?
+Suggestions for next year students.
+Suggestions for instructors.
+
+*Artur:* +
+On which parts of the robot did you work on? +
+The electronics and firmware for the mainboard +
+
+What did you learn? +
+I learnt quite a few things about good PCB design and how to use and program stm32 microprocessors. +
+
+What would you do differently next time? +
+I would start with the PCB right from the first week and also try to invest more time into the firmware. +
+
+What did you like/did not like about the course/building a robot? +
+If you don't manage your time well it is very likely that the last 2 weeks before the competition will be a time crunch. Regardless I enjoyed the freedom that this course offered when designing the mainboard, it really felt like I was actually making something useful and learning from it. +
+
+Suggestions for next year students. +
+If you're doing the electronics, **START WORKING ON THE MAINBOARD FROM WEEK 1** and keep up the pace. Otherwise you are doomed to an appalling time crunch and you WILL be spending the better part of a week (figuratively) locked in the electronics lab. Heed my warning or perish! +
+
+Suggestions for instructors. +
+I think there should be a central figure who properly oversees all of the instructors to organise a few things better and reduce communication issues. +
+
+*Johannes:* +
+On which parts of the robot did you work on? +
+Programming
+
+What did you learn? +
+Many ideas and approaches related to constructing and optimising code.
+
+What would you do differently next time? +
+Possibly improve the performance and stability of the code, the accuracy of throwing also could be better.
+
+What did you like/did not like about the course/building a robot? +
+I liked the base material and code, which was very helpful in building a working solution without inventing the wheel.
+
+Suggestions for next year students. +
+Don't sit idly, work for the whole semester.
+
+Suggestions for instructors. +
+Maybe the points system could be improved, as a robot that makes it into the final competition should be enough to make all team members pass with high grades.
+
+*Kert:* +
+
+On which parts of the robot did you work on? +
+I worked on mechanics: designing, manufacturing and assembling. +
+
+What did you learn? +
+I improved my usage of Fusion 360 and making a complete project in this space, fitting all of the components inside the robot, 3d-modelling and making them fit with one another. Also improved my knowledge on how to manufacture parts for the robot - all the preparation steps from the model to an actual robot using a CNC-mill and the software. +
+
+What would you do differently next time? +
+I would probably make at least one more prototype of the robot between the given one and our final robot to make the last one even better and learn from mistakes made. +
+
+What did you like/did not like about the course/building a robot? +
+I liked that at first all groups get the last year's robots with what all of the members of the group can start working on right away. Additionally we could see how their solution was made (physically and in the software), what would they improve and what was good and learn from others mistakes before even starting the modelling of our own robot. +
+
+What would you do differently next time? +
+I would start working on the robot right away to get more feedback and to get the robots chassis ready for developers/programmers to perfect their solution more - to give them more time. +
+
+Suggestions for next year students? +
+For mechanics i would suggest starting as easly as you can and try to make the first iteration as soon as possible. Try to get a lot of feedback from the instructors and if stuck, don't hesitate to ask for help. About modelling: make the sketch as flexible (in terms of main dimensions) as possible, this saves a lot of time and effort to change these based on the feedback. Also keep in mind that the course actually takes roughly the time and investment for the 6EAP requirements and 95% of the time it's independent work so you have to initiate it yourself. +
+
+Suggestions for instructors? +
+Instructors usually answered quite quickly, but sometimes you had to wait several weeks for an answer. And to keep an eye on the groups that are behind with some parts and give them more attention. +
+
+
+*Sander:* +
+On which parts of the robot did you work on? +
+I worked on mechanics: designing, manufacturing and assembling. +
+What I learned? +
+I learned to use Fusion 360 and how to export necessary files to actually manufacture components. Also learned how to use CNC-mill, lathe and 3D-printer. +
+What I liked about the course? +
+I liked that we needed to make actual robot from scratch and learned how to use CNC-mill, lathe and 3D-printer. +
+What would you do differently next time? +
+I would make the robot a bit bigger and wheels smaller to make it easier to turn. Also would improve the thrower design to make it smaller and more efficent. +
+Suggestions for next year students? +
+Make the sketch so that important dimensions can be changed easily and find enough time for this project from the beginning of the course. +
+Suggestions for instructors? +
+Instructors usually answered quite quickly, but sometimes you had to wait several weeks for an answer.  +
+
+*Andres:* +
+On which parts of the robot did you work on? +
+I worked on the robot's software. In addition I did some team management stuff.+
+
+What did you learn?+
+General project management stuff, both from the software side and the team management side. It was a valuable (and fun) experience for the future.
+Also gained some more experience with Python in general.+
+
+What would you do differently next time? +
+Think more about code architeture and structure. Towards the end of the course code quality started downgrading and that led to stability issues and bugs. +
+
+What did you like/did not like about the course/building a robot? +
+Extremely cool and fun course. Gives you quite a bit of freedom on tackling the challenge of building a basketball robot. +
+
+Suggestions for next year students. +
+Start right of the bat at the beginning of the semester. It will be easier in December before the DeltaX, then you don't have to crunch that much.
+Establish a good structure for working together as a team. Be it weekly meetings or that one person is responsible for checking how everyone is doing. Find somehting that works for your team and make it happen. It is very helpful in the long run.
+Think hard about what features to add. The best robot usually doesn't have the fanciest algorithms and features, but very robust and stable core components. Main thing is not to get carried away by unnecessary stuff. +
+
+Suggestions for instructors. +
+Organizational stuff could be better. There was quite a bit of confusion and uncertainty about the dates of the competition.
+The basketball court can get quite crowded at times. Would be nice to have some more space. +
+
+
+
+== BLOG
+=== Mon, 05.09.22
+*Everyone:* Workshop safety training and team management
+
+=== Thu, 08.09.22
+*Andres and Kert:* Mainboard communication 2 h
+
+=== Fri, 09.09.22
+*Andres and Artur:* Assembling test robot 3 h 
+
+=== Sun, 11.09.22
+*Johannes:* Learning neural networks 1.5 h +
+*Andres:* Omni motion code and math, testing thrower motor 2 h
+
+=== Mon, 12.09.22
+*Everyone:* Meeting for general planning 1 h +
+*Andres:* Working with the vision example code from boot camp 1 h +
+*Sander:* Thrower designing 3 h
+
+=== Wed, 14.09.22
+*Johannes:* Learning neural networks 1.5 h +
+*Sander:* Thrower designing 2 h
+
+=== Thu, 15.09.22
+*Everyone:* LiPo 1 h +
+*Andres:* NUC setup, Working with the vision example code from boot camp 3 h +
+*Johannes:* NUC software and connectivity setup 2 h +
+*Sander:* Thrower design improvements 3 h +
+*Kert:* Thrower design improvements 1.5 h
+
+=== Sat, 17.09.22
+*Sander:* Thrower design improvements 1 h
+
+=== Mon, 19.09.22
+*Andres:* Progress report, Vision example code, Trello setup 3.5 h +
+*Sander:* Thrower CAM 2h +
+*Kert:* Thrower CAM 2h +
+*Johannes:* Image processing code and testing 3.5 h
+
+=== Tue, 20.09.22
+*Johannes:* Image processing testing and calibration 2 h +
+*Andres:* Architectural view and planning 2 h
+
+=== Thu, 22.09.22
+*Johannes:* Image processing, line detection 5.5 h +
+*Andres:* State machine, logging functionality 1.5 h +
+*Sander and Kert:* Thrower cut out, assembled and tested 4 h
+
+=== Sat, 24.09.22
+*Artur:* Component files, import testing 2 h
+
+=== Mon, 26.09.22
+*Johannes:* Line detection 4 h +
+*Andres:* Orbiting logic, general code improvements 5 h +
+*Artur:* Component files, import testing 1 h
+
+=== Tue, 27.09.22
+*Johannes:* Filtering balls with lines, integrating distance without depth 3.5 h +
+*Sander:* Wheels design 1 h
+
+=== Wed, 28.09.22
+*Sander and Kert:* Mechanics meeting 1 h
+
+=== Thu, 29.09.22
+*Sander:* Wheels design 2 h
+
+=== Sun, 02.10.22
+*Artur:* Component files, manually importing 4.5 h
+
+=== Mon, 03.10.22
+*Johannes:* Progress report and misc. changes in code 2.5h +
+*Andres:* Progress report, sigmoid, orbiting 6.5 h +
+*Artur:* Electrical trouble debugging, creating passives 2.5 h
+
+=== Tue, 04.10.22
+*Sander:* Wheels design 2 h +
+*Johannes:* Testing and measuring thrower 1.5 h +
+*Andres:* Color calibration 1.5 h +
+
+=== Wed, 5.10.22
+*Artur:* Designing the mainboard 2 h 
+
+=== Thu, 06.10.22
+*Johannes:* Image processing minor tweaks, thrower testing 3.5 h +
+*Andres:* Thrower code and calibration 3 h +
+
+=== Sat, 08.10.22
+*Sander:* Thrower design 4 h +
+*Artur:* Designing the mainboard 2.5 h 
+
+=== Sun. 09.10.22
+*Artur:* Designing the mainboard 2 h 
+
+=== Mon, 10.10.22
+*Johannes:* Meeting, throwing state coded, first tests ran 4.5 h +
+*Artur:* Meeting, mainboard design 3 h +
+*Andres:* Meeting, some discussion with the mechanics, code 4.5 h +
+*Kert:* Meeting, bottom chassis design and motor mount completion 6.5 h +
+*Sander:* Meeting, thrower design 6.5 h +
+
+=== Wed, 12.10.22
+*Sander:* Thrower design 5 h +
+
+=== Thu, 13.10.22
+*Johannes:* Miscellaneous testing and bug fixes, stability improvements 2.5 h +
+
+=== Sun, 16.10.22
+*Artur:* Designing the mainboard 3.5 h +
+
+=== Mon, 17.10.22
+*Artur:* Designing the mainboard pcb 3 h +
+*Sander:* Thrower design improvements 4.5 h +
+*Johannes:* Code improvements 1.5 h +
+*Andres:* Progress report, code improvements based on feedback 4.5 h +
+*Kert:* Started working on camera mount & design 4 h +
+
+=== Tue, 18.10.22
+*Artur:* Improving the mainboard schematic 2 h +
+*Sander:* Chassis design 2 h +
+*Johannes:* Pull request fixes, general improvements 2.5 h +
+
+=== Wed, 19.10.22
+*Sander:* Chassis design 3 h
+
+=== Thu, 20.10.22
+*Sander:* Chassis design 3 h +
+*Johannes:* Thrower and motion code tweaking 3 h +
+*Andres:* Logging improvements, testing, housekeeping (Trello etc...) 3 h +
+*Kert:* Camera mount design 2 h +
+
+=== Sat, 22.10.22
+*Artur:* Picking the microcontroller timer layout, improving the schematic and designing the pcb 6 h +
+
+=== Sun, 23.10.22
+*Artur:* Picking the microcontroller timer layout and routing traces 3 h +
+
+=== Mon, 24.10.22
+*Andres:* Task reviews, NUC fixing 1 h +
+*Sander:* Chassis design and various improvements 4 h +
+*Johannes:* Task reviews, image processing modifications 4 h +
+*Kert:* Helping with task reviews, improving the camera mount and other little tweaks 4.5 h +
+
+=== Tue, 25.10.22
+*Andres:* Started looking into referee commands 0.5 h +
+*Artur:* Improving the mainboard schematic 1 h +
+
+=== Wed, 26.10.22
+*Sander:* Chassis design and various improvements 1 h +
+
+=== Sat, 29.10.22
+*Sander:* Chassis design and various improvements 1 h +
+*Artur:* Picking the microcontroller timer layout and improving the schematic 4.5 h +
+
+=== Mon, 31.10.22
+*Kert:* Camera mount design troubleshooting and bottom & top plate modifications 2.5 h +
+*Sander:* Various improvements and wheel manufacturing 7.5 h +
+*Artur:* Picking the microcontroller timer layout, improving the schematic and designing the pcb 4 h +
+*Johannes:* Remote control with gamepad implementation 4 h +
+*Andres:* Progress report, referee commands 7.5 h +
+
+=== Tue, 01.11.22
+*Sander:* Chassis design and various improvements 3 h +
+*Kert:* Chassis design and camera mount modifications 4.5 h +
+
+=== Thu, 03.11.12
+*Johannes:* Improving line detection, improving robot stability 5 h +
+*Andres:* Referee commands, thrower (re)design ideas, code cleanup 3 h + 
+*Kert:* Thrower bits, testing and manufacturing 4.5 h + 
+
+=== Sat, 5.11.12
+*Artur:* Improving the pcb design 2 h +
+
+=== Sun, 06.11.12
+*Johannes:* Line detection redesign, new thrower ramp calibration 2.5 h +
+*Artur:* Fixing design issues with the pcb 4 h +
+
+=== Mon, 07.11.22
+*Sander:* Wheel manufacturing and 3d printing 7 h +
+*Johannes:* New thrower ramp calibration 2.5 h +
+*Andres:* New thrower ramp calibration 3.5 h +
+
+=== Tue, 08.11.22
+*Sander:* Wheel manufacturing and 3d printing 6 h +
+*Johannes:* Line detection reform reform, throwing calibrations 3.5 h +
+*Andres:* Thrower calibration, logging into file 3 h +
+*Kert:* Design fixes, improvements based on feedback 3.5 h +
+
+=== Wed, 09.11.22
+*Sander:* Chassis design and various improvements 3 h +
+*Johannes:* Robot movement and throwing stabilisations 2 h +
+*Andres:* Merge, mechanics discussion, acceleration limiter 6.5 h +
+*Artur:* Fixing design issues with the pcb 2.5 h +
+*Kert:* Chassis design and various improvements 6 h +
+
+=== Thu, 10.11.22
+*Sander:* Design improvements and 3d printing, test competition 4.5 h +
+*Andres:* Test competition 5 h +
+*Artur:* Fixing design issues with the pcb 2.5 h +
+*Kert:* Test competition, support and cheering for team 4 h +
+*Johannes:* Test competition victory 6 h 
+
+=== Fri, 11.11.22
+*Sander:* Design improvements 3 h +
+*Artur:* Finalising the design 1 h +
+
+=== Mon, 14.11.22
+*Andres:* Progress report, referee reconnect 3.5 h +
+*Artur:* Starting with the firmware 0.5 h +
+*Kert:* Chassis design and fixes based on feedback 1 h +
+*Sander:* Design improvements 3 h +
+*Johannes:* Progress report and manual control 3.5 h +
+
+=== Tue, 15.11.22
+*Andres:* Merging, referee reconnect 1 h +
+
+=== Thu, 17.11.22
+*Andres:* Config, other minor improvements 3 h +
+*Johannes:* Minor improvements and stability 2.5 h + 
+
+=== Sat, 19.11.22
+*Andres:* Pull request feedback, argparse, config 8 h +
+*Johannes:* Pull request feedback 1 h +
+*Artur:* Soldering the mainboard 7 h +
+
+=== Sun, 20.11.22
+*Artur:* Soldering and debugging the mainboard 5 h +
+
+=== Mon, 21.11.22
+*Andres:* Meeting, planning, config files, search algorithms 5 h +
+*Sander:* Design improvements and CAM 5 h +
+*Artur:* Soldering the mainboard 6 h +
+*Johannes:* Meeting, timeout algorithms 4 h +
+*Kert:* Final adjustments before the new robot mill 6.5 h +
+
+=== Tue, 22.11.22
+*Andres:* Search algorithms with movement 3.5 h +
+*Artur:* Soldering the mainboard 2.5 h +
+
+=== Wed, 23.11.22
+*Andres:* Search algorithms with movement, cleaning the robot 3.5 h +
+*Artur:* Writing firmware for the mainboard 1 h +
+*Johannes:* Minor stability improvements 1.5 h +
+*Kert:* Milling the new robot 6.5 h +
+
+=== Thu, 24.11.22
+*Andres:* Second test competition 3.5 h +
+*Johannes:* Second test competition 4.5 h +
+*Kert:* Second test competition 4 h +
+
+=== Fri, 25.11.22
+*Sander:* Wheel manufacturing and assembling thrower 5 h +
+
+=== Sat, 26.11.22
+*Sander:* Design improvements 4 h +
+
+=== Sun, 27.11.22
+*Andres:* Behavior analysis, progress report 3 h +
+
+=== Mon, 28.11.22
+*Sander:* 3d printing and drilling holes 5.5 h +
+*Johannes:* Progress Presentation and Programming 2 h +
+*Artur:* Firmware 1.5 h +
+*Kert:* Drilling holes, cleaning the parts, preparing for the assembly 2 h +
+
+=== Tue, 29.11.22
+*Sander:* Assembling the robot 2.5 h +
+
+=== Thu, 01.12.22
+*Johannes:* Improving stability and showing tasks 3 h +
+*Artur:* Firmware 0.5 h +
+
+=== Fri, 02.12.22
+*Artur:* Firmware 1 h +
+
+=== Sat, 03.12.22
+*Artur:* Firmware 2 h +
+
+=== Sun, 04.12.22
+*Johannes:* Preparing code for new robot 1.5 h +
+*Artur:* Firmware, motor connectors and PWM troubles 7.5 h +
+
+=== Mon, 05.12.22
+*Sander:* Assembling the robot 4 h +
+*Andres:* Throwing angle choice, backwheel adjust code 1.5 h +
+*Johannes:* New robot code preparation 2.5 h +
+*Artur:* Firmware and more PWM issues 6.5 h +
+*Kert:* Assembling the robot 2 h +
+
+=== Tue, 06.12.22
+*Sander:* Assembling the robot 2 h +
+*Johannes:* New robot code preparation 2.5 h +
+*Artur:* Firmware and DSHOT implementation 7.5 h +
+*Kert:* Assembling the robot 1.5 h +
+
+=== Wed, 07.12.22
+*Sander:* Helping others 5 h +
+*Andres:* Porting code to new robot, helping with firmware a bit, fixing computer 11 h +
+*Johannes:* Helping with new robot, code for new robot 5 h +
+*Artur:* Firmware, giving up on DSHOT and a lot of pain 11 h +
+*Kert:* Helping to ready up for the competitions 4 h +
+
+=== Thu, 08.12.22
+*Sander:* Helping others and test competition 7.5 h +
+*Andres:* New robot code, thrower calibration, test competition 5 h +
+*Johannes:* Getting new robot to be functional, test competition 8 h +
+*Artur:* Desperately trying to get the driving to work, test competition 7.5 h +
+*Kert:* Helping to ready up for the competitions, competitions 5 h +
+
+=== Mon, 12.12.22
+*Andres:* Progress report, new robot debug 3.5 h +
+*Johannes:* Progress report, debugging new robot 4 h +
+*Artur:* Progress report, minor improvements to the firmware 8 h +
+
+=== Tue, 13.12.22
+*Andres:* New robot debug 6.5 h +
+*Johannes:* Working on new robot 5.5 h +
+*Artur:* Major improvements to the firmware 8.5 h +
+
+=== Wed, 14.12.22
+*Andres:* Cleaning robot, wiring, small software improvements, painting 12 h +
+*Johannes:* Working on new robot 4 h +
+*Artur:* Total PID rework, painting the robot while almost (?) delirious 11.5 h +
+*Kert:* Helping with cleaning the robot 1.5 h +
+
+=== Thu, 15.12.22
+*Andres:* Improving new robot software 5 h +
+*Johannes:* New robot software corrections 7 h +
+
+=== Fri, 16.12.22
+*Andres:* DeltaX 3.5 h +
+*Sander:* DeltaX 3.5 h +
+*Johannes:* DeltaX 5.5 h +
+*Artur:* DeltaX 3.5 h +
+*Kert:* DeltaX 4 h +
+
+=== Sat, 17.12.22
+*Andres:* Course competition 6.5 h +
+*Johannes:* DeltaX Vol.2 7 h +
+*Kert:* Managing multiple robots in the course/DeltaX competition and helping with other stuff 8 h +
+
+=== Sat, 14.01.23
+*Andres:* Final documentation, presentation 3 h +
+
+=== Mon, 16.01.23
+*Sander:* Final documentation 2 h +
+*Johannes:* Final documentation 2 h +
+*Andres:* Final documentation 0.5 h +
+*Kert:* Final documentation 2 h +
+
+=== Tue, 17.01.23
+*Artur:* FInal documentation 1 h +
